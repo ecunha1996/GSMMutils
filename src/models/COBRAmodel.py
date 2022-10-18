@@ -13,6 +13,7 @@ import numpy as np
 import seaborn
 from openpyxl import load_workbook
 from sympy import Add
+from src.io.writer import *
 
 warnings.filterwarnings("ignore")
 import re
@@ -23,6 +24,7 @@ from cobra.flux_analysis import find_essential_genes
 
 class MyModel(Model):
     def __init__(self, file_name = None, biomass_reaction=None, directory=None, prune_mets=False):
+        self.biomass_reaction = None
         if not directory:
             directory = os.getcwd()
         self.directory = directory
@@ -255,8 +257,6 @@ class MyModel(Model):
         self.model = previous_model.copy()
         
     def reset(self):
-
-        
         self.model = self.model_first.copy()
     
     def test_bio_precursors(self):
@@ -560,27 +560,29 @@ class MyModel(Model):
             print(name + "\t"*2+"Not found")
             return None
 
-    def apply_env_cond(self, conditions_file_name, conditions_sheet_name):
-
+    def apply_env_conditions_from_excel(self, conditions_file_name, conditions_sheet_name):
         file = pd.read_excel(conditions_file_name, conditions_sheet_name)
-
-        self.exchanges = self.get_exchanges()
         for exchange in self.exchanges:
             try:
                 exchange.lower_bound = float(-file["Uptake Rate"][file["Exchange"] == exchange.id].values[0])
             except:
                 pass
 
+    def apply_env_conditions_from_dict(self, data, metabolites = None, aliases = None):
+            try:
+                for metabolite in metabolites:
+                    if metabolite in data.keys():
+                        if type(data[metabolite]) != tuple:
+                            data[metabolite] = (-data[metabolite], 1000)
+                        if aliases and metabolite in aliases.keys():
+                            metabolite_in_model = aliases[metabolite]
+                        else:
+                            metabolite_in_model = metabolite
+                        self.exchanges.get_by_id(f"EX_{metabolite_in_model}__dra").bounds = data[metabolite]
+            except Exception as e:
+                print("Error applying environmental conditions")
+                print(e)
 
-
-    def maximize(self, pfba = False, value = True):
-        from cobra import util
-        if pfba:
-            if value: return cobra.flux_analysis.pfba(self).fluxes[list(util.solver.linear_reaction_coefficients(self))[0].id]
-            else: return cobra.flux_analysis.pfba(self)
-        else:
-            if value: return self.optimize(objective_sense = "maximize").objective_value
-            else: return self.optimize(objective_sense = "maximize")
 
     def minimal_medium(self, conditions_file_name, conditions_sheet_name, output_file_name, minimal_growth):
         ''' '''
@@ -704,8 +706,6 @@ class MyModel(Model):
     def gene_essentiality(self, conditions_file_name, conditions_sheet_name):
 
         file = pd.read_excel(conditions_file_name, conditions_sheet_name)
-
-        self.exchanges = self.get_exchanges()
 
         for exchange in self.exchanges:
             exchange.lower_bound = float(-file["Uptake Rate"][file["Exchange"] == exchange.id].values[0])
@@ -863,7 +863,9 @@ def check_biomass(name,biomass):
         print(name + "\t"*3 + "Growth" + "\t"*3 + str(biomass))
         
         
-def atp_m(model, m_reaction, mu, values= {0.36:0,1:0,1.5:0,2:0,3:0,4:0,1.48:0}):
+def atp_m(model, m_reaction, mu, values=None):
+    if values is None:
+        values = {0.36: 0, 1: 0, 1.5: 0, 2: 0, 3: 0, 4: 0, 1.48: 0}
     m_reaction = model.get_reaction(m_reaction)
     original_bounds = m_reaction.bounds
     for key in values.keys():    
@@ -1253,7 +1255,7 @@ def check_balance(model, show_biomass_reactions=False):
                     res[str(reaction.id)] = reaction.check_mass_balance()
     return res
 
-def simulation_for_conditions(model, conditions_df, growth_rate_df):
+def simulation_for_conditions(model, conditions_df, growth_rate_df, save_in_file=False, filename=None):
     as_dict = conditions_df.to_dict(orient='index')
     growth_rate = growth_rate_df.to_dict(orient='index')
     complete_results = {}
@@ -1262,20 +1264,15 @@ def simulation_for_conditions(model, conditions_df, growth_rate_df):
     for index, condition in as_dict.items():
         copy = model.copy()
         for met, lb in condition.items():
-            # if not met.startswith("C00009") and not met.startswith("C00244")  and not met.startswith("C00205"):
             lb = -lb if lb <0 else lb
             copy.reactions.get_by_id("EX_" + met + "__dra").bounds = (round(-lb, 4), 1000)
-    #     sol = flux_analysis.pfba(copy)
         sol = copy.optimize()
         biomass = round(sol['EX_e_Biomass__dra'],5)
-#         print(index)
-#         print(growth_rate[index]['growth_rate'])
-#         print(biomass)
-#         print(f"Error: {round((growth_rate[index]['growth_rate'] - biomass)/growth_rate[index]['growth_rate']*100,2)} %")
         error_sum += abs(growth_rate[index]['growth_rate'] - biomass)
-#         print("----------------------")
         complete_results[index] = sol
         values_for_plot.append((growth_rate[index]['growth_rate'], biomass))
+    if save_in_file:
+        write_simulation(complete_results, filename)
     return complete_results, values_for_plot, round(error_sum, 6)
 
 def get_biomass_mass(model):
@@ -1582,7 +1579,7 @@ def get_pfba(model):
         return fba
 
 def get_inner_bark_model(model, conditions_file_name, conditions_sheet_name):
-    model.apply_env_cond(conditions_file_name, conditions_sheet_name)
+    model.apply_env_conditions_from_excel(conditions_file_name, conditions_sheet_name)
     biomass_reactions = ["e_Biomass_Leaf__cyto", "e_Carbohydrate__cyto", "e_CellWall_Leaf__cyto", "e_Cofactor_Leaf__cyto"]
     model.model.objective = 'e_Biomass_Ibark__cyto'
     try:
@@ -1593,7 +1590,7 @@ def get_inner_bark_model(model, conditions_file_name, conditions_sheet_name):
 
 
 def get_phellogen_model(model, conditions_file_name, conditions_sheet_name):
-    model.apply_env_cond(conditions_file_name, conditions_sheet_name)
+    model.apply_env_conditions_from_excel(conditions_file_name, conditions_sheet_name)
     biomass_reactions = ["e_Biomass_Leaf__cyto", "e_Carbohydrate_Leaf__cyto", "e_CellWall_Leaf__cyto", "e_Cofactor_Leaf__cyto",
                          "e_Biomass_Ibark__cyto", "e_Carbohydrate_Ibark__cyto", "e_CellWall_Ibark__cyto", "e_Cofactor_Ibark__cyto","e_Suberin_Ibark__cyto"]
     model.model.objective = 'e_Biomass_Phellogen__cyto'
