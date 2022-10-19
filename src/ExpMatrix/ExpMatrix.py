@@ -5,7 +5,7 @@ from utils.utils import *
 
 
 class ExpMatrix:
-    def __init__(self, experimental_filename, model):
+    def __init__(self, experimental_filename, model=None):
         self._conditions = None
         self._substrate_uptake_hours, self._substrate_uptake_days = {}, {}
         self.experimental_filename = experimental_filename
