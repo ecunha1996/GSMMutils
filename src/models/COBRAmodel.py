@@ -168,8 +168,12 @@ class MyModel(Model):
             return  self.model.summary(**kwargs)
         else:
             print("Runnning pFBA")
-            pfba_sol = cobra.flux_analysis.pfba(self)
-            return self.model.summary(pfba_sol, **kwargs)
+            try:
+                pfba_sol = cobra.flux_analysis.pfba(self)
+                return self.model.summary(pfba_sol, **kwargs)
+            except Exception as e:
+                print(e)
+                return 0
 
     def create_reaction(self, reaction):
         self.add_reactions([cobra.Reaction(reaction)])
@@ -800,7 +804,7 @@ class MyModel(Model):
 
     def set_heterotrophy(self, carbon_source = "EX_C00033__dra", update_value = -10):
         self.exchanges.EX_C00205__dra.bounds = (0, 1000)
-        self.exchanges.get_by_id(carbon_source).bounds = (update_value, 1000)
+        self.reactions.get_by_id(carbon_source).bounds = (update_value, 1000)
         self.reactions.e_Biomass_ht__cytop.bounds = (0,1000)
         self.reactions.e_Biomass__cytop.bounds = (0, 0)
         self.objective = "e_Biomass_ht__cytop"

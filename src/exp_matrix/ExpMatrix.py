@@ -1,3 +1,4 @@
+from typing import Union
 
 from src.io.writer import *
 from src.io.reader import read_matrix
@@ -33,24 +34,24 @@ class ExpMatrix:
             self._substrate_uptake_days[key] = {}
             for trial_name, uptake in value.items():
                 self._substrate_uptake_days[key][trial_name] = round(uptake * 24, 4)
-        self._conditions = pd.concat([self._conditions, pd.DataFrame.from_dict(data={key : value for key, value in self._substrate_uptake_days.items() if key not in
+        self._conditions = pd.concat([self._conditions, pd.DataFrame.from_dict(data={key: value for key, value in self._substrate_uptake_days.items() if key not in
                                                                                      self._conditions.columns})], axis=1).rename_axis('Trial')
 
     def load(self):
         self.matrix = read_matrix(self.experimental_filename, sheet_name=None, index_col=0)
 
     @property
-    def conditions(self):
+    def conditions(self) -> pd.DataFrame:
         return self._conditions
 
     @conditions.setter
-    def conditions(self, value):
+    def conditions(self, value: Union[pd.DataFrame, str]):
         if type(value) is not pd.DataFrame:
             value = self.matrix[value]
         self._conditions = value
 
     @conditions.getter
-    def conditions(self):
+    def conditions(self) -> pd.DataFrame:
         return self._conditions
 
     def remove_trials(self, trials):
@@ -69,7 +70,7 @@ class ExpMatrix:
         to_write["Resume"] = self.conditions
         write_matrix(to_write, filename)
 
-    def get_substrate_uptake_from_biomass(self, element, substrate, header = None):
+    def get_substrate_uptake_from_biomass(self, element, substrate, header=None):
         if not header:
             header = substrate
         carbon_in_biomass = get_element_in_biomass(self.model, element)
@@ -86,7 +87,7 @@ class ExpMatrix:
         data[f'{substrate} uptake (mmol{substrate}/gDW.h)'] = get_uptake(data, m_substrate, substrate)
         return get_average_uptake(data, self.exponential_phases[trial_name], substrate)
 
-    def get_substrate_uptake(self, substrate, header = None):
+    def get_substrate_uptake(self, substrate, header=None):
         if not header:
             header = f"{substrate} uptake (mmol{substrate}/gDW.h)"
         temp_dict = {}
@@ -94,7 +95,7 @@ class ExpMatrix:
             init_concentration = self.conditions.loc[trial_name, substrate]
             x_u_init = self.matrix[trial_name].DW[str(self.exponential_phases[trial_name][0])] / self.conditions['growth_rate'][trial_name]
             x_u_final = self.matrix[trial_name].DW[str(self.exponential_phases[trial_name][1])] / self.conditions['growth_rate'][trial_name]
-            temp_dict[trial_name] = init_concentration / (x_u_final- x_u_init)
+            temp_dict[trial_name] = init_concentration / (x_u_final - x_u_init)
         self.conditions[header] = pd.Series(temp_dict)
         return temp_dict
 

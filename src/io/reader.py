@@ -15,3 +15,8 @@ def read_simulation():
     pass
 
 
+
+def read_csv(filename, **kwargs):
+    data = pd.read_csv(filename, **kwargs)
+    data.index = data.index.astype(str)
+    return data
