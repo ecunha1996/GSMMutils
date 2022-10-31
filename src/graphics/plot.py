@@ -56,3 +56,19 @@ def qqplot(model, to_show = True, path = None):
         plt.show()
     else:
         plt.savefig(path)
+
+
+def heatmap(dataframe, to_show = True, path = None):
+    sns.heatmap(dataframe, cmap="YlGnBu", z_score=0)
+    if to_show:
+        plt.show()
+    else:
+        plt.savefig(path)
+
+def clustermap(dataframe, to_show = True, path = None):
+    g = sns.clustermap(dataframe, cmap="Blues", z_score=0, center=0)
+    if to_show:
+        plt.show()
+    else:
+        plt.savefig(path)
+    return g

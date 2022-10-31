@@ -1,3 +1,5 @@
+import re
+
 import pandas as pd
 
 from bio.gene import Gene
@@ -8,7 +10,7 @@ class Genes:
         self._lengths = None
         self._genes = []
         self._genes_ids = []
-        if batch:
+        if batch is not None:
             self.load(batch)
 
     @property
@@ -36,4 +38,5 @@ class Genes:
         self._genes_ids = value
 
     def load(self, batch):
-        self.genes = [Gene(gene_id=gene_id) for gene_id in batch]
+        self.genes = [Gene(gene_id=gene_id, length=length) for gene_id, length in batch.to_dict().items()]
+        self.lengths = batch

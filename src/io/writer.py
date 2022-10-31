@@ -36,3 +36,11 @@ def write_simulation(results, filename, **kwargs):
             )) + 3
             worksheet.set_column(idx, idx, max_len)
     writer.save()
+
+
+def write_specific_models(specific_models, filename, **kwargs):
+    writer = pd.ExcelWriter(filename, engine='xlsxwriter')
+    for method, samples in specific_models.items():
+        for sample, result in samples.items():
+            result.dataframe.to_excel(writer, sheet_name=f"{method}_{sample}", **kwargs)
+    writer.save()
