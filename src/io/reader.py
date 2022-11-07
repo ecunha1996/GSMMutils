@@ -22,3 +22,11 @@ def read_csv(filename, index_name=None, **kwargs):
     data.index = [index_name.split(".")[0] for index_name in data.index]
     data = data.rename_axis(index_name)
     return data
+
+
+def read_excel(filename, index_name=None, **kwargs):
+    data = pd.read_excel(filename, **kwargs)
+    data.index = data.index.astype(str)
+    data.index = [index_name.split(".")[0] for index_name in data.index]
+    data = data.rename_axis(index_name)
+    return data

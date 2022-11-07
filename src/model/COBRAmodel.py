@@ -6,20 +6,23 @@ Created on Mon Jun 29 14:52:26 2020
 """
 
 import cobra
-import pandas as pd
 import os
 import warnings
 import numpy as np
 import seaborn
 from openpyxl import load_workbook
 from sympy import Add
+
+from experimental.Biomass import Biomass
+from experimental.BiomassComponent import BiomassComponent
 from src.io.writer import *
+from utils.utils import update_st, get_precursors
 
 warnings.filterwarnings("ignore")
 import re
 import matplotlib.pyplot as plt
 # import seaborn
-from cobra import flux_analysis, Model
+from cobra import flux_analysis, Model, Reaction
 from cobra.flux_analysis import find_essential_genes
 
 class MyModel(Model):
@@ -30,13 +33,13 @@ class MyModel(Model):
         self.directory = directory
         self.file_name = file_name
         self.model_old = []
-        self.model_first = ""
+        self.model_first = None
+        self._biomass_composition = None
         self.load_model(self.directory, self.file_name)
         if not biomass_reaction:
             biomass_reaction = self.search_biomass()
-
         self.bio_reaction = self.model.reactions.get_by_id(biomass_reaction)
-
+        self.biomass_metabolite = [e for e in self.bio_reaction.products if 'biomass' in e.id.lower()][0]
         self.set_compartments()
                 
         self.bio_precursors = None
@@ -48,10 +51,28 @@ class MyModel(Model):
         super().__init__(self.model)
         if self.bio_reaction:
             self.objective = self.bio_reaction.id
+        self.biomass_components = {}
         print("Reactions:", len(self.model.reactions))
         print("Metabolites:", len(self.model.metabolites))
         print("Model loaded")
-        
+
+    @property
+    def biomass_composition(self):
+        return self._biomass_composition
+    @biomass_composition.setter
+    def biomass_composition(self, biomass_composition=None):
+        if type(biomass_composition) == str or not biomass_composition:
+            self._biomass_composition = {}
+            if not self.biomass_components:
+                self.infer_biomass_from_model()
+            biomass_composition = {}
+            for children in self.biomass_components[self.biomass_metabolite.id].children:
+                biomass_composition[children.id] = children.stoichiometry
+            self._biomass_composition = biomass_composition
+        elif type(biomass_composition) == Biomass:
+            self._biomass_composition = biomass_composition
+        else:
+            raise Exception("Biomass composition must be a string or a Biomass object")
     def load_model(self, directory, file_name):
         
         ''' This function loads the model. Returns a COBRApy object, the model
@@ -255,8 +276,6 @@ class MyModel(Model):
         self.model_old.insert(0,self.model.copy())
         
     def undo(self):
-        
-        
         previous_model = self.model_old.pop(0)
         self.model = previous_model.copy()
         
@@ -822,6 +841,31 @@ class MyModel(Model):
                 reaction.bounds = (0, 0)
 
 
+    def adjust_biomass(self, new_value, suffix="v2", biomass_reaction_id=None):
+        if not biomass_reaction_id:
+            biomass_reaction_id = self.bio_reaction.id
+        new_biomass = Reaction(id=f"e_Biomass_{suffix}__cytop", lower_bound=0, upper_bound=1000)
+        if not self.biomass_composition: self.biomass_composition = biomass_reaction_id
+        stoichiometries = update_st(self.biomass_composition, new_value)
+        new_biomass.add_metabolites({self.metabolites.get_by_id(key): value for key, value in stoichiometries.items()})
+        new_biomass.add_metabolites({key: value for key, value in self.reactions.get_by_id(biomass_reaction_id).metabolites.items() if
+                                     not key.id.startswith("e_")})
+        new_biomass.add_metabolites({self.biomass_metabolite: 1})
+        self.objective = "EX_e_Biomass__dra"
+        self.add_reactions([new_biomass])
+
+    def infer_biomass_from_model(self, biomass_reaction_name="e_Biomass__cytop", biomass_met_id="e_Biomass__cytop"):
+        biomass_reaction = self.reactions.get_by_id(biomass_reaction_name)
+        macromolecules = biomass_reaction.reactants
+        macromolecules = set(macromolecules) - {self.metabolites.get_by_id("C00001__cytop"), self.metabolites.get_by_id("C00002__cytop")}
+        e_biomass = BiomassComponent(self.metabolites.get_by_id(biomass_met_id), 1, None)
+        self.biomass_components[biomass_reaction_name] = e_biomass
+        for macromolecule in macromolecules:
+            macromolecule_component = BiomassComponent(macromolecule.id, biomass_reaction.metabolites[macromolecule], e_biomass)
+            self.biomass_components[macromolecule.id] = macromolecule_component
+            get_precursors(macromolecule_component, macromolecule, self)
+
+
 def test_carbohydrate(model):
     file = open("sugars_to_test.txt")
     sugars=file.readlines()
@@ -1279,112 +1323,8 @@ def simulation_for_conditions(model, conditions_df, growth_rate_df, save_in_file
         write_simulation(complete_results, filename)
     return complete_results, values_for_plot, round(error_sum, 6)
 
-def get_biomass_mass(model):
-    def get_sum_of_reaction(reaction, stoichiometry, ignore_water,elementar_counter):
-        counter = 0
-        for reactant in reaction.reactants:
-            copy = reactant.copy()
-            copy.elements = {key: value for key, value in copy.elements.items() if key != "T"}
-            counter += abs(reaction.metabolites[reactant]) * copy.formula_weight * stoichiometry
-            for key in elementar_counter.keys():
-                if key in reactant.elements:
-                    elementar_counter[key] += abs(reaction.metabolites[reactant]) * reactant.elements[key] * stoichiometry
-        for product in reaction.products:
-            if product.id != "C00001__cytop":
-                copy = product.copy()
-                copy.elements = {key: value for key, value in copy.elements.items() if key != "T"}
-                counter -= reaction.metabolites[product] * copy.formula_weight * stoichiometry
-                for key in elementar_counter.keys():
-                    if key in product.elements:
-                        elementar_counter[key] -= abs(reaction.metabolites[product]) * product.elements[key] * stoichiometry
-            else:
-                if not ignore_water:
-                    copy = product.copy()
-                    copy.elements = {key: value for key, value in copy.elements.items() if key != "T"}
-                    counter -= reaction.metabolites[product] * copy.formula_weight * stoichiometry
-                    for key in elementar_counter.keys():
-                        if key in product.elements:
-                            elementar_counter[key] -= abs(reaction.metabolites[product]) * product.elements[key] * stoichiometry
-        return counter / 1000, elementar_counter
 
-    counter = 0
-    elementar_counter = {"C":0,"N":0, "O":0, "P":0, "S":0, "H":0}
-    lipid_stoichiometry = abs(model.reactions.e_Biomass__cytop.metabolites[model.metabolites.e_Lipid__cytop])
-    for reactant in model.reactions.e_TAG__lip.reactants:
-        counter += abs(model.reactions.e_TAG__lip.metabolites[reactant]) * reactant.formula_weight * 0.13 * lipid_stoichiometry
-        for key in elementar_counter.keys():
-            if key in reactant.elements:
-                elementar_counter[key] += abs(model.reactions.e_TAG__lip.metabolites[reactant]) * reactant.elements[key] * 0.13 * lipid_stoichiometry
-    for reactant in model.reactions.e_DAG__er.reactants:
-        counter += abs(model.reactions.e_DAG__er.metabolites[reactant]) * reactant.formula_weight * 0.1418 * lipid_stoichiometry
-        for key in elementar_counter.keys():
-            if key in reactant.elements:
-                elementar_counter[key] += abs(model.reactions.e_DAG__er.metabolites[reactant]) * reactant.elements[key] * 0.13 * lipid_stoichiometry
-    for reactant in model.reactions.e_DGTS__er.reactants:
-        counter += abs(model.reactions.e_DGTS__er.metabolites[reactant]) * reactant.formula_weight * 0.0863 * lipid_stoichiometry
-        for key in elementar_counter.keys():
-            if key in reactant.elements:
-                elementar_counter[key] += abs(model.reactions.e_DGTS__er.metabolites[reactant]) * reactant.elements[key] * 0.13 * lipid_stoichiometry
-    for reactant in model.reactions.e_PE__er.reactants:
-        counter += abs(model.reactions.e_PE__er.metabolites[reactant]) * reactant.formula_weight * 0.0432 * lipid_stoichiometry
-        for key in elementar_counter.keys():
-            if key in reactant.elements:
-                elementar_counter[key] += abs(model.reactions.e_PE__er.metabolites[reactant]) * reactant.elements[key] * 0.13 * lipid_stoichiometry
-    for reactant in model.reactions.e_PC__er.reactants:
-        counter += abs(model.reactions.e_PC__er.metabolites[reactant]) * reactant.formula_weight * 0.0386 * lipid_stoichiometry
-        for key in elementar_counter.keys():
-            if key in reactant.elements:
-                elementar_counter[key] += abs(model.reactions.e_PC__er.metabolites[reactant]) * reactant.elements[key] * 0.13 * lipid_stoichiometry
-    for reactant in model.reactions.e_PI__er.reactants:
-        counter += abs(model.reactions.e_PI__er.metabolites[reactant]) * reactant.formula_weight * 0.0329 * lipid_stoichiometry
-        for key in elementar_counter.keys():
-            if key in reactant.elements:
-                elementar_counter[key] += abs(model.reactions.e_PI__er.metabolites[reactant]) * reactant.elements[key] * 0.13 * lipid_stoichiometry
-    for reactant in model.reactions.e_PG__chlo.reactants:
-        counter += abs(model.reactions.e_PG__chlo.metabolites[reactant]) * reactant.formula_weight * 0.1808 * lipid_stoichiometry
-        for key in elementar_counter.keys():
-            if key in reactant.elements:
-                elementar_counter[key] += abs(model.reactions.e_PG__chlo.metabolites[reactant]) * reactant.elements[key] * 0.13 * lipid_stoichiometry
-    for reactant in model.reactions.e_DGDG__chlo.reactants:
-        counter += abs(model.reactions.e_DGDG__chlo.metabolites[reactant]) * reactant.formula_weight * 0.191 * lipid_stoichiometry
-        for key in elementar_counter.keys():
-            if key in reactant.elements:
-                elementar_counter[key] += abs(model.reactions.e_DGDG__chlo.metabolites[reactant]) * reactant.elements[key] * 0.13 * lipid_stoichiometry
-    for reactant in model.reactions.e_SQDG__chlo.reactants:
-        counter += abs(model.reactions.e_SQDG__chlo.metabolites[reactant]) * reactant.formula_weight * 0.114 * lipid_stoichiometry
-        for key in elementar_counter.keys():
-            if key in reactant.elements:
-                elementar_counter[key] += abs(model.reactions.e_SQDG__chlo.metabolites[reactant]) * reactant.elements[key] * 0.13 * lipid_stoichiometry
-    for reactant in model.reactions.e_MGDG__chlo.reactants:
-        counter += abs(model.reactions.e_MGDG__chlo.metabolites[reactant]) * reactant.formula_weight * 0.2373 * lipid_stoichiometry
-        for key in elementar_counter.keys():
-            if key in reactant.elements:
-                elementar_counter[key] += abs(model.reactions.e_MGDG__chlo.metabolites[reactant]) * reactant.elements[key] * 0.13 * lipid_stoichiometry
-    for reactant in model.reactions.e_CL__mito.reactants:
-        counter += abs(model.reactions.e_CL__mito.metabolites[reactant]) * reactant.formula_weight * 0.0264 * lipid_stoichiometry
-        for key in elementar_counter.keys():
-            if key in reactant.elements:
-                elementar_counter[key] += abs(model.reactions.e_CL__mito.metabolites[reactant]) * reactant.elements[key] * 0.13 * lipid_stoichiometry
-    for reactant in model.reactions.e_FFA__cytop.reactants:
-        counter += abs(model.reactions.e_FFA__cytop.metabolites[reactant]) * reactant.formula_weight * 0.1153 * lipid_stoichiometry
-        for key in elementar_counter.keys():
-            if key in reactant.elements:
-                elementar_counter[key] += abs(model.reactions.e_FFA__cytop.metabolites[reactant]) * reactant.elements[key] * 0.13 * lipid_stoichiometry
-    c = 0
-    c += counter / 1000
-    to_ignore = ["C00002__cytop", "C00001__cytop", "e_Lipid__cytop"]
-    for reactant in model.reactions.e_Biomass__cytop.reactants:
-        if reactant.id not in to_ignore:
-            for reaction in reactant.reactions:
-                if reaction.id != "e_Biomass__cytop":
-                    if 'Protein' in reaction.id:
-                        ignore_water = True
-                    else:
-                        ignore_water = False
-                    res = get_sum_of_reaction(reaction, abs(model.reactions.e_Biomass__cytop.metabolites[reactant]), ignore_water, elementar_counter)
-                    c += res[0]
-                    elementar_counter = res[1]
-    return round(c,3), elementar_counter
+
 
 
 def get_reactions_nadh_nadph(model):

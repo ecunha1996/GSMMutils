@@ -113,10 +113,11 @@ def omics_integration(model):
 
 if __name__ == '__main__':
     data_directory = r"../data"
-    # model = read_model(data_directory)
-    # matrix = experimental_data_processing(data_directory, "Matriz- DCCR Dunaliella salina.xlsx", model)
-    # matrix = ExpMatrix(join(data_directory, "Matriz- DCCR Dunaliella salina_new.xlsx"))
-    # matrix.conditions = "Resume"
-    # simulations(matrix, model)
-    # stats(data_directory, "Matriz- DCCR Dunaliella salina_new.xlsx")
-    omics_integration(None)
+    model = read_model(data_directory)
+    matrix = experimental_data_processing(data_directory, "Matriz- DCCR Dunaliella salina.xlsx", model)
+    matrix = ExpMatrix(join(data_directory, "Matriz- DCCR Dunaliella salina_new.xlsx"))
+    matrix.conditions = "Resume"
+    simulations(matrix, model)
+    biomass = Biomass("e_Biomass__cytop", "Biomass_exp_composition.xlsx")
+    stats(data_directory, "Matriz- DCCR Dunaliella salina_new.xlsx")
+    # omics_integration(None)
