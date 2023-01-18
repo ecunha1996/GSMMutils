@@ -1,22 +1,34 @@
-import scipy
+import pandas as pd
+from cobra import flux_analysis
 
-from src.io.reader import read_csv
-from omics.omics_integration import OmicsIntegration
-from src.model.COBRAmodel import *
-from src.experimental.ExpMatrix import *
+from ExpAlgae.experimental.ExpMatrix import ExpMatrix
+from ExpAlgae.io.reader import read_csv
+from ExpAlgae.model.COBRAmodel import simulation_for_conditions, MyModel
+# from ExpAlgae.omics.omics_integration import OmicsIntegration
 from os.path import join
-from graphics.plot import *
-from stats.stats import *
+from ExpAlgae.graphics.plot import *
+from ExpAlgae.stats.stats import *
 
 
-def read_model(data_directory):
-    model = MyModel(join(data_directory, "model.xml"), "e_Biomass__cytop")
+def read_model(data_directory, filename="model.xml"):
+    model = MyModel(join(join(data_directory, 'models'), filename), "e_Biomass__cytop")
     model.add_medium(join(data_directory, "media.xlsx"), "base_medium")
-    model.reactions.e_Biomass_ht__cytop.bounds = (0, 0)
-    model.reactions.R00019__chlo.bounds = (0, 0)
-    model.reactions.R00019__mito.bounds = (0, 0)
+    try:
+        model.reactions.e_Biomass_ht__cytop.bounds = (0, 0)
+        model.reactions.R00019__chlo.bounds = (0, 0)
+        model.reactions.R00019__mito.bounds = (0, 0)
+    except:
+        pass
     model.set_prism_reaction("PRISM_white_LED__extr")
     model.reactions.ATPm__cytop.bounds = (2.85, 2.85)
+    for reaction in model.reactions:
+        if reaction.lower_bound < -1000:
+            reaction.lower_bound = -1000
+        if reaction.upper_bound > 1000:
+            reaction.upper_bound = 1000
+    blocked = flux_analysis.find_blocked_reactions(model, open_exchanges=True)
+    model.remove_reactions(blocked)
+    model.write(join(data_directory, "models/model_with_no_blocked.xml"))
     return model
 
 
@@ -30,31 +42,42 @@ def experimental_data_processing(data_directory, filename, model):
                                    "RPC3": (2, 10)})
     matrix.get_experimental_data(parameter='all')
     matrix.get_substrate_uptake_from_biomass("C", "CO2", header="C00011")
-    matrix.get_substrate_uptake_from_biomass("P", "HPO4")
-    matrix.get_substrate_uptake("[P] mmol", header='C00009')
-    matrix.get_substrate_uptake("[N] mmol", header='C00244')
+    matrix.get_substrate_uptake_from_biomass("P", "C00009")
+    matrix.get_substrate_uptake_from_biomass("N", "C00244")
+    matrix.get_substrate_uptake("[P] mmol", header='HPO4')
+    matrix.get_substrate_uptake("[N] mmol", header='NO3')
     matrix.save()
     return matrix
 
 
 def simulations(matrix, model):
-    complete_results, values_for_plot_carbon_limited, _ = simulation_for_conditions(model, matrix.conditions[["C00011"]], matrix.conditions[["growth_rate"]], save_in_file=True, filename="carbon_limited")
-    _, values_for_plot_carbon_and_p_limited, _ = simulation_for_conditions(model, matrix.conditions[["C00011", "C00009"]], matrix.conditions[["growth_rate"]], save_in_file=True, filename="carbon_and_p_limited")
-    _, values_for_plot_carbon_and_p_and_n_limited, _ = simulation_for_conditions(model, matrix.conditions[["C00011", "C00009", "C00244"]], matrix.conditions[["growth_rate"]], save_in_file=True, filename="carbon_and_p_and_n_limited")
+    complete_results, values_for_plot_carbon_limited, error1 = simulation_for_conditions(model, matrix.conditions[["C00011"]], matrix.conditions[["growth_rate"]], save_in_file=True, filename="trial_simulations/carbon_limited")
+    _, values_for_plot_p_limited, error2= simulation_for_conditions(model, matrix.conditions[["C00009"]], matrix.conditions[["growth_rate"]], save_in_file=True, filename="trial_simulations/p_limited")
+    _, values_for_plot_carbon_and_p_limited, error3 = simulation_for_conditions(model, matrix.conditions[["C00011", "C00009"]], matrix.conditions[["growth_rate"]], save_in_file=True, filename="trial_simulations/carbon_and_p_limited")
+    _, values_for_plot_n_limited, error4 = simulation_for_conditions(model, matrix.conditions[["C00244"]], matrix.conditions[["growth_rate"]], save_in_file=True, filename="trial_simulations/n_limited")
+    _, values_for_plot_carbon_and_p_and_n_limited, error5 = simulation_for_conditions(model, matrix.conditions[["C00011", "C00009", "C00244"]], matrix.conditions[["growth_rate"]], save_in_file=True, filename="trial_simulations/carbon_and_p_and_n_limited")
     res = []
-    for index, element in enumerate(values_for_plot_carbon_limited):
+    print("Error1: ", error1)
+    print("Error2: ", error2)
+    print("Error3: ", error3)
+    print("Error4: ", error4)
+    print("Error5: ", error5)
+    print(sum([error1, error2, error3, error4]))
+    for index, element in values_for_plot_carbon_limited.items():
         new_value = values_for_plot_carbon_and_p_limited[index][1]
-        new_value2 = values_for_plot_carbon_and_p_and_n_limited[index][1]
-        res.append((element[0], element[1], new_value))
-    df = pd.DataFrame(data=res, index=complete_results.keys(), columns=["Exp", "in silico (C limited)", "in silico (C & P limited)"])
-    df.to_excel("simulation_summary.xlsx")
-    barplot(df, to_show=False, path="simulation_summary.png")
-    model.set_photoautotrophy()
-    print(model.summary())
-    model.set_heterotrophy()
-    print(model.summary())
-    model.set_mixotrophy()
-    print(model.summary())
+        new_value2 = values_for_plot_p_limited[index][1]
+        new_value3 = values_for_plot_carbon_and_p_and_n_limited[index][1]
+        new_value4 = values_for_plot_n_limited[index][1]
+        res.append((element[0], element[1], new_value, new_value2, new_value3, new_value4))
+    df = pd.DataFrame(data=res, index=complete_results.keys(), columns=["Exp", "in silico (C limited)", "in silico (C & P limited)", "in silico (P limited)", "in silico (C, P, and N limited)", "in silico (N limited)"])
+    df.to_excel("trial_simulations/simulation_summary.xlsx")
+    barplot(df, to_show=False, path="trial_simulations/simulation_summary.png")
+    # model.set_photoautotrophy()
+    # print(model.summary())
+    # model.set_heterotrophy()
+    # print(model.summary())
+    # model.set_mixotrophy()
+    # print(model.summary())
 
 
 def stats(data_directory, filename):
@@ -74,50 +97,27 @@ def stats(data_directory, filename):
 
 
 
-def omics_integration(model):
-    omics = OmicsIntegration('raw_counts.txt', samples_names={"PRJNA437866/SRR6825159/SRR6825159_Aligned.sortedByCoord.out.bam":"control_1",
-                                                              "PRJNA437866/SRR6825160/SRR6825160_Aligned.sortedByCoord.out.bam": "control_2",
-                                                               "PRJNA437866/SRR6825161/SRR6825161_Aligned.sortedByCoord.out.bam":"control_3",
-                                                                "PRJNA437866/SRR6825162/SRR6825162_Aligned.sortedByCoord.out.bam":"nacl_1",
-                                                                "PRJNA437866/SRR6825163/SRR6825163_Aligned.sortedByCoord.out.bam":"nacl_2",
-                                                                "PRJNA437866/SRR6825164/SRR6825164_Aligned.sortedByCoord.out.bam":"nacl_3",
-                                                                "PRJNA437866/SRR6825165/SRR6825165_Aligned.sortedByCoord.out.bam":"h2o2_1",
-                                                                "PRJNA437866/SRR6825166/SRR6825166_Aligned.sortedByCoord.out.bam":"h2o2_2",
-                                                                "PRJNA437866/SRR6825167/SRR6825167_Aligned.sortedByCoord.out.bam":"h2o2_3",
-                                                                "PRJNA437866/SRR6825168/SRR6825168_Aligned.sortedByCoord.out.bam":"sorb_1",
-                                                                "PRJNA437866/SRR6825169/SRR6825169_Aligned.sortedByCoord.out.bam":"sorb_2",
-                                                                "PRJNA437866/SRR6825170/SRR6825170_Aligned.sortedByCoord.out.bam":"sorb_3",
-                                                              }, model=model)
 
-    # omics.get_getmm()
-    # omics.get_degs()
-    omics.getmm = read_csv("getmm.tsv", index_name='GeneID', index_col=0, comment='#', sep='\t')
-    omics.degs = read_csv("degs.tsv", index_name='GeneID', index_col=0, comment='#', sep='\t')
-    idx = omics.degs.index
-    counts_degs = omics.getmm.loc[idx]
-    # omics.counts.to_csv("counts.tsv", sep="\t")
-    # omics.data.to_csv("data.tsv", sep="\t")
-    # omics.sum_tech_reps()
-    # omics.get_tpm()
-    # omics.tpm.to_csv("tpm.tsv", sep="\t")
-    g = clustermap(counts_degs)
-    print()
-
-
-
-    # omics.integrate(method='eFlux', parsimonious=True)
-    # omics.integrate(method='GIMME', parsimonious=True, biomass="e_Biomass__cytop", growth_frac = 0.1)
-    # omics.integrate(method='iMAT')
-    # omics.save()
+def simulations_max_carotene(matrix, model):
+    complete_results, values_for_plot_carbon_and_p_and_n_limited, error = simulation_for_conditions(model, matrix.conditions[["C00011", "C00009", "C00244"]], matrix.conditions[["growth_rate"]], save_in_file=True,
+                                                                                                    filename="carbon_and_p_and_n_limited", objective = {"DM_C02094__chlo": 0.9})
+    res = []
+    print("Error1: ", error)
+    for key, value in values_for_plot_carbon_and_p_and_n_limited.items():
+        carotene = complete_results[key].fluxes["DM_C02094__chlo"]
+        res.append((value[0], value[1], carotene))
+    df = pd.DataFrame(data=res, index=complete_results.keys(), columns=["Exp", "in silico (C, P, and N limited)", "Carotene"])
+    df.to_excel("trial_simulations/simulation_summary_max_carotene.xlsx")
+    barplot(df, to_show=False, path="trial_simulations/simulation_summary_max_carotene.png")
 
 
 if __name__ == '__main__':
     data_directory = r"../data"
-    model = read_model(data_directory)
-    matrix = experimental_data_processing(data_directory, "Matriz- DCCR Dunaliella salina.xlsx", model)
+    model = read_model(data_directory, filename="model_with_trials.xml")
+    # matrix = experimental_data_processing(data_directory, "Matriz- DCCR Dunaliella salina.xlsx", model)
     matrix = ExpMatrix(join(data_directory, "Matriz- DCCR Dunaliella salina_new.xlsx"))
     matrix.conditions = "Resume"
+    print("Simulating")
     simulations(matrix, model)
-    biomass = Biomass("e_Biomass__cytop", "Biomass_exp_composition.xlsx")
-    stats(data_directory, "Matriz- DCCR Dunaliella salina_new.xlsx")
-    # omics_integration(None)
+    simulations_max_carotene(matrix, model)
+    # stats(data_directory, "Matriz- DCCR Dunaliella salina_new.xlsx")
