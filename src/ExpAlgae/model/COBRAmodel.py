@@ -24,11 +24,12 @@ from ExpAlgae.utils.utils import update_st, get_precursors, normalize, convert_m
 warnings.filterwarnings("ignore")
 import re
 import matplotlib.pyplot as plt
-from cobra import flux_analysis, Model, Reaction
+from cobra import flux_analysis, Model, Reaction, Metabolite
 from cobra.flux_analysis import find_essential_genes
 
 class MyModel(Model):
     def __init__(self, file_name = None, biomass_reaction=None, directory=None, prune_mets=False):
+        self.pathway_reactions_map = {}
         self.biomass_reaction = None
         if not directory:
             directory = os.getcwd()
@@ -41,9 +42,13 @@ class MyModel(Model):
         if not biomass_reaction:
             biomass_reaction = self.search_biomass()
         self.bio_reaction = self.model.reactions.get_by_id(biomass_reaction)
-        if not self.bio_reaction:
+        if not self.biomass_reaction:
             self.biomass_reaction = self.bio_reaction.id
-        self.biomass_metabolite = [e for e in self.bio_reaction.products if 'biomass' in e.id.lower()][0]
+        potential_biomet = [e for e in self.bio_reaction.products if 'biomass' in e.id.lower()]
+        if potential_biomet:
+            self.biomass_metabolite = potential_biomet[0]
+        else:
+            self.biomass_metabolite = Metabolite("e_Biomass__cytop")
         # self.set_compartments()
         self.reactions_pathways_map = None
         self.bio_precursors = None
@@ -57,6 +62,7 @@ class MyModel(Model):
         self.biomass_components = {}
         # self.parse_genes()
         self.model_first = self.model
+        self.get_pathway_reactions_map()
         print("Reactions:", len(self.model.reactions))
         print("Metabolites:", len(self.model.metabolites))
         print("Genes:", len(self.model.genes))
@@ -179,18 +185,28 @@ class MyModel(Model):
         return self.pre_precursors
         
     def maximize(self, value = True, pfba = True):
-        if value:
-            if pfba:
-                return flux_analysis.pfba(self.model)[self.biomass_reaction]
+        """ This function maximizes the biomass reaction.
+        If value is True, it returns the objective value.
+        If value is False, it returns the solution object.
+        If pfba is True, it runs pFBA instead of FBA.
+        """
+        try:
+            if value:
+                if pfba:
+                    return flux_analysis.pfba(self.model)[self.biomass_reaction]
+                else:
+                    return self.model.optimize().objective_value
             else:
-                return self.model.optimize().objective_value
-        else:
-            if pfba:
-                return flux_analysis.pfba(self.model)
-            else:
-                return self.model.optimize()
-
-    def summary(self, pfba = True, **kwargs):
+                if pfba:
+                    return flux_analysis.pfba(self.model)
+                else:
+                    return self.model.optimize()
+        except Exception as e:
+            print(e)
+            return 0
+    def summary(self, solution=None, pfba = True, **kwargs):
+        if solution:
+            return self.model.summary(solution, **kwargs)
         if not pfba or kwargs:
             return  self.model.summary(**kwargs)
         else:
@@ -543,7 +559,7 @@ class MyModel(Model):
         
         self.save()
         
-        file = pd.read_excel(medium_file_name, medium_sheet_name, converters = {"Model ID": str})
+        file = pd.read_excel(medium_file_name, medium_sheet_name, converters = {"Model ID": str}, engine = "openpyxl")
 
         for reaction in file["Reaction ID"]:
             
@@ -866,8 +882,6 @@ class MyModel(Model):
         new_biomass.add_metabolites({self.metabolites.get_by_id(key): value for key, value in stoichiometries.items()})
         new_biomass.add_metabolites({key: value for key, value in self.reactions.get_by_id(biomass_reaction_id).metabolites.items() if
                                      not key.id.startswith("e_")})
-        new_biomass.add_metabolites({self.biomass_metabolite: 1})
-        self.objective = "EX_e_Biomass__dra"
         self.add_reactions([new_biomass])
 
     def determine_precursors(self, name, composition, units):
@@ -889,7 +903,7 @@ class MyModel(Model):
         for key, value in mol_mol.items():
             mg_molMM[key] = convert_mmol_mol_to_g_molMM(value, key.formula_weight)
         mmol_gMM = convert_mg_molMM_to_mmolM_gMM(mol_mol, sum(mg_molMM.values()))
-        new_reaction = Reaction(id=f"{reaction_id}_{suffix}", lower_bound=0, upper_bound=1000)
+        new_reaction = Reaction(id=f"{reaction_id.split('__')[0]}_{suffix}__{reaction_id.split('__')[1]}", lower_bound=0, upper_bound=1000)
         for reactant, stoichiometry in mmol_gMM.items():
             new_reaction.add_metabolites({reactant: -round(stoichiometry, 4)})
         new_reaction.add_metabolites({self.metabolites.e_Pigment__chlo: 1})
@@ -909,7 +923,10 @@ class MyModel(Model):
         biomass_reaction = self.reactions.get_by_id(biomass_reaction_name)
         macromolecules = biomass_reaction.reactants
         macromolecules = set(macromolecules) - {self.metabolites.get_by_id("C00001__cytop"), self.metabolites.get_by_id("C00002__cytop")}
-        e_biomass = BiomassComponent(self.metabolites.get_by_id(biomass_met_id), 1, None)
+        if biomass_met_id in [met.id for met in self.metabolites]:
+            e_biomass = BiomassComponent(self.metabolites.get_by_id(biomass_met_id), 1, None)
+        else:
+            e_biomass = BiomassComponent(biomass_met_id, 1, None)
         self.biomass_components[biomass_reaction_name] = e_biomass
         for macromolecule in macromolecules:
             macromolecule_component = BiomassComponent(macromolecule.id, biomass_reaction.metabolites[macromolecule], e_biomass)
@@ -932,6 +949,15 @@ class MyModel(Model):
         for key, value in pathway_map.items():
             pathway_map[key] = list(set(value))
         self.reactions_pathways_map = pathway_map
+
+    def get_pathway_reactions_map(self):
+        if not self.reactions_pathways_map: self.get_reactions_pathways_map()
+        for key, value in self.reactions_pathways_map.items():
+            for pathway in value:
+                if pathway in self.pathway_reactions_map and key not in self.pathway_reactions_map[pathway]:
+                    self.pathway_reactions_map[pathway].append(key)
+                else:
+                    self.pathway_reactions_map[pathway] = [key]
 
     def get_genes_pathways_map(self):
         res = {}
@@ -1434,7 +1460,7 @@ def simulation_for_conditions(model, conditions_df, growth_rate_df, save_in_file
             lb = -lb if lb < 0 else lb
             copy.reactions.get_by_id("EX_" + met + "__dra").bounds = (round(-lb, 4), 1000)
         sol = copy.optimize()
-        biomass = round(sol['EX_e_Biomass__dra'], 3)
+        biomass = round(sol[f"e_Biomass_trial{index}__cytop"], 3)
         error_sum += abs(growth_rate[index]['growth_rate'] - biomass)
         complete_results[index] = sol
         values_for_plot[index] = (growth_rate[index]['growth_rate'], biomass)

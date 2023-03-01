@@ -1,7 +1,7 @@
 
 from cobra import Reaction
 from cobra.io import read_sbml_model
-from cobra.flux_analysis import pfba, find_blocked_reactions, flux_variability_analysis as fva
+from cobra.flux_analysis import pfba, find_blocked_reactions, flux_variability_analysis as fva, fastcc
 
 
 def load_model(model_path):
@@ -99,12 +99,19 @@ def check_biomass_production(model):
 
 def check_blocked_reactions(model):
     blocked = find_blocked_reactions(model, open_exchanges=True)
+    with open("blocked_reactions.txt", "w") as f:
+        for reaction in blocked:
+            f.write(reaction + "\n")
     print(f"Blocked reactions: {len(blocked)} -> ({round(len(blocked)/len(model.reactions),2)*100}%)")
+    print("Running fastcc...")
+    consistent_model = fastcc(model)
+    print("Consistent reactions: ", len(consistent_model.reactions))
+    print("Inconsistent reactions: ", len(model.reactions) - len(consistent_model.reactions))
 
 
 def check_unbounded_flux(model):
     fva_sol = fva(model, fraction_of_optimum=1.0)
-    sbc = fva_sol.loc[(round(fva_sol["minimum"], 5) < 0) & (round(fva_sol["maximum"], 5) > 0)]
+    sbc = fva_sol.loc[(fva_sol["minimum"].round(5) < 0) & (fva_sol["maximum"].round(5) > 0)]
     print(f"Reactions with Unbounded flux: {len(sbc)} -> ({round(len(sbc)/len(model.reactions),2)*100}%)")
     print(sbc)
 
@@ -113,20 +120,53 @@ def check_sbc(model, atpm_reaction):
     for ex in model.exchanges: ex.bounds = (0, 0)
     model.reactions.get_by_id(atpm_reaction).bounds = (0,1000)
     fva_sol = fva(model, fraction_of_optimum=1.0)
-    sbc = fva_sol.loc[(round(fva_sol["minimum"], 5) < 0) | (round(fva_sol["maximum"], 5) > 0)]
+    sbc = fva_sol.loc[(fva_sol["minimum"].round(5) < 0) & (fva_sol["maximum"].round(5) > 0)]
+    sbc.to_csv("sbc.csv")
     print(f"SBC: {len(sbc)} -> ({round(len(sbc) / len(model.reactions), 2) * 100}%)")
     print(sbc)
 
 
+def check_reactions_equal_metabolites(model):
+    inconsistency = False
+    exceptions = ["PRISM", "e_Pigment", "e_Biomass"]
+    already_printed = []
+    for reaction in model.reactions:
+        for second_reaction in model.reactions:
+            exception = False
+            for e in exceptions:
+                if e in reaction.id or e in second_reaction.id:
+                    exception = True
+            if not exception:
+                if reaction.id != second_reaction.id:
+                    if reaction.reactants == second_reaction.reactants and reaction.products == second_reaction.products:
+                        string_message = f"Reactions {reaction.id} and {second_reaction.id} are equal!"
+                        if string_message not in already_printed:
+                            print(string_message)
+                        inconsistency = True
+                    if reaction.reactants == second_reaction.products and reaction.products == second_reaction.reactants:
+                        string_message = f"Reactions {reaction.id} and {second_reaction.id} are equal!"
+                        if string_message not in already_printed:
+                            print(string_message)
+                        inconsistency = True
+    if not inconsistency:
+        print("No duplicate reactions found!")
+
+def check_duplicated_metabolites(model):
+    for met in model.metabolites:
+        for second_met in model.metabolites:
+            if met.id.split("__")[0] != second_met.id.split("__")[0]:
+                if met.formula and met.formula == second_met.formula and ("BMGC" in met.id or "BMGC" in second_met.id):
+                    print(f"Metabolites {met.id} and {second_met.id} are equal!")
+
 def check_consistency(model, atpm_reaction, cytoplasm_abb = "__cytop"):
+    # check_duplicated_metabolites(model)
+    check_reactions_equal_metabolites(model)
     check_balance(model)
     check_energy_producing_cycles(model, atpm_reaction = atpm_reaction, cytoplasm_abb = cytoplasm_abb)
     check_biomass_production(model)
     check_blocked_reactions(model)
     check_unbounded_flux(model)
     check_sbc(model, atpm_reaction = atpm_reaction)
-
-
 
 
 

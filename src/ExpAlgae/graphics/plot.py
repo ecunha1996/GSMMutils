@@ -18,6 +18,11 @@ def barplot(dataframe, to_show = True, path = None):
         plt.savefig(path)
 
 
+
+def lineplot(x, y, **kwargs):
+    plot = sns.lineplot(x, y).set(**kwargs)
+    plt.show()
+
 def boxplot(dataframe, x_cols=None, y_cols = None, to_show = True, path = None, x_labels = None, y_labels = None):
     for y in y_cols:
         fig, axs = plt.subplots(ncols=4)
@@ -60,7 +65,7 @@ def qqplot(model, to_show = True, path = None):
 
 
 def heatmap(dataframe, to_show = True, path = None):
-    sns.heatmap(dataframe, cmap="YlGnBu", z_score=0)
+    sns.heatmap(dataframe, cmap="YlGnBu")
     if to_show:
         plt.show()
     else:

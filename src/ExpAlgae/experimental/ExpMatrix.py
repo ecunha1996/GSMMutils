@@ -40,7 +40,7 @@ class ExpMatrix:
                                                                                      self._conditions.columns})], axis=1).rename_axis('Trial')
 
     def load(self):
-        self.matrix = read_matrix(self.experimental_filename, sheet_name=None, index_col=0)
+        self.matrix = read_matrix(self.experimental_filename, sheet_name=None, index_col=0, engine="openpyxl")
 
     @property
     def conditions(self) -> pd.DataFrame:

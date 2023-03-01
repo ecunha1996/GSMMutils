@@ -1,3 +1,4 @@
+import math
 import os
 import subprocess
 import sys
@@ -5,6 +6,7 @@ import sys
 import numpy as np
 import pandas as pd
 from cobra import Metabolite
+from joblib import Parallel, delayed
 from scipy.stats import linregress
 from ExpAlgae.experimental.BiomassComponent import BiomassComponent
 
@@ -84,12 +86,12 @@ def get_maximum_productivity(data, exponential_phase):
 
 
 def run(cmd):
-    process = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    stdout, stderr = process.communicate()
+    process = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    stdout, stderr = process.stdout.decode("utf-8"), process.stderr.decode("utf-8")
     if stdout:
-        print(stdout.decode("utf-8"))
+        print(stdout)
     if stderr:
-        print("\n\nError: ", stderr.decode("utf-8"))
+        print("\n\nError: ", stderr)
 
 
 def get_precursors(macromolecule, temp_precursor, model):
@@ -345,3 +347,25 @@ def flux_change(fluxes_control: dict, fluxes_condition: dict, threshold: float =
     for key, value in as_dict.items():
         as_dict[key] = round(value['Flux_change'], 3)
     return as_dict
+
+def reaction_capacity(fva_solution: pd.DataFrame):
+    """
+    Function to calculate the reaction capacity
+    :param fva_solution:
+    :return:
+    """
+    as_dict = {}
+    for index, row in fva_solution.iterrows():
+        as_dict[index] = row['maximum'] - row['minimum']
+    return as_dict
+
+
+def differential_reaction_capacity(rc_1, rc_2):
+    transformed_fold_changes = {}
+    for key, value in rc_1.items():
+        transformed_fold_changes[key] = math.log2(rc_2[key]) - math.log2(value)
+    return transformed_fold_changes
+
+
+def mp(function: callable, iterable, processes: int = 1, **kwargs):
+    return Parallel(n_jobs=processes, **kwargs)(delayed(function)(iterable[0]))

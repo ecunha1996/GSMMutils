@@ -3,7 +3,6 @@ library("TCC")
 
 
 
-
 args = commandArgs(trailingOnly=TRUE)
 
 vargs <- strsplit(args, ",")
@@ -31,7 +30,6 @@ head(result)
 table(de$estimatedDEG)
 
 degs = result[result$estimatedDEG==1,]
-
 
 
 write.table(degs, ouputPath, row.names = FALSE, sep="\t", quote = FALSE)

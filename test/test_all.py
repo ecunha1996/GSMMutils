@@ -12,7 +12,7 @@ from ExpAlgae.stats.stats import *
 
 def read_model(data_directory, filename="model.xml"):
     model = MyModel(join(join(data_directory, 'models'), filename), "e_Biomass__cytop")
-    model.add_medium(join(data_directory, "media.xlsx"), "base_medium")
+    model.add_medium(join(data_directory, "media.xlsx"), "media_with_starch")
     try:
         model.reactions.e_Biomass_ht__cytop.bounds = (0, 0)
         model.reactions.R00019__chlo.bounds = (0, 0)
@@ -21,14 +21,9 @@ def read_model(data_directory, filename="model.xml"):
         pass
     model.set_prism_reaction("PRISM_white_LED__extr")
     model.reactions.ATPm__cytop.bounds = (2.85, 2.85)
-    for reaction in model.reactions:
-        if reaction.lower_bound < -1000:
-            reaction.lower_bound = -1000
-        if reaction.upper_bound > 1000:
-            reaction.upper_bound = 1000
     blocked = flux_analysis.find_blocked_reactions(model, open_exchanges=True)
     model.remove_reactions(blocked)
-    model.write(join(data_directory, "models/model_with_no_blocked.xml"))
+    # model.write(join(data_directory, "models/model_with_no_blocked.xml"))
     return model
 
 

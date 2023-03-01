@@ -3,22 +3,27 @@ import os
 from os.path import join
 from pprint import pprint
 
-import cobra
+
 import numpy as np
 import pandas as pd
 from bioinfokit.analys import norm
 from mewpy.omics import ExpressionSet, eFlux, GIMME, iMAT
 from mewpy.simulation import get_simulator
-
+from cobra.flux_analysis import flux_variability_analysis as fva
 from ExpAlgae.bio.genes import Genes
 from ExpAlgae.graphics.plot import clustermap
 from ExpAlgae.io import write_specific_models
 from ExpAlgae.io.reader import read_csv
-from ExpAlgae.utils.utils import run
+from ExpAlgae.utils.utils import run, differential_reaction_capacity
 
 
 class OmicsIntegration:
     def __init__(self, filename: str, samples_names: dict = None, groups: list = None, model=None):
+        self.pathways_reaction_counts = None
+        self.pathways_gene_counts = None
+        self.degs = None
+        self.getmm = None
+        self.reaction_capacity = {}
         self.flux_change = {}
         self.model = model
         self.counts_file = join(os.getcwd(), filename)
@@ -89,16 +94,16 @@ class OmicsIntegration:
             counts_file  = join(os.getcwd(), "counts.tsv")
         if not os.path.exists(output_file):
             self.counts.to_csv(counts_file, sep='\t')
-        cmd = ["Rscript", join(os.getcwd(), "../src/omics/GeTMM.R"), counts_file , data_path, output_file, ','.join(self.groups)]
+        cmd = ["Rscript", join(os.getcwd(), "../../src/ExpAlgae/omics/GeTMM.R"), counts_file , data_path, output_file, ','.join(self.groups)]
         run(cmd)
         self.getmm = read_csv(output_file, index_name='GeneID', index_col=0, comment='#', sep='\t')
 
-    def get_degs(self, getmm_file=None, output_file=None, **kwargs):
+    def get_degs(self, getmm_file=None, output_file=None):
         if not getmm_file:
             getmm_file = join(os.getcwd(), "getmm.tsv")
         if not output_file:
             output_file = join(os.getcwd(), "degs.tsv")
-        cmd = ["Rscript", join(os.getcwd(), "../src/omics/DGE.R"), getmm_file, output_file, ','.join(self.groups)]
+        cmd = ["Rscript", join(os.getcwd(), "../../src/ExpAlgae/omics/DGE.R"), getmm_file, output_file, ','.join(self.groups)]
         run(cmd)
         self.degs = read_csv(output_file, index_name='GeneID', index_col=0, comment='#', sep='\t')
 
@@ -135,6 +140,7 @@ class OmicsIntegration:
         self.counts.drop(to_remove, axis=1, inplace=True)
 
     def integrate(self, method=None, samples=None, tool="mewpy", **kwargs):
+        print(f"Integrating omics data with {method}")
         if not samples:
             samples = list(set(self.groups))
         if method not in self.specific_models.keys():
@@ -149,22 +155,23 @@ class OmicsIntegration:
                 try:
                     result = method_callable(self.model, expr=set_expression, condition=sample, **kwargs)
                     self.specific_models[method][sample] = result
-                    # constraints = {}
-                    # for reaction, bounds in result.simulation_constraints.items():
-                    #     if bounds == (-1, 1) or bounds == (0, 1) or bounds == (-1, 0):
-                    #         result.simulation_constraints[reaction] = self.model.reactions.get_by_id(reaction).bounds
-                    #     constraints[reaction] = result.simulation_constraints[reaction]
-                    # as_df = pd.DataFrame.from_dict(constraints, orient='index', columns=['Lower', 'Upper'])
-                    # as_df.to_csv(join(os.getcwd(), "constraints_{}.tsv".format(sample)), sep='\t')
-                    # simulator = get_simulator(self.model, result.simulation_constraints)
-                    # sol = simulator.simulate()
-                    # sol.dataframe.to_csv(join(os.getcwd(), "results_{}_{}.tsv".format(method, sample)), sep='\t')
-                    # print(sol.status)
-                    # pprint(sol.dataframe.loc[result.dataframe.index=='EX_e_Biomass__dra'])
+                    if method == "eFlux":
+                        constraints = {}
+                        for reaction, bounds in result.simulation_constraints.items():
+                            if bounds == (-1, 1) or bounds == (0, 1) or bounds == (-1, 0):
+                                result.simulation_constraints[reaction] = self.model.reactions.get_by_id(reaction).bounds
+                            constraints[reaction] = result.simulation_constraints[reaction]
+                        as_df = pd.DataFrame.from_dict(constraints, orient='index', columns=['Lower', 'Upper'])
+                        as_df.to_csv(join(os.getcwd(), "constraints_{}.tsv".format(sample)), sep='\t')
+                        simulator = get_simulator(self.model, result.simulation_constraints)
+                        sol = simulator.simulate()
+                        sol.dataframe.to_csv(join(os.getcwd(), "results_{}_{}.tsv".format(method, sample)), sep='\t')
+                        print(sol.status)
+                        pprint(sol.dataframe.loc[result.dataframe.index=='EX_e_Biomass__dra'])
                 except Exception as e:
                     print(e)
                     print(f"Error in {method} for {sample}")
-
+        print("#" * 100)
     @staticmethod
     def get_method(method) -> callable:
         if method == 'eFlux':
@@ -174,10 +181,10 @@ class OmicsIntegration:
         elif method == 'iMAT':
             return iMAT
 
-    def save(self, filename="omics/context_specific_models.xlsx"):
+    def save(self, filename="context_specific_models.xlsx"):
         write_specific_models(self.specific_models, filename)
 
-    def get_clustermap_genes_by_pathway(self, omics_results=None, **kwargs):
+    def get_clustermap_genes_by_pathway(self, omics_results=None):
         self.set_pathways_counts_by_gene()
         idx = self.degs.index
         count_degs = self.getmm.loc[idx]
@@ -186,7 +193,7 @@ class OmicsIntegration:
                 in_pathway = [gene_id for gene_id, value in self.model.genes_pathways_map.items() if pathway in value]
                 clustermap(count_degs.loc[count_degs.index.isin(in_pathway)], title=pathway, to_show=False, path=f"./omics/clustermaps_degs/{pathway.replace(' ', '_').replace('/', '_')}.png")
 
-    def get_clustermap_reactions_by_pathway(self, omics_results=None, **kwargs):
+    def get_clustermap_reactions_by_pathway(self, omics_results=None):
         for key, value in omics_results.items():
             value.columns = [key]
         new_df = pd.concat([value for key, value in omics_results.items()], axis=1)
@@ -200,7 +207,7 @@ class OmicsIntegration:
                 in_pathway = [reaction_id for reaction_id, value in self.model.reactions_pathways_map.items() if pathway in value]
                 clustermap(variance.loc[variance.index.isin(in_pathway)], title=pathway, to_show=False, path=f"./omics/\clustermaps_reactions/clustermaps_gimme/{pathway.replace(' ', '_').replace('/', '_')}.png")
 
-    def integrate_troppo(self, method, samples, **kwargs):
+    def integrate_troppo(self, method, samples):
         from ExpAlgae.omics.troppo import integration_pipeline
         for sample in samples:
             if "control" in sample:
@@ -213,9 +220,9 @@ class OmicsIntegration:
         pass
 
 
-    def get_flux_change(self, all=False, method_1=None, condition_1=None, method_2=None,  condition_2=None, threshold: float = 0.1):
+    def get_flux_change(self, combine_all=False, method_1=None, condition_1=None, method_2=None, condition_2=None, threshold: float = 0.1):
         from ExpAlgae.utils.utils import flux_change
-        if all:
+        if combine_all:
             for method in self.specific_models.keys():
                 for condition_1, condition_2 in itertools.product(self.specific_models[method].keys(), self.specific_models[method].keys()):
                     if condition_1 != condition_2:
@@ -232,3 +239,18 @@ class OmicsIntegration:
             for reaction, flux in self.specific_models[method_2][condition_2].dataframe.to_dict(orient='index').items():
                 constraints_2[reaction] = flux['Flux rate']
             self.flux_change[f"{method_1}_{condition_1}_{method_2}_{condition_2}"] = flux_change(constraints_1, constraints_2, threshold)
+
+
+    def get_reaction_capacity(self, condition, fva_solution):
+        from ExpAlgae.utils.utils import reaction_capacity
+        if not hasattr(self, "reaction_capacity"):
+            self.reaction_capacity = {}
+        self.reaction_capacity[condition] = reaction_capacity(fva_solution)
+
+
+    def get_differential_reaction_capacity(self, method, condition_1, condition_2):
+        fva_sol_1 = fva(self.specific_models[method][condition_1].model)
+        self.get_reaction_capacity(condition_1, fva_sol_1)
+        fva_sol_2 = fva(self.specific_models[method][condition_2].model)
+        self.get_reaction_capacity(condition_2, fva_sol_2)
+        return differential_reaction_capacity(self.reaction_capacity[condition_1], self.reaction_capacity[condition_2])
