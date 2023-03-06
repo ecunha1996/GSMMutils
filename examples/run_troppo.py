@@ -37,7 +37,6 @@ def main():
     # model_consistent = fastcc(model)
     # cobra.io.write_sbml_model(model_consistent, r"C:\Users\Bisbii\PythonProjects\ExpAlgae\data\models\model_consistent.xml")
     model = MyModel(r"C:\Users\Bisbii\PythonProjects\ExpAlgae\data\models\model_consistent.xml", "e_Biomass__cytop")
-    # model.write(r"C:\Users\Bisbii\PythonProjects\ExpAlgae\data\models\model_consistent.xml")
     omics = OmicsIntegration(r"../data/omics/output.txt", samples_names={"SRR7984026Aligned.out.sam":"LL_1",
                                                                     "SRR7984027Aligned.out.sam": "LL_2",
                                                                     "SRR7984028Aligned.out.sam":"LL_3",
@@ -54,10 +53,10 @@ def main():
     #
     dataset = omics.counts.applymap(lambda x: math.log2(x + 1)).T
     # dataset = omics.counts.T
-    ids = [111, 278, 281, 310, 588, 1117, 1120, 1285, 1885, 1969, 2049, 2191, 2257, 2268, 2608, 2734 ,2751, 2860, 2893, 3114, 3281]
+    ids = [ 111,  279,  282,  311,  319,  591, 1122, 1125, 1614 ,1885, 1893, 2058, 2201, 2268, 2622, 2640, 2690, 2750, 2768, 2877, 2910 ,3175, 3305]
     to_ignore = []
     print("#" * 100)
-    to_ignore = [111, 310, 1117, 1285, 1969, 2191, 2608, 2751]
+    # to_ignore = [111, 310, 1117, 1285, 1969, 2191, 2608, 2751]
     # for reac_id in to_ignore:
     #     print(reac_id)
     #     print(model.reactions[reac_id].id, model.reactions[reac_id].name)
@@ -66,7 +65,8 @@ def main():
         if i not in to_ignore:
             reaction = model.reactions[i]
             reaction_ids.append(reaction.id)
-    reaction_ids += ["BMGR5416__lip", "BMGR5845__lip", "BMGR5422__lip", "DGDGS_183_164__chlo"]
+    # reaction_ids += ["BMGR5416__lip", "BMGR5845__lip", "BMGR5422__lip", "DGDGS_183_164__chlo"]
+    reaction_ids += ["DGDGS_183_164__chlo"]
     # reaction_ids = []
     to_remove = []
     with model:
@@ -85,16 +85,13 @@ def main():
     print(len(blocked))
     model.remove_reactions(blocked)
     # print(model.reactions[975]) #[ 126 1867 2211]
-    # print(model.reactions[126])
+    # print(model.reactions[3093])
     # print(model.reactions[1867])
     # print(model.reactions[3070])
-    # print(model.reactions[3311]) #[ 126 2204]
-    # print(model.reactions[126])
-    # print(model.reactions[276])
     model.write(r"C:\Users\Bisbii\PythonProjects\ExpAlgae\data\models\consistent_model.xml")
     # print(model.optimize())
     # print(dataset.quantile(0.75, axis=1))
-    integration_pipeline(dataset, r"..\data\omics\light", "fastcore", 2.8, 8, model.model, output_dir="../data/omics/light")
+    # integration_pipeline(dataset, r"..\data\omics\light", "fastcore", 2.8, 8, model.model, output_dir="../data/omics/light")
 
 
 def main_reduced_model():

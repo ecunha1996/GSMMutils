@@ -70,6 +70,7 @@ R07051__cytop
 R00904__cytop
 R07274__cytop
 R09532__cytop
+T_PHPYRtm__mitmem
 R01665__mito
 R03971__cytop
 R10039__vacu
@@ -106,7 +107,6 @@ R05640__er
 T_K1t__plas
 R01771__mito
 RXN_14334__chlo
-R00588__mito
 R07447__er
 R12542__cytop
 R06526__cytop
@@ -126,7 +126,6 @@ R08310__cytop
 R04019__cytop
 R03028__pero
 R06722__golg
-T_GCALDtm__mitmem
 R10953__nucl
 R07891__pero
 R09658__chlo
@@ -177,7 +176,6 @@ R00418__cytop
 R09030__cytop
 TO0000205_CHLOMEM__chlomem
 T_Cu2th__chlomem
-R03186__mito
 R07674__chlo
 R01920__cytop
 R01175__mito
@@ -190,6 +188,7 @@ R03077__cytop
 T_7DCHLtr__ermem
 TO1000128_CHLOMEM__chlomem
 R03534__mito
+R01108__cytop
 R07506__er
 R08232__cytop
 BMGR6117__mito
@@ -215,7 +214,6 @@ ECH181_2E__pero
 R09844__cytop
 R12024__cytop
 TO1001567_CHLOMEM__chlomem
-R01388__cytop
 R08628__mito
 R07268__cytop
 R03154__mito
@@ -310,7 +308,6 @@ R03920__chlo
 R08183__cytop
 R04746__mito
 R01931__cytop
-R03815__chlo
 T_H2Otg__golmem
 TI3000017_MITMEM__mitmem
 R02540__cytop
@@ -369,7 +366,6 @@ R08238__cytop
 R04930__chlo
 R05980__er
 R12375__er
-R01253__mito
 R09372__cytop
 R04586__vacu
 BMGR6068__er
@@ -537,7 +533,6 @@ R10491__chlo
 T_PAPtg__golmem
 R02577__cytop
 R00866__chlo
-R00734__cytop
 R11003__er
 R00311__chlo
 TO7000099_CYTMEM__plas
@@ -550,6 +545,7 @@ R03921__vacu
 R06127__cytop
 TR0000100_GOLGMEM__golmem
 EX_C00406__dra
+R03186__cytop
 R01332__cytop
 T_ORNtm__mitmem
 RXN_9970__cytop
@@ -587,7 +583,6 @@ R07762__mito
 R04137__mito
 R04483__cytop
 BMGR6063__er
-R00707__mito
 R07055__cytop
 R01857__chlo
 R07272__cytop
@@ -656,7 +651,6 @@ R00174__cytop
 R12376__er
 R05981__er
 R04300__cytop
-R01392__cytop
 R04666__cytop
 BMGR6067__er
 R07512__chlo
@@ -665,7 +659,6 @@ R03311__cytop
 R08270__cytop
 T_DADNtm__mitmem
 R04204__pero
-R00256__mito
 R04773__mito
 R04968__mito
 T_G3PCtg__golmem
@@ -745,14 +738,12 @@ R01526__chlo
 R02568__cytop
 R04960__mito
 R04880__cytop
-R00476__chlo
 R02513__cytop
 EX_C00175__dra
 R05776__er
 R02985__chlo
 PRISM_red_LED_674nm__extr
 R04502__cytop
-R00734__mito
 R08705__cytop
 TR2000026_ERMEM__ermem
 R07939__cytop
@@ -781,7 +772,6 @@ R08221__cytop
 R05976__er
 R02102__mito
 RXN_19211_V2__chlo
-R01388__mito
 R10183__cytop
 TI3000688_MITMEM__mitmem
 R02926__cytop
@@ -791,7 +781,6 @@ RXN_11211__cytop
 RXN_7886__chlo
 R02366__eye
 R06578__cytop
-R00575__mito
 TR0000043_GOLGMEM__golmem
 R02927__chlo
 R07888__pero

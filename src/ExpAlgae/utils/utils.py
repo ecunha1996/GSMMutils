@@ -241,8 +241,11 @@ def get_biomass_mass(model, biomass_reaction=None):
                     go = True
                     if "trial" in reaction.id:
                         trial_number = reaction.id.split("trial")[1].split("_")[0]
-                        biomass_trial = biomass_reaction.id.split("trial")[1].split("_")[0]
-                        if trial_number != biomass_trial:
+                        if "trial" in biomass_reaction.id:
+                            biomass_trial = biomass_reaction.id.split("trial")[1].split("_")[0]
+                            if trial_number != biomass_trial:
+                                go = False
+                        else:
                             go = False
                     if go:
                         if 'Protein' in reaction.id:

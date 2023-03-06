@@ -40,7 +40,7 @@ def adjust_precursors(biomass, model):
 if __name__ == '__main__':
     data_directory = r"."
     model = read_model(data_directory, "model.xml")
-    biomass = Biomass("e_Biomass__cytop", "Biomass_exp_composition.xlsx")
+    biomass = Biomass("e_Biomass__cytop", "experimental/Biomass_exp_composition.xlsx")
     simulate_all_trials(biomass.biomass_matrix, model)
     model = read_model(data_directory, "model_with_biomass_trials.xml")
     adjust_precursors(biomass, model)

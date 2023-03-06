@@ -12,7 +12,7 @@ from ExpAlgae.stats.stats import *
 
 def read_model(data_directory, filename="model.xml"):
     model = MyModel(join(join(data_directory, 'models'), filename), "e_Biomass__cytop")
-    model.add_medium(join(data_directory, "media.xlsx"), "media_with_starch")
+    model.add_medium(join(data_directory, "media.xlsx"), "base_medium")
     try:
         model.reactions.e_Biomass_ht__cytop.bounds = (0, 0)
         model.reactions.R00019__chlo.bounds = (0, 0)
@@ -109,8 +109,8 @@ def simulations_max_carotene(matrix, model):
 if __name__ == '__main__':
     data_directory = r"../data"
     model = read_model(data_directory, filename="model_with_trials.xml")
-    # matrix = experimental_data_processing(data_directory, "Matriz- DCCR Dunaliella salina.xlsx", model)
-    matrix = ExpMatrix(join(data_directory, "Matriz- DCCR Dunaliella salina_new.xlsx"))
+    matrix = experimental_data_processing(data_directory, "experimental/Matriz- DCCR Dunaliella salina.xlsx", model)
+    # matrix = ExpMatrix(join(data_directory, "Matriz- DCCR Dunaliella salina_new.xlsx"))
     matrix.conditions = "Resume"
     print("Simulating")
     simulations(matrix, model)

@@ -894,7 +894,7 @@ class MyModel(Model):
             print(mmol_gMM)
 
     def adjust_precursors(self, reaction_id, composition, units, suffix="v2"):
-        old_composition = self.reactions.get_by_id(reaction_id).metabolites
+        old_composition = {key: value for key, value in self.reactions.get_by_id(reaction_id).metabolites.items() if value <0}
         for key, value in composition.items():
             if self.metabolites.get_by_id(key) in old_composition:
                 old_composition[self.metabolites.get_by_id(key)] = -value / self.metabolites.get_by_id(key).formula_weight
@@ -917,8 +917,11 @@ class MyModel(Model):
                 reaction.bounds = (0, 0)
             if reaction.id.startswith("e_Pigment") and f"trial{condition}" not in reaction.id:
                 reaction.bounds = (0, 0)
-        self.objective = f"e_Biomass_trial{condition}__cytop"
-
+        if condition == "default":
+            self.reactions.e_Biomass__cytop.bounds = (0, 1000)
+            self.reactions.e_Pigment__chlo.bounds = (0, 1000)
+        else:
+            self.objective = f"e_Biomass_trial{condition}__cytop"
     def infer_biomass_from_model(self, biomass_reaction_name="e_Biomass__cytop", biomass_met_id="e_Biomass__cytop"):
         biomass_reaction = self.reactions.get_by_id(biomass_reaction_name)
         macromolecules = biomass_reaction.reactants
@@ -1441,7 +1444,6 @@ def simulation_for_conditions(model, conditions_df, growth_rate_df, save_in_file
     error_sum = 0
     values_for_plot = {}
     model.exchanges.EX_C00011__dra.bounds = (-1000, 1000)
-    t = model.optimize()
     for index, condition in as_dict.items():
         copy = model.copy()
         for reaction in copy.reactions:

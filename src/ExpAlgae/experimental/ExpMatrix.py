@@ -1,3 +1,4 @@
+import pickle
 from typing import Union
 import pandas as pd
 
@@ -71,6 +72,7 @@ class ExpMatrix:
         to_write = self.matrix
         to_write["Resume"] = self.conditions
         write_matrix(to_write, filename)
+        pickle.dump(self, open(filename.replace(".xlsx", ".pkl"), "wb"))
 
     def get_substrate_uptake_from_biomass(self, element, substrate, header=None):
         if not header:
