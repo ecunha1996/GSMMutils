@@ -59,7 +59,7 @@ def get_element_in_biomass(model, element, biomass_reaction):
     percentage_map = {}
     for key in res[1]:
         percentage_map[key] = round(res[1][key] * Metabolite(formula=key).formula_weight / 1000, 3)
-    if round(sum(percentage_map.values()), 3) != 1: print(f"Error! Sum of Elemental mass percentage is different from 1! ({sum(percentage_map.values())})")
+    if round(sum(percentage_map.values()), 3) != 1: print(f"Error! Sum of Elemental mass percentage is different from 1! ({round(sum(percentage_map.values()), 3)})")
     return percentage_map[element]
 
 

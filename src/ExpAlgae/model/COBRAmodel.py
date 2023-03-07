@@ -183,7 +183,11 @@ class MyModel(Model):
         except Exception as e:
             print(e)
         return self.pre_precursors
-        
+
+    def set_stoichiometry(self, reaction, metabolite, stoichiometry):
+        self.get_reaction(reaction).add_metabolites({self.get_metabolite(metabolite): -self.get_reaction(reaction).metabolites[self.get_metabolite(metabolite)]})
+        self.get_reaction(reaction).add_metabolites({self.get_metabolite(metabolite): stoichiometry})
+
     def maximize(self, value = True, pfba = True):
         """ This function maximizes the biomass reaction.
         If value is True, it returns the objective value.
@@ -271,7 +275,7 @@ class MyModel(Model):
         
         ''' This function creates a demand reaction'''
         
-        reaction_name = "Sk_" + metabolite_id
+        reaction_name = "Dm_" + metabolite_id
         self.create_reaction(reaction_name).add_metabolites({self.get_metabolite(metabolite_id): -1})
         self.get_reaction(reaction_name).bounds = (0, 10000)
         return self.get_reaction(reaction_name)
@@ -280,7 +284,7 @@ class MyModel(Model):
         
         ''' This function creates a sink reaction '''
         
-        reaction_name = "Av_" + metabolite_id
+        reaction_name = "Sk_" + metabolite_id
         self.create_reaction(reaction_name).add_metabolites({self.get_metabolite(metabolite_id): 1})
         self.get_reaction(reaction_name).bounds = bounds
         return self.get_reaction(reaction_name)
@@ -404,20 +408,20 @@ class MyModel(Model):
         old_objective = self.objective
         precursors = self.get_reactants(reaction)
         
-        self.save()
+        # self.save()
         
         e_precursors_res = {"Flux": []}
         meta_val = []
         
         for precursor in precursors:
-            self.save()
+            # self.save()
             reaction = self.create_demand(precursor.id)
             self.objective = reaction.id
-            val_2 = self.maximize()
+            val_2 = self.model.optimize().objective_value
             e_precursors_res["Flux"].append(val_2)
             meta_val.append(precursor.name)
-        
-            self.undo()
+            self.remove_reactions(reaction.id)
+            # self.undo()
         
         res = pd.DataFrame(e_precursors_res, index=meta_val)
         self.objective = old_objective
