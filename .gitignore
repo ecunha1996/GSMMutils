@@ -15,6 +15,7 @@ data/
 *.xml
 */*.xml
 *.fig
+tINIT_test.lp
 #Pycharm
 
 *.iml
