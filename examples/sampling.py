@@ -10,7 +10,6 @@ from scipy import stats
 from scipy.stats import hypergeom, ks_2samp
 from statsmodels.stats import multitest
 import sys
-# sys.path.insert(0, r"C:\Users\Bisbii\PythonProjects\ExpAlgae\src")
 sys.path.insert(0, "/home/src/")
 from ExpAlgae.model.COBRAmodel import MyModel
 
@@ -36,7 +35,7 @@ def load_results(file_names):
             dataframe.drop(columns=["Unnamed: 0"], inplace=True)
         # dataframe = dataframe * dataframe[biomass_map[filename.split(".")[0]]]
         data_list.append(dataframe)
-    reactions = list(set([reac for dataframe in data_list for reac in dataframe.columns]))
+    reactions = list(set([reaction for dataframe in data_list for reaction in dataframe.columns]))
     for reaction in reactions:
         for index, value in enumerate(data_list):
             if reaction not in value.columns:
@@ -54,16 +53,16 @@ def load_results(file_names):
     results_df = pd.DataFrame.from_dict(results, orient="index", columns=["Statistic", "p-value"])
     results_df.to_csv("ACHR_results.csv")
 
-def kstest(samples_healthy: pd.DataFrame, samples_infected: pd.DataFrame, dataset_name: str):
+def kstest(samples_control: pd.DataFrame, samples_condition: pd.DataFrame, dataset_name: str):
     """
     Calculate the K-S test to detect significantly altered reactions fluxes.
     Results are saved in a csv file.
 
     Parameters
     ----------
-    samples_healthy: pd.DataFrame
+    samples_control: pd.DataFrame
         The samples of the healthy tissue.
-    samples_infected: pd.DataFrame
+    samples_condition: pd.DataFrame
         The samples of the infected tissue.
     dataset_name: str
         The name of the dataset.
@@ -72,18 +71,26 @@ def kstest(samples_healthy: pd.DataFrame, samples_infected: pd.DataFrame, datase
     pd.DataFrame: The results of the K-S test for each reaction.
 
     """
-    rxns1 = set(samples_infected.columns)
-    rxns2 = set(samples_healthy.columns)
+
+    union = set(samples_condition.columns).union(set(samples_control.columns))
+    for rxn in union:
+        if rxn not in samples_condition.columns:
+            samples_condition[rxn] =  pd.Series(np.zeros(10000))
+        if rxn not in samples_control.columns:
+            samples_control[rxn] =  pd.Series(np.zeros(10000))
+
+    rxns1 = set(samples_condition.columns)
+    rxns2 = set(samples_control.columns)
 
     rxn_c = rxns1.intersection(rxns2)
-
+    # rxn_c = rxns1.union(rxns2)
     pvals = []
     rxnid = []
     fc = []
 
     for rxn in rxn_c:
-        data1 = samples_infected[rxn].round(decimals=4)
-        data2 = samples_healthy[rxn].round(decimals=4)
+        data1 = samples_condition[rxn].round(decimals=4)
+        data2 = samples_control[rxn].round(decimals=4)
 
         data1 = data1.sample(n=1000)
         data2 = data2.sample(n=1000)
@@ -108,15 +115,15 @@ def kstest(samples_healthy: pd.DataFrame, samples_infected: pd.DataFrame, datase
 
     data_sig_fc = data_mwu.loc[(abs(data_mwu['FC']) > 0.82) & (data_mwu['Padj'] < 0.05), :]
 
-    rxns1 = set(samples_infected.columns)
-    rxns2 = set(samples_healthy.columns)
+    rxns1 = set(samples_condition.columns)
+    rxns2 = set(samples_control.columns)
 
     rxn_in1 = rxns1.difference(rxns2)
     rxn_in2 = rxns2.difference(rxns1)
 
-    sigs = Parallel(n_jobs=8)(delayed(bootstrap_ci)(samples_infected[rx]) for rx in rxn_in1)
+    sigs = Parallel(n_jobs=8)(delayed(bootstrap_ci)(samples_condition[rx]) for rx in rxn_in1)
     act = [sigs[i][0] for i in range(len(sigs)) if sigs[i][1] == 1]
-    sigs2 = Parallel(n_jobs=8)(delayed(bootstrap_ci)(samples_healthy[rx]) for rx in rxn_in2)
+    sigs2 = Parallel(n_jobs=8)(delayed(bootstrap_ci)(samples_control[rx]) for rx in rxn_in2)
     rep = [sigs2[i][0] for i in range(len(sigs2)) if sigs2[i][1] == 1]
 
     df_abs = pd.DataFrame({'Reaction': act + rep, 'Padj_bootstrap': np.zeros(len(act + rep))})
@@ -239,8 +246,8 @@ def pathway_enrichment(rxnlist: list, dataset_name: str):
 
     hyperdata_sorted.to_csv(f'{dataset_name}.csv', index=False)
 
-def remove_exchanges(df):
-    return df.drop([col for col in df.columns if col.startswith("EX_") or col.startswith("e_")], axis=1)
+def remove_exchanges(dataframe: pd.DataFrame) -> pd.DataFrame:
+    return dataframe.drop([col for col in dataframe.columns if col.startswith("EX_") or col.startswith("e_")], axis=1)
 
 if __name__ == '__main__':
     os.chdir("../data/omics/")
@@ -294,12 +301,12 @@ if __name__ == '__main__':
                  r"nacl_h2o2_sorb/sorb/Dsalina_sorb_Local2_2_4_4_fastcore_t2_8.xml"
     ]
 
-    Parallel(n_jobs=8)(delayed(achr_sample)(filename, "e_Biomass__cytop") for filename in filenames)
+    # Parallel(n_jobs=8)(delayed(achr_sample)(filename, "e_Biomass__cytop") for filename in filenames)
 
-    control_samples_gimme = pd.read_csv(r"nacl_h2o2_sorb/control/Dsalina_control_gimme_ACHR_samples.csv", index_col=0)
-    nacl_samples_gimme = pd.read_csv(r"nacl_h2o2_sorb/nacl/Dsalina_nacl_gimme_ACHR_samples.csv", index_col=0)
-    sorb_samples_gimme = pd.read_csv(r"nacl_h2o2_sorb/h2o2/Dsalina_h2o2_gimme_ACHR_samples.csv", index_col=0)
-    h2o2_samples_gimme = pd.read_csv(r"nacl_h2o2_sorb/sorb/Dsalina_sorb_gimme_ACHR_samples.csv", index_col=0)
+    control_samples_gimme = pd.read_csv(r"nacl_h2o2_sorb/control/Dsalina_control_gimme_ACHR_samples.csv")
+    nacl_samples_gimme = pd.read_csv(r"nacl_h2o2_sorb/nacl/Dsalina_nacl_gimme_ACHR_samples.csv")
+    sorb_samples_gimme = pd.read_csv(r"nacl_h2o2_sorb/h2o2/Dsalina_h2o2_gimme_ACHR_samples.csv")
+    h2o2_samples_gimme = pd.read_csv(r"nacl_h2o2_sorb/sorb/Dsalina_sorb_gimme_ACHR_samples.csv")
 
     control_samples_gimme = remove_exchanges(control_samples_gimme)
     nacl_samples_gimme = remove_exchanges(nacl_samples_gimme)
