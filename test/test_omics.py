@@ -1,11 +1,9 @@
 # from troppo.methods_wrappers import GapfillWrapper
 import math
 import os
-from os.path import join
 
-from ExpAlgae.graphics.plot import clustermap
 from ExpAlgae.model.COBRAmodel import MyModel
-from ExpAlgae.io.reader import read_csv
+from ExpAlgae.io import read_csv
 from ExpAlgae.omics.omics_integration import OmicsIntegration
 from ExpAlgae.utils.utils import flux_change
 from test_all import read_model

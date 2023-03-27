@@ -1,12 +1,10 @@
 import os
-from builtins import int
 
 import pandas as pd
 
 from ExpAlgae.graphics.plot import clustermap
-from ExpAlgae.io.reader import read_excel, read_csv
+from ExpAlgae.io import read_csv
 from ExpAlgae.model.COBRAmodel import MyModel
-from ExpAlgae.omics.omics_integration import OmicsIntegration
 import pickle
 #unlimit pandas printing:
 pd.set_option('display.max_rows', 500)

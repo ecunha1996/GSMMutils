@@ -4,8 +4,7 @@ from os.path import join
 
 import numpy as np
 
-from ExpAlgae.graphics.plot import clustermap
-from ExpAlgae.io.reader import read_csv
+from ExpAlgae.io import read_csv
 from ExpAlgae.model.COBRAmodel import MyModel
 from ExpAlgae.omics.omics_integration import OmicsIntegration
 import pickle

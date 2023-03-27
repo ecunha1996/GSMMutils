@@ -13,7 +13,7 @@ from cobra.flux_analysis import flux_variability_analysis as fva
 from ExpAlgae.bio.genes import Genes
 from ExpAlgae.graphics.plot import clustermap
 from ExpAlgae.io import write_specific_models
-from ExpAlgae.io.reader import read_csv
+from ExpAlgae.io import read_csv
 from ExpAlgae.utils.utils import run, differential_reaction_capacity
 
 

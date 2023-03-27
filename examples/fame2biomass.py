@@ -1,21 +1,23 @@
 import os
+from os.path import join
 
+from ExpAlgae import DATA_PATH, MyModel
 from ExpAlgae.model.FAME2Biomass import FAME2Biomass
 from test_all import read_model
 
 
-
 if __name__ == '__main__':
-    directory = r"C:\Users\Bisbii\OneDrive - Universidade do Minho\Models"
-    os.chdir(directory)
-    model = read_model()
-    fame2biomass = FAME2Biomass(model)
-    lipid_compartments_map = {"PG": "chlo", "PC": "e_r_", "PE": "e_r_",
-                              "PI": "e_r_", "MGDG": "chlo", "DGDG": "chlo",
-                                "SQDG": "chlo", "DGTS": "e_r_", "DAG": "e_r_",
+    directory = join(DATA_PATH, 'fame2biomass')
+    model = MyModel(join(join(DATA_PATH, 'models'), 'model.xml'), "e_Biomass__cytop")
+    model.add_medium(join(DATA_PATH, "media.xlsx"), "base_medium")
+    fame2biomass = FAME2Biomass(model, data_directory=directory)
+    lipid_compartments_map = {"PG": "chlo", "PC": "er", "PE": "er",
+                              "PI": "er", "MGDG": "chlo", "DGDG": "chlo",
+                                "SQDG": "chlo", "DGTS": "er", "DAG": "er",
                                 "TAG": "lip", "CL": "mito"}
-
-    fame2biomass.run(lipid_compartments_map)
+    abb_compartment_id_map = {'chlo': 'C_00005', 'er': 'C_00003', 'lip': 'C_00010', 'mito': 'C_00002'}
+    fame2biomass.batch_run(lipid_compartments_map, abb_compartment_id_map)
+    # fame2biomass.run(lipid_compartments_map)
     # main(model, 'PG', compartment='chlo')
     # main(model, 'PC', compartment='e_r_')
     # main(model, 'PE', compartment='e_r_')
@@ -27,4 +29,4 @@ if __name__ == '__main__':
     # main(model, 'DAG', compartment='e_r_')
     # main(model, 'TAG', compartment='lip')
     #main(model, 'CL', compartment='mito')
-    fame2biomass.merge_results()
+    # fame2biomass.merge_results()

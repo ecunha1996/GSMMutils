@@ -41,8 +41,6 @@ ub = zeros(nmodel, 2);
         ub(j, 1) = Inf;
     
         % Light
-        Ke1 = 0.32;
-        Ke2 = 0.03;
         L = 0.2; % meters depth of pond
         biomass = y(2);
              
@@ -65,7 +63,7 @@ ub = zeros(nmodel, 2);
         else
             lb(j,3) = -0.04*y(3)/(0.0015+y(3));
         end
-        lb(j,3) = -1000;
+        %lb(j,3) = -1000;
         ub(j,3) = Inf;
 
         % N
@@ -74,7 +72,7 @@ ub = zeros(nmodel, 2);
         else
             lb(j,4) = -4.07*y(4)/(0.011+y(4))*(1-(y(10)/6.78)); % y(10)
         end
-        lb(j,4) = -1000;
+        %lb(j,4) = -1000;
         ub(j,4) = Inf;
 
 
@@ -127,7 +125,7 @@ ub = zeros(nmodel, 2);
         nacl = INFO.nacl; %g/L
         y0 = 0.966; % g glycerol / g chl
         m = 0.15; %  g glycerol / g chl * gnacl/L
-        nacl_production = (y0 + nacl*m) * y(11); %g gly / gDW
+        %nacl_production = (y0 + nacl*m) * y(11); %g gly / gDW
         
         %lb(j, 10) = nacl_production / 92.09*1000 * n; % mmol gly/ gDW
         wgly_max = 0.17; %https://doi.org/10.1016/j.biortech.2008.02.042
@@ -141,7 +139,7 @@ ub = zeros(nmodel, 2);
         Km = 0.873;
         %lb(j, 11) = -r_co2_max * (y(8) / (y(8)+ Km));
         lb(j, 11) = -r_co2_max * (1-z);
-        lb(j, 11) = -100;
+        %lb(j, 11) = -100;
         ub(j, 11) = Inf;
 
         % Nitrate intracellular metabolization

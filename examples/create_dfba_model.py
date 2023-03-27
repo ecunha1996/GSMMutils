@@ -1,14 +1,9 @@
 import os
 import pickle
-from os.path import join
-
-from cobra import Metabolite
 from cobra.flux_analysis import find_blocked_reactions
-
 from ExpAlgae import DATA_PATH
-from ExpAlgae.experimental.ExpMatrix import ExpMatrix
 from ExpAlgae.model.COBRAmodel import MyModel
-from ExpAlgae.utils.utils import get_biomass_mass, get_element_in_biomass, get_molecular_weight
+from ExpAlgae.utils.utils import get_element_in_biomass, get_molecular_weight
 
 
 def create_active_biomass(model):
@@ -106,16 +101,10 @@ def remove_pigments(model):
 def correct_co2_uptake(model, active_biomass):
     total = abs(sum([active_biomass.metabolites[met] for met in active_biomass.reactants if active_biomass.metabolites[met] > -10]))
     print(total)
-    # for met in active_biomass.reactants:
-    #     if active_biomass.metabolites[met] > -10:
-    #         new_st = active_biomass.metabolites[met] / total
-    #         active_biomass.add_metabolites({model.metabolites.get_by_id(met.id): new_st - active_biomass.metabolites[met]})
-    # print(round(abs(sum([active_biomass.metabolites[met] for met in active_biomass.reactants if active_biomass.metabolites[met] > -10])), 4))
-    # print(model.optimize().objective_value)
     carbon_in_biomass = get_element_in_biomass(model, "C", f"e_ActiveBiomass__cytop")
     print(carbon_in_biomass)
-    expmatrix = pickle.load(open("experimental/Matriz- DCCR Dunaliella salina_new.pkl", "rb"))
-    r = round(expmatrix.get_substrate_uptake_for_trial("C", "23", expmatrix.matrix["23"], get_molecular_weight("CO2"), get_molecular_weight("C"), carbon_in_biomass) * 24, 3)
+    exp_matrix = pickle.load(open("experimental/Matriz- DCCR Dunaliella salina_new.pkl", "rb"))
+    r = round(exp_matrix.get_substrate_uptake_for_trial("C", "23", exp_matrix.matrix["23"], get_molecular_weight("CO2"), get_molecular_weight("C"), carbon_in_biomass) * 24, 3)
     print(r)
     model.exchanges.EX_C00011__dra.bounds = (-r, 1000)
     print(model.optimize().objective_value)
@@ -137,7 +126,6 @@ def main():
         model = remove_pigments(model)
         model = correct_co2_uptake(model, model.reactions.e_ActiveBiomass__cytop)
         model.write("models/model_dfba.xml")
-
 
 
 

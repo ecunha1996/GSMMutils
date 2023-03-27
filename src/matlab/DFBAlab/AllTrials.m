@@ -1,6 +1,6 @@
 
 
-matrix = readExpMatrix('C:\Users\Bisbii\PythonProjects\ExpAlgae\data\experimental\Matriz- DCCR Dunaliella salina_new.xlsx');
+matrix = readExpMatrix('C:\Users\Bisbii\PythonProjects\ExpAlgae\data\experimental\Matriz- DCCR Dunaliella salina_dfba.xlsx');
 
 
 
@@ -15,7 +15,7 @@ for z=1:length(matrix)-2
     
     %% Plotting
     trial = readtable(filename, 'VariableNamingRule', 'preserve');
-    [~,sheet_name]=xlsfinfo('C:\Users\Bisbii\PythonProjects\ExpAlgae\data\experimental\Matriz- DCCR Dunaliella salina_new.xlsx');
+    [~,sheet_name]=xlsfinfo('C:\Users\Bisbii\PythonProjects\ExpAlgae\data\experimental\Matriz- DCCR Dunaliella salina_dfba.xlsx');
     T = trial.("Time (d)");
     time = str2double(matrix{z}.("Time (d)"));
     f1 = figure(1);

@@ -1,9 +1,8 @@
 import pickle
 from typing import Union
-import pandas as pd
 
-from ExpAlgae.io.reader import read_matrix
-from ExpAlgae.io.writer import write_matrix
+from ExpAlgae.io import read_matrix
+from ExpAlgae.io import write_matrix
 from ExpAlgae.utils.utils import *
 
 

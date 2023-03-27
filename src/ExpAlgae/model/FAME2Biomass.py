@@ -1,4 +1,5 @@
 import os
+from os.path import join
 from typing import Union
 
 from cobra import Model
@@ -6,13 +7,15 @@ import numpy as np
 import pandas as pd
 import scipy
 
-from COBRAmodel import MyModel
+from ExpAlgae import SRC_PATH
+from ExpAlgae.model.COBRAmodel import MyModel
 import matlab.engine
 
 
 class FAME2Biomass:
-    def __init__(self, model: Union[MyModel, Model]):
+    def __init__(self, model: Union[MyModel, Model], data_directory):
         self.model = model
+        self.data_directory = data_directory
 
     def parse_other_lipids(self, lipid_abb,list_of_names, chains_map):
         final_map = {}
@@ -44,9 +47,6 @@ class FAME2Biomass:
         for e in as_list:
             if as_list.count(e) > 1:
                 print(e)
-        # for key, value in final_map.items():
-        #     if "14_0__20" in value :
-        #         print(key)
         return final_map
 
 
@@ -237,7 +237,7 @@ class FAME2Biomass:
         directory = r"C:\Users\Bisbii\OneDrive - Universidade do Minho\Algae\Models\Dsalina\lipids"
         os.chdir(directory)
         res = pd.DataFrame()
-        for file in os.listdir("./"):
+        for file in os.listdir("/"):
             if file.endswith(".csv") and file != "model_stoichiometry_all.csv":
                 try:
                     df = pd.read_csv(file, sep="\t")
@@ -249,16 +249,11 @@ class FAME2Biomass:
         print(res.shape)
         res.to_csv("model_stoichiometry_all.csv", index=False, sep="\t")
 
-    def run(self, lipid_abb, compartment = "e_r_"):
-        if compartment == "e_r_":
-            compartment_id = "C_00003"
-        elif compartment == 'lip':
-            compartment_id = "C_00007"
-        else:
-            compartment_id = "C_00002"
+    def run(self, lipid_abb, compartment = "er", compartment_id="C_00001"):
         met_mat, final_map, faas, final_map_rev, lipidClass = self.parse_2FA_lipid(lipid_abb, self.model, compartment_id=compartment_id, parent_reaction=f"e_{lipid_abb}_complete__{compartment}")
         eng = matlab.engine.start_matlab()
-        eng.cd(r"C:\Users\Bisbii\Documents\MATLAB")
+        eng.cd(self.data_directory)
+        eng.addpath(join(SRC_PATH, 'matlab'))
         eng.addpath(r'C:\gurobi912\win64\matlab')
         np_a = np.array(met_mat)
         scipy.io.savemat(rf"C:\Users\Bisbii\Documents\MATLAB\{lipid_abb.lower()}_metmat.mat", {'metmat': np_a})
@@ -270,6 +265,6 @@ class FAME2Biomass:
         reactions_ids_map = {"PG": 35724, "PE":36207, "PI":35940, "PC": 35921, "MGDG": 35956, "DGDG":35957 , "SQDG":35962 , "DGTS": 35955, "DAG": 36091, "TAG": 36129}
         self.parse_results_to_merlin(final_map_rev, reactions_ids_map[lipid_abb], lipid=lipid_abb.lower())
 
-    def batch_run(self, lipid_compartments_map):
+    def batch_run(self, lipid_compartments_map, abb_compartment_id_map):
         for lipid, compartment in lipid_compartments_map.items():
-            self.run(lipid, compartment)
+            self.run(lipid, compartment, abb_compartment_id_map[compartment])

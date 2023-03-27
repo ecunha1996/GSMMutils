@@ -1,5 +1,4 @@
-from ExpAlgae.io.reader import read_excel
-from ExpAlgae.utils.utils import normalize, convert_mmol_mol_to_g_molMM
+from ExpAlgae.io import read_excel
 
 
 class Biomass:

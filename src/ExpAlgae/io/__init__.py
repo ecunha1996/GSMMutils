@@ -1,4 +1,4 @@
 
 
-from .reader import read_matrix
+from .reader import *
 from .writer import *

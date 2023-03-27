@@ -1,7 +1,5 @@
 import pandas as pd
 
-from ExpAlgae.io.reader import read_csv
-
 
 class GenomeAnnotation:
     def __init__(self):

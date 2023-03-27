@@ -2,18 +2,14 @@ import math
 import sys
 
 import cobra.io
-import matplotlib.pyplot as plt
-import numpy as np
-import pandas as pd
-from cobra.flux_analysis import flux_variability_analysis as fva, fastcc
-from cobra.flux_analysis import pfba
+
 sys.path.insert(0, r"C:\Users\Bisbii\PythonProjects\ExpAlgae\src")
 # sys.path.insert(0, r"/home/algae/ExpAlgae/src")
 from ExpAlgae.model.COBRAmodel import *
 import seaborn as sns
 from ExpAlgae.omics.troppo import integration_pipeline
 from cobra.flux_analysis import find_blocked_reactions
-from ExpAlgae.io.reader import read_csv
+from ExpAlgae.io import read_csv
 from ExpAlgae.omics.omics_integration import OmicsIntegration
 sns.set(rc={'figure.figsize':(35, 8.27)})
 

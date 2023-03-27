@@ -3,7 +3,7 @@ import os
 import pandas as pd
 import sys
 
-from ExpAlgae.io.reader import read_csv
+from ExpAlgae.io import read_csv
 from ExpAlgae.omics.omics_integration import OmicsIntegration
 
 sys.path.insert(0, r"/")

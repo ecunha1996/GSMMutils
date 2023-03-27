@@ -15,10 +15,9 @@ import pandas as pd
 import seaborn
 from openpyxl import load_workbook
 from sympy import Add
-
 from ExpAlgae.experimental.Biomass import Biomass
 from ExpAlgae.experimental.BiomassComponent import BiomassComponent
-from ExpAlgae.io.writer import write_simulation
+from ExpAlgae.io import write_simulation
 from ExpAlgae.utils.utils import update_st, get_precursors, normalize, convert_mmol_mol_to_g_molMM, convert_mg_molMM_to_mmolM_gMM
 
 warnings.filterwarnings("ignore")
@@ -409,21 +408,17 @@ class MyModel(Model):
         old_objective = self.objective
         precursors = self.get_reactants(reaction)
         
-        # self.save()
-        
         e_precursors_res = {"Flux": []}
         meta_val = []
         
         for precursor in precursors:
-            # self.save()
             reaction = self.create_demand(precursor.id)
             self.objective = reaction.id
             val_2 = self.model.optimize().objective_value
             e_precursors_res["Flux"].append(val_2)
             meta_val.append(precursor.name)
             self.remove_reactions(reaction.id)
-            # self.undo()
-        
+
         res = pd.DataFrame(e_precursors_res, index=meta_val)
         self.objective = old_objective
         return res 
@@ -1019,9 +1014,10 @@ def test_carbohydrate(model):
         sugar=sugar.replace("\n","")
         if model.get_metabolite_by_name(sugar,"C00001") is not None:
             met = model.get_metabolite_by_name(sugar,"C00001")
+            biomass = 0
             for r in model.model.exchanges:
                 if met in r.metabolites:
-                    c_number = int(re.search("C(\d*)(.*)",met.formula).group(1))
+                    c_number = int(re.search('C(\d*)(.*)', met.formula).group(1))
                     uptake = 6*13/c_number
                     r.bounds = (-uptake,0)
                     biomass = round(model.model.optimize().objective_value,2)

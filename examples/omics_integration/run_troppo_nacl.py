@@ -7,7 +7,7 @@ from ExpAlgae import DATA_PATH
 
 sys.path.insert(0, r"/")
 sys.path.insert(0, "/home/src/")
-from ExpAlgae.io.reader import read_csv
+from ExpAlgae.io import read_csv
 from ExpAlgae.omics.omics_integration import OmicsIntegration
 from Tissue_specific_Reconstruction_Pipeline.Pipeline.utils.config_variables import *
 from Tissue_specific_Reconstruction_Pipeline.Pipeline.utils.pipeline_paths import *

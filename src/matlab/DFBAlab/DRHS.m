@@ -35,7 +35,7 @@ Fout = 0.006;
 
 
 q = y(10) / 6.35;
-n = 1 - (q / (q + 3.5));  %0.049
+n = 1 - (q / (q + 0.049));  %0.049
 
 
 %% Update bounds and solve for fluxes

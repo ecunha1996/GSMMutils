@@ -1,9 +1,7 @@
-import pandas as pd
 from cobra import flux_analysis
 
 from ExpAlgae import DATA_PATH
 from ExpAlgae.experimental.ExpMatrix import ExpMatrix
-from ExpAlgae.io.reader import read_csv
 from ExpAlgae.model.COBRAmodel import simulation_for_conditions, MyModel
 # from ExpAlgae.omics.omics_integration import OmicsIntegration
 from os.path import join
@@ -11,7 +9,7 @@ from ExpAlgae.graphics.plot import *
 from ExpAlgae.stats.stats import *
 
 
-def read_model(data_director=DATA_PATH, filename="model.xml"):
+def read_model(data_directory=DATA_PATH, filename="model.xml"):
     model = MyModel(join(join(data_directory, 'models'), filename), "e_Biomass__cytop")
     model.add_medium(join(data_directory, "media.xlsx"), "base_medium")
     try:
@@ -22,8 +20,8 @@ def read_model(data_director=DATA_PATH, filename="model.xml"):
         pass
     model.set_prism_reaction("PRISM_white_LED__extr")
     model.reactions.ATPm__cytop.bounds = (2.85, 2.85)
-    blocked = flux_analysis.find_blocked_reactions(model, open_exchanges=True)
-    model.remove_reactions(blocked)
+    #blocked = flux_analysis.find_blocked_reactions(model, open_exchanges=True)
+    #model.remove_reactions(blocked)
     # model.write(join(data_directory, "models/model_with_no_blocked.xml"))
     return model
 
