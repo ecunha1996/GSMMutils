@@ -19,7 +19,7 @@ from sympy import Add
 from ExpAlgae.experimental.Biomass import Biomass
 from ExpAlgae.experimental.BiomassComponent import BiomassComponent
 from ExpAlgae.io.writer import write_simulation
-from ExpAlgae.utils.utils import update_st, get_precursors, normalize, convert_mmol_mol_to_g_molMM, convert_mg_molMM_to_mmolM_gMM, convert_mg_gMM_to_mmol_gMM
+from ExpAlgae.utils.utils import update_st, get_precursors, normalize, convert_mmol_mol_to_g_molMM, convert_mg_molMM_to_mmolM_gMM
 
 warnings.filterwarnings("ignore")
 import re
@@ -86,10 +86,13 @@ class MyModel(Model):
         else:
             raise Exception("Biomass composition must be a string or a Biomass object")
     def load_model(self, directory, file_name):
-        
-        ''' This function loads the model. Returns a COBRApy object, the model
-        It also creates a copy of the model 
-        '''
+        """
+        This function loads the model. Returns a COBRApy object, the model
+        It also creates a copy of the model to be used in the first simulation
+        :param directory:
+        :param file_name:
+        :return:
+        """
 
         print("Loading")
         print("")
@@ -174,10 +177,10 @@ class MyModel(Model):
                     print("ATP or other metabolite. Without unique precursor")
                     self.pre_precursors[precursor.id] = []
                 else:
-                    reaction = ""
+                    reaction = Reaction()
                     for r in reactions:
                         if r != self.bio_reaction: reaction = r
-                    if reaction:
+                    if reaction.id:
                         self.pre_precursors[precursor.id] = self.get_reactants(reaction.id)
                         self.precursors_reactions[precursor.name] = (reaction.id, precursor.id)
         except Exception as e:
@@ -403,8 +406,6 @@ class MyModel(Model):
         """The input should be the id of the reaction (e.g. 00001)
         This function tests any reactant in such reaction"""
         
-#        if reaction[0]=="R":
-#            reaction = reaction[2:]
         old_objective = self.objective
         precursors = self.get_reactants(reaction)
         
@@ -993,13 +994,15 @@ class MyModel(Model):
             constraints = {}
         for constraint in constraints.items():
             self.reactions.get_by_id(constraint[0]).bounds = constraint[1]
-
+        sampler = None
         if method == "achr":
             from cobra.sampling import ACHRSampler
             sampler = ACHRSampler(self, thinning=10, processes=6)
         elif method == "optgp":
             from cobra.sampling import OptGPSampler
             sampler = OptGPSampler(self, thinning=10, processes=6)
+        else:
+            raise ValueError("Method not supported")
         res = [s for s in sampler.batch(100, 10)]
         return res
 
@@ -1153,14 +1156,13 @@ def growth_carbs(model, m_reaction):
     for sugar in sugars:
         for r in model.model.exchanges:
             if sugar in r.metabolites:
-                
                 if sugar == "C00984__extr":
                     r.bounds = (-2.54,0)
-                    print(atp_m(model, m_reaction))
+                    print(atp_m(model, m_reaction, 0.1))
                     r.bounds = (0,0)
                 if sugar == "C00243__cytop":
                     r.bounds = (-6.58,0)
-                    print(atp_m(model, m_reaction))
+                    print(atp_m(model, m_reaction, 0.1))
                 
 # growth_carbs(la, atp)
 

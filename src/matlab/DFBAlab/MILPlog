@@ -1,0 +1,129 @@
+
+Gurobi 9.1.2 (win64, Matlab) logging started Thu Dec 29 15:06:04 2022
+
+Gurobi Optimizer version 9.1.2 build v9.1.2rc0 (win64)
+Thread count: 8 physical cores, 8 logical processors, using up to 8 threads
+Optimize a model with 3991 rows, 3471 columns and 15795 nonzeros
+Model fingerprint: 0x6e0f9475
+Variable types: 3387 continuous, 84 integer (84 binary)
+Coefficient statistics:
+  Matrix range     [3e-05, 1e+03]
+  Objective range  [3e-02, 1e+00]
+  Bounds range     [1e+00, 1e+03]
+  RHS range        [1e+03, 1e+03]
+Presolve removed 3083 rows and 1558 columns
+Presolve time: 0.05s
+Presolved: 908 rows, 1913 columns, 9204 nonzeros
+Variable types: 1849 continuous, 64 integer (64 binary)
+
+Root relaxation: objective 4.045533e+01, 1512 iterations, 0.06 seconds
+
+    Nodes    |    Current Node    |     Objective Bounds      |     Work
+ Expl Unexpl |  Obj  Depth IntInf | Incumbent    BestBd   Gap | It/Node Time
+
+     0     0   40.45533    0   12          -   40.45533      -     -    0s
+H    0     0                      36.9167380   40.45533  9.59%     -    0s
+H    0     0                      37.4634722   40.45533  7.99%     -    0s
+     0     0   39.38003    0    6   37.46347   39.38003  5.12%     -    0s
+H    0     0                      37.9570091   39.38003  3.75%     -    0s
+H    0     0                      39.3542992   39.38003  0.07%     -    0s
+
+Cutting planes:
+  Learned: 4
+  Cover: 1
+  Implied bound: 10
+  Relax-and-lift: 1
+
+Explored 1 nodes (1610 simplex iterations) in 0.23 seconds
+Thread count was 8 (of 8 available processors)
+
+Solution count 4: 39.3543 37.957 37.4635 36.9167 
+
+Optimal solution found (tolerance 1.00e-12)
+Best objective 3.935429923626e+01, best bound 3.935429923626e+01, gap 0.0000%
+
+Gurobi 9.1.2 (win64, Matlab) logging started Thu Dec 29 15:06:46 2022
+
+Gurobi Optimizer version 9.1.2 build v9.1.2rc0 (win64)
+Thread count: 8 physical cores, 8 logical processors, using up to 8 threads
+Optimize a model with 3991 rows, 3471 columns and 15795 nonzeros
+Model fingerprint: 0x6e0f9475
+Variable types: 3387 continuous, 84 integer (84 binary)
+Coefficient statistics:
+  Matrix range     [3e-05, 1e+03]
+  Objective range  [3e-02, 1e+00]
+  Bounds range     [1e+00, 1e+03]
+  RHS range        [1e+03, 1e+03]
+Presolve removed 3083 rows and 1558 columns
+Presolve time: 0.04s
+Presolved: 908 rows, 1913 columns, 9204 nonzeros
+Variable types: 1849 continuous, 64 integer (64 binary)
+
+Root relaxation: objective 4.045533e+01, 1512 iterations, 0.06 seconds
+
+    Nodes    |    Current Node    |     Objective Bounds      |     Work
+ Expl Unexpl |  Obj  Depth IntInf | Incumbent    BestBd   Gap | It/Node Time
+
+     0     0   40.45533    0   12          -   40.45533      -     -    0s
+H    0     0                      36.9167380   40.45533  9.59%     -    0s
+H    0     0                      37.4634722   40.45533  7.99%     -    0s
+     0     0   39.38003    0    6   37.46347   39.38003  5.12%     -    0s
+H    0     0                      37.9570091   39.38003  3.75%     -    0s
+H    0     0                      39.3542992   39.38003  0.07%     -    0s
+
+Cutting planes:
+  Learned: 4
+  Cover: 1
+  Implied bound: 10
+  Relax-and-lift: 1
+
+Explored 1 nodes (1610 simplex iterations) in 0.18 seconds
+Thread count was 8 (of 8 available processors)
+
+Solution count 4: 39.3543 37.957 37.4635 36.9167 
+
+Optimal solution found (tolerance 1.00e-12)
+Best objective 3.935429923626e+01, best bound 3.935429923626e+01, gap 0.0000%
+
+Gurobi 9.1.2 (win64, Matlab) logging started Thu Dec 29 15:08:42 2022
+
+Gurobi Optimizer version 9.1.2 build v9.1.2rc0 (win64)
+Thread count: 8 physical cores, 8 logical processors, using up to 8 threads
+Optimize a model with 3991 rows, 3471 columns and 15795 nonzeros
+Model fingerprint: 0x6e0f9475
+Variable types: 3387 continuous, 84 integer (84 binary)
+Coefficient statistics:
+  Matrix range     [3e-05, 1e+03]
+  Objective range  [3e-02, 1e+00]
+  Bounds range     [1e+00, 1e+03]
+  RHS range        [1e+03, 1e+03]
+Presolve removed 3083 rows and 1558 columns
+Presolve time: 0.03s
+Presolved: 908 rows, 1913 columns, 9204 nonzeros
+Variable types: 1849 continuous, 64 integer (64 binary)
+
+Root relaxation: objective 4.045533e+01, 1512 iterations, 0.06 seconds
+
+    Nodes    |    Current Node    |     Objective Bounds      |     Work
+ Expl Unexpl |  Obj  Depth IntInf | Incumbent    BestBd   Gap | It/Node Time
+
+     0     0   40.45533    0   12          -   40.45533      -     -    0s
+H    0     0                      36.9167380   40.45533  9.59%     -    0s
+H    0     0                      37.4634722   40.45533  7.99%     -    0s
+     0     0   39.38003    0    6   37.46347   39.38003  5.12%     -    0s
+H    0     0                      37.9570091   39.38003  3.75%     -    0s
+H    0     0                      39.3542992   39.38003  0.07%     -    0s
+
+Cutting planes:
+  Learned: 4
+  Cover: 1
+  Implied bound: 10
+  Relax-and-lift: 1
+
+Explored 1 nodes (1610 simplex iterations) in 0.16 seconds
+Thread count was 8 (of 8 available processors)
+
+Solution count 4: 39.3543 37.957 37.4635 36.9167 
+
+Optimal solution found (tolerance 1.00e-12)
+Best objective 3.935429923626e+01, best bound 3.935429923626e+01, gap 0.0000%

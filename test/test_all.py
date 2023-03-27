@@ -1,6 +1,7 @@
 import pandas as pd
 from cobra import flux_analysis
 
+from ExpAlgae import DATA_PATH
 from ExpAlgae.experimental.ExpMatrix import ExpMatrix
 from ExpAlgae.io.reader import read_csv
 from ExpAlgae.model.COBRAmodel import simulation_for_conditions, MyModel
@@ -10,7 +11,7 @@ from ExpAlgae.graphics.plot import *
 from ExpAlgae.stats.stats import *
 
 
-def read_model(data_directory, filename="model.xml"):
+def read_model(data_director=DATA_PATH, filename="model.xml"):
     model = MyModel(join(join(data_directory, 'models'), filename), "e_Biomass__cytop")
     model.add_medium(join(data_directory, "media.xlsx"), "base_medium")
     try:

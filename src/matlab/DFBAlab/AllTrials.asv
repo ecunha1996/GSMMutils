@@ -1,0 +1,12 @@
+
+
+matrix = readExpMatrix('Matriz- DCCR Dunaliella salina_new.xlsx');
+
+
+
+for z=1:3   %length(matrix)-2
+    [resT, Yt] = main(matrix, z);
+    res = [resT Yt];
+    csvwrite('');
+end
+
