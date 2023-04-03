@@ -1,6 +1,9 @@
 from pprint import pprint
 
 import pandas as pd
+
+from ExpAlgae import DATA_PATH
+
 pd.set_option('display.max_columns', None)
 from ExpAlgae.experimental.Biomass import Biomass
 from ExpAlgae.experimental.ExpMatrix import ExpMatrix
@@ -8,9 +11,8 @@ from ExpAlgae.graphics.plot import boxplot
 from ExpAlgae.stats.stats import StatisticalAnalysis
 
 if __name__ == '__main__':
-    data_directory = r"../data"
-    biomass = Biomass("e_Biomass__cytop", "Biomass_exp_composition.xlsx")
-    matrix = ExpMatrix("Matriz- DCCR Dunaliella salina_new.xlsx")
+    biomass = Biomass("e_Biomass__cytop", f"{DATA_PATH}/experimental/Biomass_exp_composition.xlsx")
+    matrix = ExpMatrix(f"{DATA_PATH}/experimental/Matriz- DCCR Dunaliella salina_new.xlsx")
     matrix.conditions = "Resume"
     matrix.conditions = matrix.conditions.rename({"[N] mmol": "N", "[P] mmol": "P", "Salinity g/L": "salinity", "Aeration rate": "aeration", 'growth_rate': 'umax', 'Productivity (g/L.h)': 'Pmax', 'Biomass (gDW/L)': 'biomass'}, axis=1)
     m = pd.concat([biomass.biomass_matrix['macromolecules'], matrix.conditions[["N", "P", "salinity", "aeration"]]], axis=1)

@@ -36,32 +36,49 @@ nmodel = INFO.nmodel;
 lb = zeros(nmodel, 2);
 ub = zeros(nmodel, 2);
     for j = 1:nmodel
+        % parameters to optimize
+        Io = INFO.Io; %150
+        ro1 = INFO.ro1; %45
+        ro0 = INFO.ro0; %0
+        wPmin = INFO.wPmin; %0.12;
+        wPopt = INFO.wPopt; %0.17;
+        a0 = INFO.a0; %6.5 * 10^-2;
+        a1 = INFO.a1; %1 * 10^-5;
+        a2 = INFO.a2; %50;
+        a3 = INFO.a3; %40;
+        l = INFO.l; %2
+        smoothing_factor = INFO.smoothing_factor;
+
+        % general parameters
+        nitrogen_mass_quota = y(10) * 14.007 / 1000;
+        q = y(10) / 6.78; % nitrogen relative quota
+        n = 1 - (q / (q + 0.049));  % n penalty function
+        Tmax = 1.74;    % maximum size increase
+        xstorage = y(12)+ y(13) + y(14) + y(15); %
+        T = 1/(1-xstorage); % cell size increase
+        z = (T-1) / (Tmax-1); %penalty function for size increase
+        phosphate_mass_quota = y(16) * 30.97 / 1000;
+
         %Biomass auto
         lb(j, 1) = 0;
         ub(j, 1) = Inf;
     
         % Light
         L = 0.2; % meters depth of pond
-        biomass = y(2);
-             
-        %Ke = Ke1 + Ke2*(biomass);
-        Ke = 11.5*biomass*y(11);
-        Io = 178;
-        lb(j,2) = 0;
-        E = Io*(1-exp(-L*Ke))/(Ke*L);
-        ro1 = 10;%3.2;
-        ro0 = 0;
-        ro = (ro1*y(11) + ro0);
+        biomass = y(2);            
+        Ke = 11.5*biomass*y(11);       
+        E = Io*(1-exp(-L*Ke))/(Ke*L);      
+        ro = ro1*y(11) + ro0;
         light_uptake = ro / (biomass*L) * E * 5.7;
 
         lb(j,2) = 0;
         ub(j,2) = light_uptake;
 
         % P
-        if y(1+nmodel+1) < 0
+        if y(3) < 0       %https://doi.org/10.4319/lo.2013.58.1.0314
             lb(j,3) = 0;
         else
-            lb(j,3) = -0.04*y(3)/(0.0015+y(3));
+            lb(j,3) = -0.04*y(3)/(0.00185+y(3));      %Vmax = 0.04; Km = 0.0015
         end
         %lb(j,3) = -1000;
         ub(j,3) = Inf;
@@ -70,31 +87,26 @@ ub = zeros(nmodel, 2);
         if y(1+nmodel+1) < 0
             lb(j,4) = 0;
         else
-            lb(j,4) = -4.07*y(4)/(0.011+y(4))*(1-(y(10)/6.78)); % y(10)
+            lb(j,4) = -4.07*y(4)/(0.011+y(4))*(1-q); % y(10)
         end
         %lb(j,4) = -1000;
         ub(j,4) = Inf;
 
 
         % Starch accumulation
-        q = y(10) / 6.35;
-        n = 1 - (q / (q + 0.049));
-        Tmax = 1.74;
-        xstarch = y(12);
-        T = 1/(1-xstarch);
-        z = (T-1) / (Tmax-1);
+        
         Ks = 0.034;
         vmax = 0.66/48660.195 * 1000;
-        lb(j,5) = -vmax * y(6) / (y(6) + Ks)*z;
+        lb(j,5) = -vmax * y(6) / (y(6) + Ks);
         ub(j,5) = 0.001 * (1-z);
     
 
         % chla
         ymax = 0.37; % max chl content: 0.0118 ; min N quota : 2.29 -> 0.0118 / (2.29*14/1000)
         KE = 12.5 * 5.7;
-        yE = ymax * (KE/(light_uptake + KE));
-        nitrogen_mass_quota = y(10) * 14.007 / 1000;
-        sum_chl = yE - (y(11)/nitrogen_mass_quota);
+        yE = ymax * (KE/(E + KE));
+
+        sum_chl = (yE - (y(11)/nitrogen_mass_quota)) * ((y(16) - wPmin)/(wPopt - wPmin));
         
         lb(j, 6) = sum_chl * 1.73/2.73;
         ub(j, 6) = Inf;
@@ -103,19 +115,17 @@ ub = zeros(nmodel, 2);
         ub(j, 7) = Inf;
 
         %  Carotene
-        l = 2;
         Exn = light_uptake^l;
         ExnA = (420/1000*24)^l;
         vcarmax = 18 * 10^-3 * 24;      %0.8 * 10^-3 * 24;
         vcargen = vcarmax * (Exn / (Exn + ExnA));
-        a0 = 6.5 * 10^-2;
-        a1 = 1 * 10^-5;
-        vcar = vcargen * phi(a1 * light_uptake + a0 - y(10));
+        
+        vcar = vcargen * phi(a1 * light_uptake + a0 - a2*nitrogen_mass_quota + a3*phosphate_mass_quota, smoothing_factor);
         lb(j, 8) = vcar;
         ub(j, 8) = Inf;
 
         % TAG
-        rtag = 49/y(5)/904.78;
+        rtag = 49/y(5)/904.78; %https://doi.org/10.1016/j.biortech.2014.01.032
         lb(j, 9) = rtag * n;
         ub(j, 9) = Inf;
 
@@ -123,11 +133,7 @@ ub = zeros(nmodel, 2);
         % glycerol
         
         nacl = INFO.nacl; %g/L
-        y0 = 0.966; % g glycerol / g chl
-        m = 0.15; %  g glycerol / g chl * gnacl/L
-        %nacl_production = (y0 + nacl*m) * y(11); %g gly / gDW
         
-        %lb(j, 10) = nacl_production / 92.09*1000 * n; % mmol gly/ gDW
         wgly_max = 0.17; %https://doi.org/10.1016/j.biortech.2008.02.042
         max_production = (1e-5*nacl^2 + 0.002*nacl + 0.112) / y(2) * (1- y(13)/wgly_max);
 
@@ -139,14 +145,20 @@ ub = zeros(nmodel, 2);
         Km = 0.873;
         %lb(j, 11) = -r_co2_max * (y(8) / (y(8)+ Km));
         lb(j, 11) = -r_co2_max * (1-z);
-        %lb(j, 11) = -100;
+        %lb(j, 11) = -1000;
         ub(j, 11) = Inf;
 
         % Nitrate intracellular metabolization
         vno3max = 0.19*24;
         wnmin = 2.29;
         lb(j, 12) = -vno3max * (1- wnmin/y(10));
-        ub(j, 12) = inf;
+        ub(j, 12) = Inf;
+
+        %Phosphate intracellular metabolization
+        vhpo4max = 0.005;
+        wpmin = 0.12;
+        lb(j, 13) = -vhpo4max * (1- wpmin/y(16));
+        ub(j, 13) = Inf;
     end
 end
 

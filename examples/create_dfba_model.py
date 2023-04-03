@@ -106,7 +106,7 @@ def correct_co2_uptake(model, active_biomass):
     exp_matrix = pickle.load(open("experimental/Matriz- DCCR Dunaliella salina_new.pkl", "rb"))
     r = round(exp_matrix.get_substrate_uptake_for_trial("C", "23", exp_matrix.matrix["23"], get_molecular_weight("CO2"), get_molecular_weight("C"), carbon_in_biomass) * 24, 3)
     print(r)
-    model.exchanges.EX_C00011__dra.bounds = (-r, 1000)
+    model.exchanges.EX_C00011__dra.bounds = (-r, 10000)
     print(model.optimize().objective_value)
     return model
 

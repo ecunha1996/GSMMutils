@@ -33,8 +33,7 @@ Fin = 0.006;
 Fout = 0.006;
 
 
-
-q = y(10) / 6.35;
+q = y(10) / 6.78;
 n = 1 - (q / (q + 0.049));  %0.049
 
 
@@ -45,7 +44,7 @@ INFO.t = t;
 
 %% Dynamics
 
-dy = zeros(16,1);    % a column vector
+dy = zeros(17,1);    % a column vector
 dy(1) = Fin-Fout;    % Volume
 
 for i=1:nmodel
@@ -59,12 +58,13 @@ for i=1:nmodel
     dy(13) = flux(i,7)*92.09/1000 - growth_rate_active*y(13);  % glycerol quota
     dy(14) = flux(i,5)*536.87/1000 - growth_rate_active*y(14); % carotene quota
     dy(15) = flux(i,6)*904.78/1000 - growth_rate_active*y(15); % tag quota
+    dy(16) = -flux(i,8) - growth_rate_active*y(16); % P quota
     dy(6) = dy(12)*y(2); %Starch /1000 (mmol/gdWd -> g/gDWd) *1000 (obj. wts) -> g/L
     dy(7) = dy(14)*y(2); % carotene concentration (g/L)
     dy(8) = dy(15)*y(2); % TAG concentration
     dy(9) = dy(13)*y(2); % glycerol concentration
     dy(2) = dy(5) + dy(6) + dy(7) + dy(8) + dy(9);
-    dy(16) = dy(16) + penalty(i);
+    dy(17) = dy(17) + penalty(i);
 end
 %dy(8) = dy(8) + Sfeed(1)*Fin + MT(1);
 end

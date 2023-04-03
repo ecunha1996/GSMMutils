@@ -1,4 +1,23 @@
-function [T, Y] = main(matrix, z, INFO)
+%initCobraToolbox(false);
+%pre_model = readCbModel('C:\Users\Bisbii\PythonProjects\ExpGSMM\data\models\model_dfba.xml');
+
+%writeCbModel(pre_model, 'format', 'mat', 'fileName', 'C:\Users\Bisbii\PythonProjects\ExpGSMM\data\models\dsalina_dfba.mat');
+
+matrix = readExpMatrix('C:\Users\Bisbii\PythonProjects\ExpGSMM\data\experimental\Matriz- DCCR Dunaliella salina_dfba.xlsx');
+z = 36;
+
+
+INFO.ro1 = 45; %
+INFO.ro0 = 0; %0
+INFO.wPmin = 0.12; %0.12;
+INFO.wPopt = 0.17; %0.17;
+INFO.a0 = 6.5 * 10^-2; %
+INFO.a1 = 1 * 10^-5; %;
+INFO.a2 = 50; %50;
+INFO.a3 = 40; %40;
+INFO.l = 2; %2
+INFO.smoothing_factor = 4;
+
 
 nmodel = 1; % Number of models
 INFO.nmodel = nmodel;
@@ -14,10 +33,20 @@ for i = 1:nmodel
     DB(i) = 10000;
 end
 INFO.DB = DB;
+%models{1} = changeRxnBounds(models{1}, 'EX_C00205__dra', -10000, 'l');
+%models{1} = changeRxnBounds(models{1}, 'EX_C00011__dra', -1000, 'l');
 
 models{i}.lb(find(strcmp(models{1}.rxns, 'EX_C00205__dra'))) = -10000;
 
+%% exID array
+% You can either search the reaction names by name or provide them directly
+% in the exID array.
+% RxnNames = {'EX_glc(e)', 'EX_ac(e)', 'biomass'};
+% for i = 1:length(RxnNames)
+%    [a,exID(i)] = ismember(RxnNames(i),model.rxns);
+% end
 [~,sheet_name]=xlsfinfo('C:\Users\Bisbii\PythonProjects\ExpGSMM\data\experimental\Matriz- DCCR Dunaliella salina_dfba.xlsx');
+%biomass = strcat(strcat('e_Biomass_trial',sheet_name{z}),'__cytop');
 biomass = 'e_ActiveBiomass__cytop';
 RxnNames = {biomass, 'PRISM_white_LED__extr', 'EX_C00009__dra', 'EX_C00244__dra', 'DM_C00369__chlo', 'DM_C05306__chlo', 'DM_C05307__chlo', 'DM_C02094__chlo', 'DM_C00422__lip', 'DM_C00116__cytop', ...
                 'EX_C00011__dra', 'DM_C00244__cytop', 'DM_C00404__vacu'}; %
@@ -88,6 +117,21 @@ for i=1:nmodel
     C{i}(9).sense = max;
     C{i}(9).rxns = index_n;
     C{i}(9).wts = 1;
+    
+    % index_co2 = find(strcmp(models{i}.rxns,'EX_C00011__dra'));
+    % C{i}(10).sense = min;
+    % C{i}(10).rxns = index_co2;
+    % C{i}(10).wts = 1;
+
+    % index_no3 = find(strcmp(models{i}.rxns,'DM_C00244__cytop'));
+    % C{i}(10).sense = max;
+    % C{i}(10).rxns = index_no3;
+    % C{i}(10).wts = 1;
+    % 
+    % index_polyP = find(strcmp(models{i}.rxns,'DM_C00404__vacu'));
+    % C{i}(11).sense = max;
+    % C{i}(11).rxns = index_polyP;
+    % C{i}(11).wts = 1;
 
 end
 
@@ -150,6 +194,8 @@ tag_quota = 0.0131;
 p_quota = 0.15;
 INFO.nacl = matrix{end}({sheet_name{z}},{'Salinity g/L'}).("Salinity g/L");
 INFO.Io = matrix{end}({sheet_name{z}},{'Light (umol/m^2.s)'}).("Light (umol/m^2.s)");
+
+
 
 %       1           2           3       4           5               6                7      8     9           10              11             12          13              14          15         16
 Y0 = [Volume initialBiomass phosphate nitrate activeBiomass starch_concentration carotene tag glycerol nitrogen_quota chlorophyl_quota starch_quota glycerol_quota carotene_quota tag_quota p_quota 0]';
@@ -281,8 +327,3 @@ filename = strcat('C:\Users\Bisbii\PythonProjects\ExpGSMM\data\dfba\', strcat(st
 saveas(f3, filename);
 message = strcat(sheet_name{z}, ' is over!');
 disp(message);
-
-close(f1);
-close(f2);
-close(f3);
-end

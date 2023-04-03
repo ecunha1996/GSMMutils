@@ -1,4 +1,3 @@
-function res =  phi(x)
-rs = 4;
+function res =  phi(x, rs)
 res = 1 / (1 + exp(-rs * x));
 end

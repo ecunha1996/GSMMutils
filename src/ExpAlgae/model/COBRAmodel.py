@@ -923,6 +923,12 @@ class MyModel(Model):
         else:
             self.objective = f"e_Biomass_trial{condition}__cytop"
     def infer_biomass_from_model(self, biomass_reaction_name="e_Biomass__cytop", biomass_met_id="e_Biomass__cytop"):
+        """
+        Infer biomass composition from biomass reaction
+        :param biomass_reaction_name:
+        :param biomass_met_id:
+        :return:
+        """
         biomass_reaction = self.reactions.get_by_id(biomass_reaction_name)
         macromolecules = biomass_reaction.reactants
         macromolecules = set(macromolecules) - {self.metabolites.get_by_id("C00001__cytop"), self.metabolites.get_by_id("C00002__cytop")}

@@ -7,7 +7,7 @@ import numpy as np
 import pandas as pd
 import scipy
 
-from ExpAlgae import SRC_PATH
+from ExpAlgae import SRC_PATH, DATA_PATH
 from ExpAlgae.model.COBRAmodel import MyModel
 import matlab.engine
 
@@ -250,16 +250,16 @@ class FAME2Biomass:
         res.to_csv("model_stoichiometry_all.csv", index=False, sep="\t")
 
     def run(self, lipid_abb, compartment = "er", compartment_id="C_00001"):
-        met_mat, final_map, faas, final_map_rev, lipidClass = self.parse_2FA_lipid(lipid_abb, self.model, compartment_id=compartment_id, parent_reaction=f"e_{lipid_abb}_complete__{compartment}")
+        met_mat, final_map, faas, final_map_rev, lipid_class = self.parse_2FA_lipid(lipid_abb, self.model, compartment_id=compartment_id, parent_reaction=f"e_{lipid_abb}_complete__{compartment}")
         eng = matlab.engine.start_matlab()
         eng.cd(self.data_directory)
         eng.addpath(join(SRC_PATH, 'matlab'))
         eng.addpath(r'C:\gurobi912\win64\matlab')
         np_a = np.array(met_mat)
-        scipy.io.savemat(rf"C:\Users\Bisbii\Documents\MATLAB\{lipid_abb.lower()}_metmat.mat", {'metmat': np_a})
-        funcion_name = getattr(eng, f"lipids_{lipid_abb.lower()}")
-        funcion_name(list(lipidClass))
-        # eng.fame2model(list(lipidClass), lipid_abb.lower())
+        scipy.io.savemat(rf"{DATA_PATH}\fame2biomass\{self.model.id}\{lipid_abb.lower()}_metmat.mat", {'metmat': np_a})
+        function_name = getattr(eng, f"lipids_{lipid_abb.lower()}")
+        function_name(list(lipid_class))
+        # eng.fame2model(list(lipid_class), lipid_abb.lower())
         directory = r"C:\Users\Bisbii\OneDrive - Universidade do Minho\Algae\Models\Dsalina\lipids"
         os.chdir(directory)
         reactions_ids_map = {"PG": 35724, "PE":36207, "PI":35940, "PC": 35921, "MGDG": 35956, "DGDG":35957 , "SQDG":35962 , "DGTS": 35955, "DAG": 36091, "TAG": 36129}
