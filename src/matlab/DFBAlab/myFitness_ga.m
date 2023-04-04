@@ -1,4 +1,4 @@
-function fitness = myfitness(x0, ~)
+function fitness = myFitness_ga(x0)
 % Simulate the kinetic model with the given parameters
 matrix = readExpMatrix('C:\Users\Bisbii\PythonProjects\ExpGSMM\data\experimental\Matriz- DCCR Dunaliella salina_dfba.xlsx');
 disp(x0);

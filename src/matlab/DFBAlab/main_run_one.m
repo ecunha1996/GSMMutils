@@ -4,20 +4,22 @@
 %writeCbModel(pre_model, 'format', 'mat', 'fileName', 'C:\Users\Bisbii\PythonProjects\ExpGSMM\data\models\dsalina_dfba.mat');
 
 matrix = readExpMatrix('C:\Users\Bisbii\PythonProjects\ExpGSMM\data\experimental\Matriz- DCCR Dunaliella salina_dfba.xlsx');
-z = 36;
+z = 35;
 
 
-INFO.ro1 = 45; %
-INFO.ro0 = 0; %0
-INFO.wPmin = 0.12; %0.12;
-INFO.wPopt = 0.17; %0.17;
-INFO.a0 = 6.5 * 10^-2; %
-INFO.a1 = 1 * 10^-5; %;
-INFO.a2 = 50; %50;
-INFO.a3 = 40; %40;
-INFO.l = 2; %2
-INFO.smoothing_factor = 4;
+INFO.ro1 = 45.6136; %
+INFO.ro0 = 0.0001; %0
+INFO.wPmin = 0.1080; %0.12;
+INFO.wPopt = 0.1723; %0.17;
+INFO.a0 = 0.0659; %
+INFO.a1 = 0.0000; %;
+INFO.a2 = 50.6818; %50;
+INFO.a3 = 40.5455; %40;
+INFO.l = 2.0273; %2
+INFO.smoothing_factor = 4.0545;
+INFO.vhpo4max = 0.0507;
 
+%45.6136    0.0001    0.1080    0.1723    0.0659    0.0000   50.6818   40.5455    2.0273    4.0545    0.0507
 
 nmodel = 1; % Number of models
 INFO.nmodel = nmodel;
@@ -129,9 +131,9 @@ for i=1:nmodel
     % C{i}(10).wts = 1;
     % 
     % index_polyP = find(strcmp(models{i}.rxns,'DM_C00404__vacu'));
-    % C{i}(11).sense = max;
-    % C{i}(11).rxns = index_polyP;
-    % C{i}(11).wts = 1;
+    % C{i}(10).sense = min;
+    % C{i}(10).rxns = index_polyP;
+    % C{i}(10).wts = 1;
 
 end
 

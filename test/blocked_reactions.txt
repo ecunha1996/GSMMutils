@@ -506,7 +506,6 @@ T_PRONA1tv__vacmem
 T_ABCFA182tx__permem
 R01481__cytop
 RXN_17743__er
-T_PiNa1tv__vacmem
 R01054__mito
 R07636__cytop
 R08293__cytop
@@ -607,7 +606,6 @@ T_BUTCOAtm__mitmem
 R08624__mito
 R12299__cytop
 R06521__chlo
-R03042__vacu
 R00434__nucl
 RXN_19210_V2__chlo
 R03482__cytop

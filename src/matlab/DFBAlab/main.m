@@ -154,7 +154,7 @@ INFO.Io = matrix{end}({sheet_name{z}},{'Light (umol/m^2.s)'}).("Light (umol/m^2.
 %       1           2           3       4           5               6                7      8     9           10              11             12          13              14          15         16
 Y0 = [Volume initialBiomass phosphate nitrate activeBiomass starch_concentration carotene tag glycerol nitrogen_quota chlorophyl_quota starch_quota glycerol_quota carotene_quota tag_quota p_quota 0]';
                             
-disp(Y0);
+%disp(Y0);
 % Time of simulation
 
 tspan = [time(1), time(length(time))];
@@ -231,58 +231,58 @@ Y = YF;
 %Y(:,nmodel+4) = Y(:,nmodel+4) * 536.8726;
 
 %% Plotting
-f1 = figure(1);
-hold on
-yyaxis left
-a = plot(T,Y(:,nmodel+2));
-xlabel('Time (d)')
-ylabel('Concentration  (mmol/L)');
-yyaxis right
-b = plot(T,Y(:,nmodel+3));
-ylabel('Concentration (mmol/L)');
-hold off;
-legend([a; b] , "HPO4", "NO3");
-filename = strcat('C:\Users\Bisbii\PythonProjects\ExpGSMM\data\dfba\',strcat(strcat(sheet_name{z}, '_Concentrations'), '.fig'));
-savefig(filename);
-filename = strcat('C:\Users\Bisbii\PythonProjects\ExpGSMM\data\dfba\',strcat(strcat(sheet_name{z}, '_Concentrations'), '.png'));
-saveas(f1, filename);
-
-f2 = figure(2);
-hold on
-yyaxis left
-c = plot(T,Y(:,[2, 5]));
-xlabel('Time (d)');
-ylabel('Biomass (g/L)');
-d = scatter(time,matrix{z}(:,{'DW'}).DW,'filled');
-hold off
-lgd = legend('Total Biomass', 'Functional Biomass'); % tag requires a space after because is also an argument for legend in matlab -_-
-lgd.Location = 'northwest';
-filename = strcat('C:\Users\Bisbii\PythonProjects\ExpGSMM\data\dfba\', strcat(strcat(sheet_name{z}, '_Biomass'), '.fig'));
-savefig(filename);
-filename = strcat('C:\Users\Bisbii\PythonProjects\ExpGSMM\data\dfba\', strcat(strcat(sheet_name{z}, '_Biomass'), '.png'));
-saveas(f2, filename);
-
-f3 = figure(3);
-hold on
-yyaxis left
-f = plot(T,Y(:,[12, 13, 15]));
-xlabel('Time (d)');
-ylabel('Quota (g/g)');
-%d = scatter(time,matrix{z}(:,{'DW'}).DW,'filled');
-yyaxis right
-e = plot(T,Y(:,[11, 14]));
-ylabel('Pigment Quota (g/g)');
-hold off
-lgd = legend('Starch', 'Glycerol', 'TAG ', 'Chlorophyll', 'Carotene'); % tag requires a space after because is also an argument for legend in matlab -_-
-lgd.Location = 'northwest';
-filename = strcat('C:\Users\Bisbii\PythonProjects\ExpGSMM\data\dfba\', strcat(strcat(sheet_name{z}, '_Quotas'), '.fig'));
-savefig(f3, filename);
-filename = strcat('C:\Users\Bisbii\PythonProjects\ExpGSMM\data\dfba\', strcat(strcat(sheet_name{z}, '_Quotas'), '.png'));
-saveas(f3, filename);
-message = strcat(sheet_name{z}, ' is over!');
-disp(message);
-
-close(f1);
-close(f2);
-close(f3);
+% f1 = figure(1);
+% hold on
+% yyaxis left
+% a = plot(T,Y(:,nmodel+2));
+% xlabel('Time (d)')
+% ylabel('Concentration  (mmol/L)');
+% yyaxis right
+% b = plot(T,Y(:,nmodel+3));
+% ylabel('Concentration (mmol/L)');
+% hold off;
+% legend([a; b] , "HPO4", "NO3");
+% filename = strcat('C:\Users\Bisbii\PythonProjects\ExpGSMM\data\dfba\',strcat(strcat(sheet_name{z}, '_Concentrations'), '.fig'));
+% savefig(filename);
+% filename = strcat('C:\Users\Bisbii\PythonProjects\ExpGSMM\data\dfba\',strcat(strcat(sheet_name{z}, '_Concentrations'), '.png'));
+% saveas(f1, filename);
+% 
+% f2 = figure(2);
+% hold on
+% yyaxis left
+% c = plot(T,Y(:,[2, 5]));
+% xlabel('Time (d)');
+% ylabel('Biomass (g/L)');
+% d = scatter(time,matrix{z}(:,{'DW'}).DW,'filled');
+% hold off
+% lgd = legend('Total Biomass', 'Functional Biomass'); % tag requires a space after because is also an argument for legend in matlab -_-
+% lgd.Location = 'northwest';
+% filename = strcat('C:\Users\Bisbii\PythonProjects\ExpGSMM\data\dfba\', strcat(strcat(sheet_name{z}, '_Biomass'), '.fig'));
+% savefig(filename);
+% filename = strcat('C:\Users\Bisbii\PythonProjects\ExpGSMM\data\dfba\', strcat(strcat(sheet_name{z}, '_Biomass'), '.png'));
+% saveas(f2, filename);
+% 
+% f3 = figure(3);
+% hold on
+% yyaxis left
+% f = plot(T,Y(:,[12, 13, 15]));
+% xlabel('Time (d)');
+% ylabel('Quota (g/g)');
+% %d = scatter(time,matrix{z}(:,{'DW'}).DW,'filled');
+% yyaxis right
+% e = plot(T,Y(:,[11, 14]));
+% ylabel('Pigment Quota (g/g)');
+% hold off
+% lgd = legend('Starch', 'Glycerol', 'TAG ', 'Chlorophyll', 'Carotene'); % tag requires a space after because is also an argument for legend in matlab -_-
+% lgd.Location = 'northwest';
+% filename = strcat('C:\Users\Bisbii\PythonProjects\ExpGSMM\data\dfba\', strcat(strcat(sheet_name{z}, '_Quotas'), '.fig'));
+% savefig(f3, filename);
+% filename = strcat('C:\Users\Bisbii\PythonProjects\ExpGSMM\data\dfba\', strcat(strcat(sheet_name{z}, '_Quotas'), '.png'));
+% saveas(f3, filename);
+% message = strcat(sheet_name{z}, ' is over!');
+% disp(message);
+% 
+% close(f1);
+% close(f2);
+% close(f3);
 end

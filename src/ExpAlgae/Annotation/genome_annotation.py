@@ -1,4 +1,10 @@
+from os import getcwd, chdir
+
 import pandas as pd
+from Bio import SeqIO
+
+from ExpAlgae.api.uniprot import Uniprot
+from ExpAlgae.utils.utils import run
 
 
 class GenomeAnnotation:
@@ -38,5 +44,43 @@ class StructuralAnnotation(GenomeAnnotation):
 
 
 class FunctionalAnnotation(GenomeAnnotation):
-    def __init__(self):
+    def __init__(self, blast_directory):
         super().__init__()
+        self.blast_directory = blast_directory
+
+
+    def identify_gene_by_homology(self, method: str, filepath: str = None):
+        """
+
+        :param method:
+        :param filepath:
+        :return:
+        """
+        old_dir = getcwd()
+        chdir(self.blast_directory)
+        if method == 'blastp':
+            run(r'blastp -db protein -query "C:\Users\Bisbii\OneDrive - Universidade do Minho\Algae\Models\Dsalina\query.faa" -out '
+              r'"C:\Users\Bisbii\OneDrive - Universidade do Minho\Algae\Models\Dsalina\results.txt" -evalue 1  -outfmt 6')
+
+    def identify_gene_by_homology_from_ec(self, method: str, ec_number: str):
+        """
+
+        :param method:
+        :param filepath:
+        :return:
+        """
+        old_dir = getcwd()
+        chdir(self.blast_directory)
+        # get records from Swissprot, with the ec_number
+        uniprot_api = Uniprot()
+        result = uniprot_api.search_by_ec_number(ec_number)
+        # write the records to a fasta file
+        with open('query.faa', 'w') as f:
+            for record in result:
+                f.write(f">{record['primaryAccession']}\n{record['sequence']['value']}\n")
+        if method == 'blastp':
+            run(rf'blastp -db protein -query "{self.blast_directory}/query.faa" -out "{self.blast_directory}/results.txt" -evalue 1e-1  -outfmt 6')
+        blast_result = pd.read_csv(f"{self.blast_directory}/results.txt", sep='\t', header=None)
+        blast_result.sort_values(by=10, ascending=True, inplace=True)
+        print(blast_result.head())
+        chdir(old_dir)

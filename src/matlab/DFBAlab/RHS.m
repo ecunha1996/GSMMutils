@@ -48,6 +48,7 @@ ub = zeros(nmodel, 2);
         a3 = INFO.a3; %40;
         l = INFO.l; %2
         smoothing_factor = INFO.smoothing_factor;
+        vhpo4max = INFO.vhpo4max;
 
         % general parameters
         nitrogen_mass_quota = y(10) * 14.007 / 1000;
@@ -102,11 +103,12 @@ ub = zeros(nmodel, 2);
     
 
         % chla
-        ymax = 0.37; % max chl content: 0.0118 ; min N quota : 2.29 -> 0.0118 / (2.29*14/1000)
+        %ymax = 0.37; % max chl content: 0.0118 ; min N quota : 2.29 -> 0.0118 / (2.29*14/1000)
+        ymax = 0.75;
         KE = 12.5 * 5.7;
         yE = ymax * (KE/(E + KE));
-
-        sum_chl = (yE - (y(11)/nitrogen_mass_quota)) * ((y(16) - wPmin)/(wPopt - wPmin));
+        phosphate_factor =  ((y(16) - wPmin)/(wPopt - wPmin));
+        sum_chl = (yE - (y(11)/nitrogen_mass_quota)) * phosphate_factor;
         
         lb(j, 6) = sum_chl * 1.73/2.73;
         ub(j, 6) = Inf;
@@ -141,7 +143,7 @@ ub = zeros(nmodel, 2);
         ub(j, 10) = Inf;
 
         % CO2 consumption
-        r_co2_max = 12.28; %
+        r_co2_max = 4.64*24; %
         Km = 0.873;
         %lb(j, 11) = -r_co2_max * (y(8) / (y(8)+ Km));
         lb(j, 11) = -r_co2_max * (1-z);
@@ -155,9 +157,7 @@ ub = zeros(nmodel, 2);
         ub(j, 12) = Inf;
 
         %Phosphate intracellular metabolization
-        vhpo4max = 0.005;
-        wpmin = 0.12;
-        lb(j, 13) = -vhpo4max * (1- wpmin/y(16));
+        lb(j, 13) = -vhpo4max * (1- wPmin/y(16));
         ub(j, 13) = Inf;
     end
 end
