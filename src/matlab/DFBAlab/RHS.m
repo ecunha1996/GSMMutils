@@ -49,6 +49,8 @@ ub = zeros(nmodel, 2);
         l = INFO.l; %2
         smoothing_factor = INFO.smoothing_factor;
         vhpo4max = INFO.vhpo4max;
+        ExA = INFO.ExA;
+        vcarmax = INFO.vcarmax;
 
         % general parameters
         nitrogen_mass_quota = y(10) * 14.007 / 1000;
@@ -118,8 +120,7 @@ ub = zeros(nmodel, 2);
 
         %  Carotene
         Exn = light_uptake^l;
-        ExnA = (420/1000*24)^l;
-        vcarmax = 18 * 10^-3 * 24;      %0.8 * 10^-3 * 24;
+        ExnA = ExA^l;
         vcargen = vcarmax * (Exn / (Exn + ExnA));
         
         vcar = vcargen * phi(a1 * light_uptake + a0 - a2*nitrogen_mass_quota + a3*phosphate_mass_quota, smoothing_factor);
