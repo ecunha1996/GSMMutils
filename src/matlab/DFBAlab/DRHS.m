@@ -65,6 +65,7 @@ for i=1:nmodel
     dy(9) = dy(13)*y(2); % glycerol concentration
     dy(2) = dy(5) + dy(6) + dy(7) + dy(8) + dy(9);
     dy(17) = dy(17) + penalty(i);
+    disp(flux(i, 3));
 end
 %dy(8) = dy(8) + Sfeed(1)*Fin + MT(1);
 end

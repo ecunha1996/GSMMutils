@@ -2,12 +2,12 @@
 % DFBAlab: Dynamic Flux Balance Analysis laboratory                       %
 % Process Systems Engineering Laboratory, Cambridge, MA, USA              %
 % July 2014                                                               %
-% Written by Jose A. Gomez and Kai Höffner                                %
+% Written by Jose A. Gomez and Kai HÃ¶ffner                                %
 %                                                                         % 
 % This code can only be used for academic purposes. When using this code  %
 % please cite:                                                            %
 %                                                                         %
-% Gomez, J.A., Höffner, K. and Barton, P. I. (2014).                      %
+% Gomez, J.A., HÃ¶ffner, K. and Barton, P. I. (2014).                      %
 % DFBAlab: A fast and reliable MATLAB code for Dynamic Flux Balance       %
 % Analysis. BMC Bioinformatics, 15:409                                    % 
 %                                                                         %
@@ -16,7 +16,7 @@
 % Read the LICENSE.txt file for more details.                             %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-function [lb,ub] = RHS( t,y,INFO )
+function [lb,ub] = RHS( ~,y,INFO )
 nmodel = INFO.nmodel;
 
 % Initial conditions
@@ -75,7 +75,6 @@ ub = zeros(nmodel, 2);
         ro = ro1*y(11) + ro0;
         light_uptake = ro / (biomass*L) * E * 5.7;
         lb(j,2) = 0;
-        disp(light_uptake);
         ub(j,2) = light_uptake;
 
         % P
@@ -88,7 +87,7 @@ ub = zeros(nmodel, 2);
         ub(j,3) = Inf;
 
         % N
-        if y(4) < 0
+        if y(1+nmodel+1) < 0
             lb(j,4) = 0;
         else
             lb(j,4) = -4.07*y(4)/(0.011+y(4))*(1-q); % y(10)
@@ -162,10 +161,6 @@ ub = zeros(nmodel, 2);
         lb(j, 13) = -vhpo4max * (1- wPmin/y(16));
         %lb(j, 13) = 0;
         ub(j, 13) = Inf;
-        % disp(t);
-        % disp(lb);
-        % disp(ub);
-        % disp('-------');
     end
 end
 

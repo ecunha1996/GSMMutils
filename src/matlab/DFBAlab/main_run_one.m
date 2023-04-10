@@ -4,24 +4,25 @@
 %writeCbModel(pre_model, 'format', 'mat', 'fileName', 'C:\Users\Bisbii\PythonProjects\ExpGSMM\data\models\dsalina_dfba.mat');
 
 matrix = readExpMatrix('C:\Users\Bisbii\PythonProjects\ExpGSMM\data\experimental\Matriz- DCCR Dunaliella salina_dfba.xlsx');
-z = 35;
+z = 4;
 
 
-INFO.ro1 = 45.6136; %
+INFO.ro1 = 75; %
 INFO.ro0 = 0.0001; %0
-INFO.wPmin = 0.1080; %0.12;
-INFO.wPopt = 0.1723; %0.17;
-INFO.a0 = 0.0659; %
+INFO.wPmin = 0.1050; %0.12;
+INFO.wPopt = 0.17; %0.17;
+INFO.a0 = 0.065; %
 INFO.a1 = 1e-5; %;
 INFO.a2 = 40; %50;
 INFO.a3 = 50; %40;
 INFO.l = 2; %2
-INFO.smoothing_factor = 4.0545;
-INFO.vhpo4max = 0.0507;
+INFO.smoothing_factor = 4;
+INFO.vhpo4max = 0.01;
 INFO.ExA = 420/1000*24;
 INFO.vcarmax = 18 * 10^-3 * 24;
+INFO.c0 = 1e-5;
 
-%45.6136    0.0001    0.1080    0.1723    0.0659    0.0000   50.6818   40.5455    2.0273    4.0545    0.0507
+%45.0000         0    0.1050    0.1700    0.0650    0.0000   40.0000   50.0000    2.0000    4.0000    0.0500   10.0800    0.4320
 
 nmodel = 1; % Number of models
 INFO.nmodel = nmodel;
@@ -113,12 +114,12 @@ for i=1:nmodel
     C{i}(7).wts = 1;
 
     index_p = find(strcmp(models{i}.rxns,'EX_C00009__dra'));
-    C{i}(8).sense = max;
+    C{i}(8).sense = min;
     C{i}(8).rxns = index_p;
     C{i}(8).wts = 1;
     
     index_n = find(strcmp(models{i}.rxns,'EX_C00244__dra'));
-    C{i}(9).sense = max;
+    C{i}(9).sense = min;
     C{i}(9).rxns = index_n;
     C{i}(9).wts = 1;
     
@@ -127,15 +128,15 @@ for i=1:nmodel
     % C{i}(10).rxns = index_co2;
     % C{i}(10).wts = 1;
 
-    % index_no3 = find(strcmp(models{i}.rxns,'DM_C00244__cytop'));
-    % C{i}(10).sense = max;
-    % C{i}(10).rxns = index_no3;
-    % C{i}(10).wts = 1;
-    % 
-    % index_polyP = find(strcmp(models{i}.rxns,'DM_C00404__vacu'));
-    % C{i}(10).sense = min;
-    % C{i}(10).rxns = index_polyP;
-    % C{i}(10).wts = 1;
+    index_no3 = find(strcmp(models{i}.rxns,'DM_C00244__cytop'));
+    C{i}(10).sense = max;
+    C{i}(10).rxns = index_no3;
+    C{i}(10).wts = 1;
+
+    index_polyP = find(strcmp(models{i}.rxns,'DM_C00404__vacu'));
+    C{i}(11).sense = max;
+    C{i}(11).rxns = index_polyP;
+    C{i}(11).wts = 1;
 
 end
 
@@ -195,7 +196,7 @@ starch_quota = 0.05;
 glycerol_quota = 0.15;
 carotene_quota = matrix{end}({sheet_name{z}},{'caro0'}).("caro0"); %0.002;
 tag_quota = 0.0131;
-p_quota = 0.15;
+p_quota = INFO.wPmin;
 INFO.nacl = matrix{end}({sheet_name{z}},{'Salinity g/L'}).("Salinity g/L");
 INFO.Io = matrix{end}({sheet_name{z}},{'Light (umol/m^2.s)'}).("Light (umol/m^2.s)");
 
