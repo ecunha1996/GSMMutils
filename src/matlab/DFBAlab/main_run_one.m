@@ -7,9 +7,9 @@ matrix = readExpMatrix('C:\Users\Bisbii\PythonProjects\ExpGSMM\data\experimental
 z = 4;
 
 
-INFO.ro1 = 75; %
+INFO.ro1 = 100; %
 INFO.ro0 = 0.0001; %0
-INFO.wPmin = 0.1050; %0.12;
+INFO.wPmin = 0.12; %0.12;
 INFO.wPopt = 0.17; %0.17;
 INFO.a0 = 0.065; %
 INFO.a1 = 1e-5; %;
@@ -17,7 +17,7 @@ INFO.a2 = 40; %50;
 INFO.a3 = 50; %40;
 INFO.l = 2; %2
 INFO.smoothing_factor = 4;
-INFO.vhpo4max = 0.01;
+INFO.vhpo4max = 0.001;
 INFO.ExA = 420/1000*24;
 INFO.vcarmax = 18 * 10^-3 * 24;
 INFO.c0 = 1e-5;
@@ -128,15 +128,15 @@ for i=1:nmodel
     % C{i}(10).rxns = index_co2;
     % C{i}(10).wts = 1;
 
-    index_no3 = find(strcmp(models{i}.rxns,'DM_C00244__cytop'));
-    C{i}(10).sense = max;
-    C{i}(10).rxns = index_no3;
-    C{i}(10).wts = 1;
-
-    index_polyP = find(strcmp(models{i}.rxns,'DM_C00404__vacu'));
-    C{i}(11).sense = max;
-    C{i}(11).rxns = index_polyP;
-    C{i}(11).wts = 1;
+    % index_no3 = find(strcmp(models{i}.rxns,'DM_C00244__cytop'));
+    % C{i}(10).sense = max;
+    % C{i}(10).rxns = index_no3;
+    % C{i}(10).wts = 1;
+    % 
+    % index_polyP = find(strcmp(models{i}.rxns,'DM_C00404__vacu'));
+    % C{i}(11).sense = max;
+    % C{i}(11).rxns = index_polyP;
+    % C{i}(11).wts = 1;
 
 end
 
@@ -196,7 +196,7 @@ starch_quota = 0.05;
 glycerol_quota = 0.15;
 carotene_quota = matrix{end}({sheet_name{z}},{'caro0'}).("caro0"); %0.002;
 tag_quota = 0.0131;
-p_quota = INFO.wPmin;
+p_quota = 0.16;
 INFO.nacl = matrix{end}({sheet_name{z}},{'Salinity g/L'}).("Salinity g/L");
 INFO.Io = matrix{end}({sheet_name{z}},{'Light (umol/m^2.s)'}).("Light (umol/m^2.s)");
 

@@ -56,6 +56,7 @@ def get_average_uptake(data, exponential_phase, substrate) -> float:
 
 def get_element_in_biomass(model, element, biomass_reaction):
     res = get_biomass_mass(model, biomass_reaction)
+    print(res)
     percentage_map = {}
     for key in res[1]:
         percentage_map[key] = round(res[1][key] * Metabolite(formula=key).formula_weight / 1000, 3)
@@ -144,6 +145,7 @@ def get_biomass_mass(model, biomass_reaction=None):
         for reactant in reaction.reactants:
             copy = reactant.copy()
             copy.elements = {key: value for key, value in copy.elements.items() if key != "T"}
+            temp = round(abs(reaction.metabolites[reactant]) * copy.formula_weight * stoichiometry, 5)
             counter += abs(reaction.metabolites[reactant]) * copy.formula_weight * stoichiometry
             for key in elementar_counter.keys():
                 if key in reactant.elements:
@@ -164,73 +166,29 @@ def get_biomass_mass(model, biomass_reaction=None):
                     for key in elementar_counter.keys():
                         if key in product.elements:
                             elementar_counter[key] -= abs(reaction.metabolites[product]) * product.elements[key] * stoichiometry
-        return counter / 1000, elementar_counter
+        return round(counter / 1000, 5), elementar_counter
+    def parse_lipids(biomass_reaction, element_counter):
+        counter = 0
+        lipid_stoichiometry = abs(biomass_reaction.metabolites[model.metabolites.e_Lipid__cytop])
+        lipids_reaction = model.reactions.e_Lipid_no_tag__cytop
+        lipid_subreactions = [
+            # model.reactions.e_TAG__lip,
+                          model.reactions.e_DAG__er, model.reactions.e_DGTS__er, model.reactions.e_PE__er, model.reactions.e_PC__er, model.reactions.e_PI__er, model.reactions.e_PG__chlo,
+                            model.reactions.e_DGDG__chlo, model.reactions.e_SQDG__chlo, model.reactions.e_MGDG__chlo, model.reactions.e_CL__mito, model.reactions.e_FFA__cytop]
+        for reaction in lipid_subreactions:
+            for reactant in reaction.reactants:
+                counter += abs(reaction.metabolites[reactant] * reactant.formula_weight * lipids_reaction.metabolites[reaction.products[0]] * lipid_stoichiometry)
+                for key in element_counter.keys():
+                    if key in reactant.elements:
+                        element_counter[key] += abs(reaction.metabolites[reactant] * reactant.elements[key] * lipids_reaction.metabolites[reaction.products[0]] * lipid_stoichiometry)
+        return counter, element_counter
 
-    counter = 0
-    element_counter = {"C":0,"N":0, "O":0, "P":0, "S":0, "H":0}
-    if not biomass_reaction: biomass_reaction = model.bio_reaction
-    elif type(biomass_reaction) == str: biomass_reaction = model.reactions.get_by_id(biomass_reaction)
-    lipid_stoichiometry = abs(biomass_reaction.metabolites[model.metabolites.e_Lipid__cytop])
-    for reactant in model.reactions.e_TAG__lip.reactants:
-        counter += abs(model.reactions.e_TAG__lip.metabolites[reactant] * reactant.formula_weight * model.reactions.e_Lipid__cytop.metabolites[model.metabolites.C00422__lip] * lipid_stoichiometry)
-        for key in element_counter.keys():
-            if key in reactant.elements:
-                element_counter[key] += abs(model.reactions.e_TAG__lip.metabolites[reactant] * reactant.elements[key] * model.reactions.e_Lipid__cytop.metabolites[model.metabolites.C00422__lip] * lipid_stoichiometry)
-    for reactant in model.reactions.e_DAG__er.reactants:
-        counter += abs(model.reactions.e_DAG__er.metabolites[reactant] * reactant.formula_weight * model.reactions.e_Lipid__cytop.metabolites[model.metabolites.C00641__er] * lipid_stoichiometry)
-        for key in element_counter.keys():
-            if key in reactant.elements:
-                element_counter[key] += abs(model.reactions.e_DAG__er.metabolites[reactant] * reactant.elements[key] * model.reactions.e_Lipid__cytop.metabolites[model.metabolites.C00641__er] * lipid_stoichiometry)
-    for reactant in model.reactions.e_DGTS__er.reactants:
-        counter += abs(model.reactions.e_DGTS__er.metabolites[reactant] * reactant.formula_weight * model.reactions.e_Lipid__cytop.metabolites[model.metabolites.C18169__er] * lipid_stoichiometry)
-        for key in element_counter.keys():
-            if key in reactant.elements:
-                element_counter[key] += abs(model.reactions.e_DGTS__er.metabolites[reactant] * reactant.elements[key] * model.reactions.e_Lipid__cytop.metabolites[model.metabolites.C18169__er] * lipid_stoichiometry)
-    for reactant in model.reactions.e_PE__er.reactants:
-        counter += abs(model.reactions.e_PE__er.metabolites[reactant] * reactant.formula_weight * model.reactions.e_Lipid__cytop.metabolites[model.metabolites.C00350__er] * lipid_stoichiometry)
-        for key in element_counter.keys():
-            if key in reactant.elements:
-                element_counter[key] += abs(model.reactions.e_PE__er.metabolites[reactant] * reactant.elements[key] * model.reactions.e_Lipid__cytop.metabolites[model.metabolites.C00350__er] * lipid_stoichiometry)
-    for reactant in model.reactions.e_PC__er.reactants:
-        counter += abs(model.reactions.e_PC__er.metabolites[reactant] * reactant.formula_weight * model.reactions.e_Lipid__cytop.metabolites[model.metabolites.C00157__er] * lipid_stoichiometry)
-        for key in element_counter.keys():
-            if key in reactant.elements:
-                element_counter[key] += abs(model.reactions.e_PC__er.metabolites[reactant] * reactant.elements[key] * model.reactions.e_Lipid__cytop.metabolites[model.metabolites.C00157__er] * lipid_stoichiometry)
-    for reactant in model.reactions.e_PI__er.reactants:
-        counter += abs(model.reactions.e_PI__er.metabolites[reactant] * reactant.formula_weight * model.reactions.e_Lipid__cytop.metabolites[model.metabolites.C00157__er] * lipid_stoichiometry)
-        for key in element_counter.keys():
-            if key in reactant.elements:
-                element_counter[key] += abs(model.reactions.e_PI__er.metabolites[reactant] * reactant.elements[key] * model.reactions.e_Lipid__cytop.metabolites[model.metabolites.C00157__er] * lipid_stoichiometry)
-    for reactant in model.reactions.e_PG__chlo.reactants:
-        counter += abs(model.reactions.e_PG__chlo.metabolites[reactant] * reactant.formula_weight * model.reactions.e_Lipid__cytop.metabolites[model.metabolites.C00344__chlo] * lipid_stoichiometry)
-        for key in element_counter.keys():
-            if key in reactant.elements:
-                element_counter[key] += abs(model.reactions.e_PG__chlo.metabolites[reactant] * reactant.elements[key] * model.reactions.e_Lipid__cytop.metabolites[model.metabolites.C00344__chlo] * lipid_stoichiometry)
-    for reactant in model.reactions.e_DGDG__chlo.reactants:
-        counter += abs(model.reactions.e_DGDG__chlo.metabolites[reactant] * reactant.formula_weight * model.reactions.e_Lipid__cytop.metabolites[model.metabolites.C06037__chlo] * lipid_stoichiometry)
-        for key in element_counter.keys():
-            if key in reactant.elements:
-                element_counter[key] += abs(model.reactions.e_DGDG__chlo.metabolites[reactant] * reactant.elements[key] * model.reactions.e_Lipid__cytop.metabolites[model.metabolites.C06037__chlo] * lipid_stoichiometry)
-    for reactant in model.reactions.e_SQDG__chlo.reactants:
-        counter += abs(model.reactions.e_SQDG__chlo.metabolites[reactant] * reactant.formula_weight * model.reactions.e_Lipid__cytop.metabolites[model.metabolites.C13508__chlo] * lipid_stoichiometry)
-        for key in element_counter.keys():
-            if key in reactant.elements:
-                element_counter[key] += abs(model.reactions.e_SQDG__chlo.metabolites[reactant] * reactant.elements[key] * model.reactions.e_Lipid__cytop.metabolites[model.metabolites.C13508__chlo] * lipid_stoichiometry)
-    for reactant in model.reactions.e_MGDG__chlo.reactants:
-        counter += abs(model.reactions.e_MGDG__chlo.metabolites[reactant] * reactant.formula_weight * model.reactions.e_Lipid__cytop.metabolites[model.metabolites.C03692__chlo] * lipid_stoichiometry)
-        for key in element_counter.keys():
-            if key in reactant.elements:
-                element_counter[key] += abs(model.reactions.e_MGDG__chlo.metabolites[reactant] * reactant.elements[key] * model.reactions.e_Lipid__cytop.metabolites[model.metabolites.C03692__chlo] * lipid_stoichiometry)
-    for reactant in model.reactions.e_CL__mito.reactants:
-        counter += abs(model.reactions.e_CL__mito.metabolites[reactant] * reactant.formula_weight * model.reactions.e_Lipid__cytop.metabolites[model.metabolites.C05980__mito] * lipid_stoichiometry)
-        for key in element_counter.keys():
-            if key in reactant.elements:
-                element_counter[key] += abs(model.reactions.e_CL__mito.metabolites[reactant] * reactant.elements[key] * model.reactions.e_Lipid__cytop.metabolites[model.metabolites.C05980__mito] * lipid_stoichiometry)
-    for reactant in model.reactions.e_FFA__cytop.reactants:
-        counter += abs(model.reactions.e_FFA__cytop.metabolites[reactant] * reactant.formula_weight * model.reactions.e_Lipid__cytop.metabolites[model.metabolites.C00162__cytop] * lipid_stoichiometry)
-        for key in element_counter.keys():
-            if key in reactant.elements:
-                element_counter[key] += abs(model.reactions.e_FFA__cytop.metabolites[reactant] * reactant.elements[key] * model.reactions.e_Lipid__cytop.metabolites[model.metabolites.C00162__cytop] * lipid_stoichiometry)
+    if not biomass_reaction:
+        biomass_reaction = model.bio_reaction
+    elif type(biomass_reaction) == str:
+        biomass_reaction = model.reactions.get_by_id(biomass_reaction)
+    element_counter = {"C": 0, "N": 0, "O": 0, "P": 0, "S": 0, "H": 0}
+    counter, element_counter = parse_lipids(biomass_reaction, element_counter)
     c = 0
     c += counter / 1000
     to_ignore = ["C00002__cytop", "C00001__cytop", "e_Lipid__cytop"]

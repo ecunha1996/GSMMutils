@@ -76,29 +76,30 @@ def remove_glycerol(model):
 
 def remove_pigments(model):
     pigments_copy = model.reactions.e_Pigment__chlo.copy()
-    pigments_copy.id = 'e_Pigments_no_car_chl_lut__cytop'
+    pigments_copy.id = 'e_Pigments_no_car_chl__cytop'
     model.add_reactions([pigments_copy])
     model.reactions.e_Pigment__chlo.bounds = (0, 0)
-    model.set_stoichiometry("e_Pigments_no_car_chl_lut__cytop", "C05306__chlo", 0)
-    model.set_stoichiometry("e_Pigments_no_car_chl_lut__cytop", "C05307__chlo", 0)
-    model.set_stoichiometry("e_Pigments_no_car_chl_lut__cytop", "C02094__chlo", 0)
+    model.set_stoichiometry("e_Pigments_no_car_chl__cytop", "C05306__chlo", 0)
+    model.set_stoichiometry("e_Pigments_no_car_chl__cytop", "C05307__chlo", 0)
+    model.set_stoichiometry("e_Pigments_no_car_chl__cytop", "C02094__chlo", 0)
 
-    model.set_stoichiometry("e_Pigments_no_car_chl_lut__cytop", "C08614__chlo", -1.0095)
-    model.set_stoichiometry("e_Pigments_no_car_chl_lut__cytop", "C05433__chlo", -0.0243)
-    model.set_stoichiometry("e_Pigments_no_car_chl_lut__cytop", "C06098__chlo", -0.0156)
-    model.set_stoichiometry("e_Pigments_no_car_chl_lut__cytop", "C08591__chlo", -0.1576)
+    model.set_stoichiometry("e_Pigments_no_car_chl__cytop", "C08614__chlo", -1.0095)
+    model.set_stoichiometry("e_Pigments_no_car_chl__cytop", "C05433__chlo", -0.0243)
+    model.set_stoichiometry("e_Pigments_no_car_chl__cytop", "C06098__chlo", -0.0156)
+    model.set_stoichiometry("e_Pigments_no_car_chl__cytop", "C08591__chlo", -0.1576)
 
-    model.set_stoichiometry("e_Pigments_no_car_chl_lut__cytop", "C08606__chlo", -0.0030)
-    model.set_stoichiometry("e_Pigments_no_car_chl_lut__cytop", "C05432__chlo", -0.0008)
-    model.set_stoichiometry("e_Pigments_no_car_chl_lut__cytop", "C08579__chlo", -0.0014)
-    model.set_stoichiometry("e_Pigments_no_car_chl_lut__cytop", "C20484__chlo", -0.4298)
+    model.set_stoichiometry("e_Pigments_no_car_chl__cytop", "C08606__chlo", -0.0030)
+    model.set_stoichiometry("e_Pigments_no_car_chl__cytop", "C05432__chlo", -0.0008)
+    model.set_stoichiometry("e_Pigments_no_car_chl__cytop", "C08579__chlo", -0.0014)
+    model.set_stoichiometry("e_Pigments_no_car_chl__cytop", "C20484__chlo", -0.4298)
 
-    model.set_stoichiometry("e_ActiveBiomass__cytop", "e_Acid__cytop", -0.0172)
+    model.set_stoichiometry("e_ActiveBiomass__cytop", "e_Pigment__chlo", -0.0172)
 
     return model
 
 
-def correct_co2_uptake(model, active_biomass):
+def correct_co2_uptake(model):
+    active_biomass = model.reactions.e_ActiveBiomass__cytop
     total = abs(sum([active_biomass.metabolites[met] for met in active_biomass.reactants if active_biomass.metabolites[met] > -10]))
     print(total)
     carbon_in_biomass = get_element_in_biomass(model, "C", f"e_ActiveBiomass__cytop")
@@ -108,6 +109,17 @@ def correct_co2_uptake(model, active_biomass):
     print(r)
     model.exchanges.EX_C00011__dra.bounds = (-r, 10000)
     print(model.optimize().objective_value)
+    return model
+
+
+def normalize_active_biomass(model):
+    active_biomass = model.reactions.e_ActiveBiomass__cytop
+    total = abs(sum([active_biomass.metabolites[met] for met in active_biomass.reactants if active_biomass.metabolites[met] > -10]))
+    for met in active_biomass.reactants:
+        if active_biomass.metabolites[met] > -10:
+            active_biomass.metabolites[met] = model.set_stoichiometry("e_ActiveBiomass__cytop", met.id, round(active_biomass.metabolites[met] / total, 5))
+    total = abs(sum([active_biomass.metabolites[met] for met in active_biomass.reactants if active_biomass.metabolites[met] > -10]))
+    print(total)
     return model
 
 
@@ -124,7 +136,8 @@ def main():
         model = remove_tag(model)
         model = remove_glycerol(model)
         model = remove_pigments(model)
-        model = correct_co2_uptake(model, model.reactions.e_ActiveBiomass__cytop)
+        model = normalize_active_biomass(model)
+        # model = correct_co2_uptake(model)
         model.write("models/model_dfba.xml")
 
 

@@ -12,21 +12,23 @@ INFO.a2 = x0(7);
 INFO.a3 = x0(8);
 INFO.l = x0(9);
 INFO.smoothing_factor = x0(10);
-INFO.vhpo4max = x0(11);
-INFO.ExA = x0(12);
-INFO.vcarmax = x0(13);
+INFO.vhpo4max = 0.001;
+INFO.ExA = x0(11);
+INFO.vcarmax = x0(12);
+INFO.c0 = x0(13);
 ssq = 0;
-parpool('local', 4);
-for z=1:6
+parpool(4);
+parfor z=1:6
     try
         res = evaluateTrial(matrix, z, INFO);
     catch
         disp('Problem infeasible');
         res = 1e10;
-    ssq = ssq + res;
     end
+    ssq = ssq + res;
 end
-delete(gcp)
+delete(gcp);
+disp('SSQ:\n')
 disp(ssq);
 fitness = ssq;
 end

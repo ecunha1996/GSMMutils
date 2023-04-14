@@ -75,7 +75,6 @@ ub = zeros(nmodel, 2);
         ro = ro1*y(11) + ro0;
         light_uptake = ro / (biomass*L) * E * 5.7;
         lb(j,2) = 0;
-        disp(light_uptake);
         ub(j,2) = light_uptake;
 
         % P
@@ -155,12 +154,13 @@ ub = zeros(nmodel, 2);
         % Nitrate intracellular metabolization
         vno3max = 0.19*24;
         wnmin = 2.29;
-        lb(j, 12) = -vno3max * (1- wnmin/y(10));
+        %lb(j, 12) = -vno3max * (1- wnmin/y(10));
+        lb(j, 12) = 0;
         ub(j, 12) = Inf;
 
         %Phosphate intracellular metabolization
-        lb(j, 13) = -vhpo4max * (1- wPmin/y(16));
-        %lb(j, 13) = 0;
+        %lb(j, 13) = -vhpo4max * (1- wPmin/y(16));
+        lb(j, 13) = 0;
         ub(j, 13) = Inf;
         % disp(t);
         % disp(lb);
