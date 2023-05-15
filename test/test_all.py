@@ -1,12 +1,12 @@
 from cobra import flux_analysis
 
-from ExpAlgae import DATA_PATH
-from ExpAlgae.experimental.ExpMatrix import ExpMatrix
-from ExpAlgae.model.COBRAmodel import simulation_for_conditions, MyModel
-# from ExpAlgae.omics.omics_integration import OmicsIntegration
+from ExpGSMM import DATA_PATH
+from ExpGSMM.experimental.ExpMatrix import ExpMatrix
+from ExpGSMM.model.COBRAmodel import simulation_for_conditions, MyModel
+# from ExpGSMM.omics.omics_integration import OmicsIntegration
 from os.path import join
-from ExpAlgae.graphics.plot import *
-from ExpAlgae.stats.stats import *
+from ExpGSMM.graphics.plot import *
+from ExpGSMM.stats.stats import *
 
 
 def read_model(data_directory=DATA_PATH, filename="model.xml"):

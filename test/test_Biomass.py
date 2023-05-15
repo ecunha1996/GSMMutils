@@ -1,7 +1,9 @@
 from os.path import join
 
-from ExpAlgae.experimental.Biomass import Biomass
-from ExpAlgae.model.COBRAmodel import MyModel
+import cobra
+
+from ExpGSMM.experimental.Biomass import Biomass
+from ExpGSMM.model.COBRAmodel import MyModel
 
 
 def read_model(data_directory, filename = "model.xml"):
@@ -13,6 +15,8 @@ def read_model(data_directory, filename = "model.xml"):
             reaction.lower_bound = -10000
         if reaction.upper_bound >= 1000:
             reaction.upper_bound = 10000
+    cobra_config = cobra.Configuration()
+    cobra_config.bounds = -10000, 10000
     model.write(f"models/model_with_media.xml")
     model.set_prism_reaction("PRISM_white_LED__extr")
     model.reactions.R00019__chlo.bounds = (0, 0)

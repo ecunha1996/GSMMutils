@@ -1,8 +1,8 @@
 import os
 from os.path import join
 
-from ExpAlgae import DATA_PATH, MyModel
-from ExpAlgae.model.FAME2Biomass import FAME2Biomass
+from ExpGSMM import DATA_PATH, MyModel
+from ExpGSMM.model.FAME2Biomass import FAME2Biomass
 from test_all import read_model
 
 

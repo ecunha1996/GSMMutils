@@ -1,4 +1,4 @@
-from ExpAlgae.Annotation.genome_annotation import StructuralAnnotation
+from ExpGSMM.Annotation.genome_annotation import StructuralAnnotation
 
 
 def  main():

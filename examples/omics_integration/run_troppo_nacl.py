@@ -3,12 +3,12 @@ import os
 import pandas as pd
 import sys
 
-from ExpAlgae import DATA_PATH
+from ExpGSMM import DATA_PATH
 
 sys.path.insert(0, r"/")
 sys.path.insert(0, "/home/src/")
-from ExpAlgae.io import read_csv
-from ExpAlgae.omics.omics_integration import OmicsIntegration
+from ExpGSMM.io import read_csv
+from ExpGSMM.omics.omics_integration import OmicsIntegration
 from Tissue_specific_Reconstruction_Pipeline.Pipeline.utils.config_variables import *
 from Tissue_specific_Reconstruction_Pipeline.Pipeline.utils.pipeline_paths import *
 from Tissue_specific_Reconstruction_Pipeline.Pipeline.model_handle import load_model, sbml_model_reconstruction
@@ -52,12 +52,14 @@ def reconstruction_pipeline():
                                                                   "SRR6825169_Aligned.sortedByCoord.out.bam": "sorb_2",
                                                                   "SRR6825170_Aligned.sortedByCoord.out.bam": "sorb_3",
                                                                   }, model=template_model)
-    omics.getmm = read_csv(r"omics/getmm.tsv", index_name='GeneID', index_col=0, comment='#', sep='\t')
+    omics.getmm = read_csv(r"omics/getmm_salinity.tsv", index_name='GeneID', index_col=0, comment='#', sep='\t')
     omics.sum_tech_reps()
     omics_data = omics.counts.applymap(lambda x: math.log2(x + 1))
-    print(omics_data.describe())
+    omics_data_temp = omics_data.loc[(omics_data != 0).any(axis=1)]
+    print(omics_data_temp.describe())
     import matplotlib.pyplot as plt
-    omics_data.plot.density()
+    fig = omics_data.plot.density()
+    fig.set_xticks([x / 2 for x in range(0, 40)])
     plt.savefig(r"omics/counts_density_nacl.png")
     omics_data = omics_data.T
     print('Omics dataset Loaded.')

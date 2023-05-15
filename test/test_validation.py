@@ -1,5 +1,5 @@
-from ExpAlgae.model.COBRAmodel import MyModel
-from ExpAlgae.model.validation import check_consistency
+from ExpGSMM.model.COBRAmodel import MyModel
+from ExpGSMM.model.validation import check_consistency
 from os.path import join
 
 

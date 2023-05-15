@@ -18,7 +18,7 @@ INFO.vcarmax = x0(12);
 INFO.c0 = x0(13);
 ssq = 0;
 parpool(4);
-parfor z=1:6
+parfor z=1:3
     try
         res = evaluateTrial(matrix, z, INFO);
     catch
@@ -28,7 +28,7 @@ parfor z=1:6
     ssq = ssq + res;
 end
 delete(gcp);
-disp('SSQ:\n')
+disp('SSQ:')
 disp(ssq);
 fitness = ssq;
 end

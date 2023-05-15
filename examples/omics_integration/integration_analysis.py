@@ -2,9 +2,9 @@ import os
 
 import pandas as pd
 
-from ExpAlgae.graphics.plot import clustermap
-from ExpAlgae.io import read_csv
-from ExpAlgae.model.COBRAmodel import MyModel
+from ExpGSMM.graphics.plot import clustermap
+from ExpGSMM.io import read_csv
+from ExpGSMM.model.COBRAmodel import MyModel
 import pickle
 #unlimit pandas printing:
 pd.set_option('display.max_rows', 500)

@@ -4,8 +4,8 @@ import numpy as np
 import pandas as pd
 from matplotlib import pyplot as plt
 
-from ExpAlgae.graphics.plot import lineplot
-from ExpAlgae.model.COBRAmodel import MyModel
+from ExpGSMM.graphics.plot import lineplot
+from ExpGSMM.model.COBRAmodel import MyModel
 from os.path import join
 from cobra.flux_analysis import pfba
 from joblib import delayed, Parallel

@@ -16,7 +16,7 @@
 % Read the LICENSE.txt file for more details.                             %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-function [lb,ub] = RHS( t,y,INFO )
+function [lb,ub] = RHS(~,y,INFO )
 nmodel = INFO.nmodel;
 
 % Initial conditions
@@ -68,12 +68,12 @@ ub = zeros(nmodel, 2);
         ub(j, 1) = Inf;
     
         % Light
-        L = 0.2; % meters depth of pond
+        L = 0.05; % meters depth of pond
         biomass = y(2);            
         Ke = 11.5*biomass*y(11);       
         E = Io*(1-exp(-L*Ke))/(Ke*L);      
-        ro = ro1*y(11) + ro0;
-        light_uptake = ro / (biomass*L) * E * 5.7;
+        ro = (ro1*y(11) + ro0);
+        light_uptake = ro*5.7 / (biomass*L) * E;
         lb(j,2) = 0;
         ub(j,2) = light_uptake;
 
@@ -109,8 +109,9 @@ ub = zeros(nmodel, 2);
         ymax = 0.37;
         KE = 12.5 * 5.7;
         yE = ymax * (KE/(E + KE));
+        Ksat = 75.5*5.7;
         phosphate_factor =  ((y(16) - wPmin)/(wPopt - wPmin)) + c0;
-        sum_chl = (yE - (y(11)/nitrogen_mass_quota)) * phosphate_factor;
+        sum_chl = (yE - (y(11)/nitrogen_mass_quota))* Ksat * phosphate_factor;
         
         lb(j, 6) = sum_chl * 1.73/2.73;
         ub(j, 6) = Inf;

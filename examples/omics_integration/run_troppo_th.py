@@ -3,8 +3,10 @@ import os
 import pandas as pd
 import sys
 
-from ExpAlgae.io import read_csv
-from ExpAlgae.omics.omics_integration import OmicsIntegration
+from PyQt5.QtWidgets import QVBoxLayout, QWidget
+
+from ExpGSMM.io import read_csv
+from ExpGSMM.omics.omics_integration import OmicsIntegration
 
 sys.path.insert(0, r"/")
 from Tissue_specific_Reconstruction_Pipeline.Pipeline.utils.config_variables import *
@@ -38,7 +40,7 @@ def reconstruction_pipeline():
     print('-------------------------------------- Processing Omics Dataset. --------------------------------------')
     print('-------------------------------------------------------------------------------------------------------')
 
-    omics = OmicsIntegration(r"data/omics/output.txt", samples_names={"SRR7984026Aligned.out.sam": "LL_1",
+    omics = OmicsIntegration(rf"{DATA_PATH}/omics/raw_data_light.txt", samples_names={"SRR7984026Aligned.out.sam": "LL_1",
                                                                          "SRR7984027Aligned.out.sam": "LL_2",
                                                                          "SRR7984028Aligned.out.sam": "LL_3",
                                                                          "SRR7984029Aligned.out.sam": "ML_1",
@@ -54,8 +56,9 @@ def reconstruction_pipeline():
     omics_data = omics.counts.applymap(lambda x: math.log2(x + 1))
     print(omics_data.describe())
     import matplotlib.pyplot as plt
-    omics_data.plot.density()
-    plt.savefig(r"data/omics/counts_density_light.png")
+    fig = omics_data.plot.density()
+    fig.set_xticks([x / 2 for x in range(0, 40)])
+    plt.savefig(rf"{DATA_PATH}/omics/counts_density_light.png")
     omics_data = omics_data.T
     print('Omics dataset Loaded.')
 

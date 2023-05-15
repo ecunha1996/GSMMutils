@@ -1,5 +1,5 @@
 import unittest
-from ExpAlgae.api.uniprot import Uniprot
+from ExpGSMM.api.uniprot import Uniprot
 
 
 class MyTestCase(unittest.TestCase):

@@ -2,7 +2,7 @@
 import unittest
 import os
 import matlab.engine
-from ExpAlgae.dynamic.DAE import DAE
+from ExpGSMM.dynamic.DAE import DAE
 
 class TestDAE(unittest.TestCase):
 

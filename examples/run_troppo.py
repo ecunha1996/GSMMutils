@@ -4,13 +4,13 @@ import sys
 import cobra.io
 
 sys.path.insert(0, r"C:\Users\Bisbii\PythonProjects\ExpAlgae\src")
-# sys.path.insert(0, r"/home/algae/ExpAlgae/src")
-from ExpAlgae.model.COBRAmodel import *
+# sys.path.insert(0, r"/home/algae/ExpGSMM/src")
+from ExpGSMM.model.COBRAmodel import *
 import seaborn as sns
-from ExpAlgae.omics.troppo import integration_pipeline
+from ExpGSMM.omics.troppo import integration_pipeline
 from cobra.flux_analysis import find_blocked_reactions
-from ExpAlgae.io import read_csv
-from ExpAlgae.omics.omics_integration import OmicsIntegration
+from ExpGSMM.io import read_csv
+from ExpGSMM.omics.omics_integration import OmicsIntegration
 sns.set(rc={'figure.figsize':(35, 8.27)})
 
 
@@ -25,14 +25,14 @@ def read_model(data_directory):
 
 def main():
     # model = read_model("../data")
-    # model = MyModel(join("../data", "models/model_with_trials.xml"), "e_Biomass__cytop")
-    # model.add_medium(join("../data", "media.xlsx"), "media_with_starch")
-    # print(model.optimize())
-    # blocked = find_blocked_reactions(model)
-    # model.remove_reactions(blocked)
+    model = MyModel(join("../data", "models/model_with_trials.xml"), "e_Biomass__cytop")
+    model.add_medium(join("../data", "media.xlsx"), "media_with_starch")
+    print(model.optimize())
+    blocked = find_blocked_reactions(model)
+    model.remove_reactions(blocked)
     # model_consistent = fastcc(model)
-    # cobra.io.write_sbml_model(model_consistent, r"C:\Users\Bisbii\PythonProjects\ExpAlgae\data\models\model_consistent.xml")
-    model = MyModel(r"C:\Users\Bisbii\PythonProjects\ExpAlgae\data\models\model_consistent.xml", "e_Biomass__cytop")
+    # cobra.io.write_sbml_model(model_consistent, r"C:\Users\Bisbii\PythonProjects\ExpGSMM\data\models\model_consistent.xml")
+    # model = MyModel(r"C:\Users\Bisbii\PythonProjects\ExpAlgae\data\models\model_consistent.xml", "e_Biomass__cytop")
     omics = OmicsIntegration(r"../data/omics/output.txt", samples_names={"SRR7984026Aligned.out.sam":"LL_1",
                                                                     "SRR7984027Aligned.out.sam": "LL_2",
                                                                     "SRR7984028Aligned.out.sam":"LL_3",
@@ -75,19 +75,19 @@ def main():
             model.remove_reactions([reaction_id])
             to_remove.append(reaction_id)
             i+=1
-    model.remove_reactions(to_remove)
-    blocked = find_blocked_reactions(model)
-    print(blocked)
-    print(len(blocked))
-    model.remove_reactions(blocked)
+    # model.remove_reactions(to_remove)
+    # blocked = find_blocked_reactions(model)
+    # print(blocked)
+    # print(len(blocked))
+    # model.remove_reactions(blocked)
     # print(model.reactions[975]) #[ 126 1867 2211]
     # print(model.reactions[3093])
     # print(model.reactions[1867])
     # print(model.reactions[3070])
-    model.write(r"C:\Users\Bisbii\PythonProjects\ExpAlgae\data\models\consistent_model.xml")
+    # model.write(r"C:\Users\Bisbii\PythonProjects\ExpAlgae\data\models\consistent_model.xml")
     # print(model.optimize())
     # print(dataset.quantile(0.75, axis=1))
-    # integration_pipeline(dataset, r"..\data\omics\light", "fastcore", 2.8, 8, model.model, output_dir="../data/omics/light")
+    integration_pipeline(dataset, r"..\data\omics\light", "fastcore", 2.8, 8, model.model, output_dir="../data/omics/light")
 
 
 def main_reduced_model():
@@ -141,7 +141,7 @@ def get_different_reactions():
 if __name__ == '__main__':
     # model = MyModel(join("../data", "models/model.xml"), "e_Biomass__cytop")
     # model.add_medium(join("../data", "media.xlsx"), "media_with_starch")
-    # model.write(r"C:\Users\Bisbii\PythonProjects\ExpAlgae\data\models\model_with_media.xml")
+    # model.write(r"C:\Users\Bisbii\PythonProjects\ExpGSMM\data\models\model_with_media.xml")
     main()
     # get_different_reactions()
     # main_reduced_model()

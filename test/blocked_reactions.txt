@@ -17,7 +17,6 @@ R02480__chlo
 R08391__cytop
 R07505__er
 R11659__cytop
-R08584__chlo
 R03697__cytop
 R00524__cytop
 R11764__cytop
@@ -480,6 +479,7 @@ R07043__cytop
 R03629__cytop
 R01148__chlo
 R01372__chlo
+R00014__chlo
 R09655__chlo
 BMGR6118__mito
 R04751__mito
@@ -669,6 +669,7 @@ R01639__chlo
 R01664__mito
 RXN_19210_V1__chlo
 R00993__cytop
+2FE2SR__mito
 R07298__cytop
 PRISM_solar_exo__extr
 R02434__cytop
@@ -684,6 +685,7 @@ R01481__chlo
 R02519__cytop
 R07059__cytop
 R07060__cytop
+T_2fe2stm__mitmem
 PRISM_red_LED_array_653nm__extr
 R07048__cytop
 R05345__chlo
@@ -758,7 +760,6 @@ R02464__cytop
 T_MI13456Ptn__nucmem
 R08280__nucl
 T_PI4P181140tn__nucmem
-R09033__chlo
 R02382__cytop
 R08390__cytop
 R08383__eye
@@ -846,7 +847,6 @@ EX_C00323__dra
 T_DGLCPtr__ermem
 R05551__cytop
 RXN_7895__chlo
-R08921__chlo
 R02887__vacu
 R04711__mito
 R06949__chlo

@@ -2,7 +2,7 @@ import os
 
 import pandas as pd
 import numpy as np
-from cobra.io import read_sbml_model
+from cobra.io import read_sbml_model, write_sbml_model
 from cobra.sampling import ACHRSampler
 from joblib import Parallel, delayed
 from matplotlib import pyplot as plt
@@ -10,21 +10,55 @@ from scipy import stats
 from scipy.stats import hypergeom, ks_2samp
 from statsmodels.stats import multitest
 import sys
+
+
+
 sys.path.insert(0, "/home/src/")
-from ExpAlgae.model.COBRAmodel import MyModel
+from ExpGSMM.model.COBRAmodel import MyModel
+from ExpGSMM import DATA_PATH
+
+
+def split_reversible_reactions(model_to_sample):
+    exchanges_demands_sinks = [reaction.id for reaction in model_to_sample.exchanges] + [reaction.id for reaction in model_to_sample.demands] + [reaction.id for reaction in model_to_sample.sinks]
+    exchanges_demands_sinks = set(exchanges_demands_sinks)
+    new_reactions = []
+    for reaction in model_to_sample.reactions:
+        if  reaction not in exchanges_demands_sinks:
+            if reaction.lower_bound < 0 < reaction.upper_bound:
+                new_reaction = reaction.copy()
+                new_reaction.id = reaction.id + "_reverse"
+                new_reaction.lower_bound = 0
+                new_reaction.upper_bound = -reaction.lower_bound
+                for metabolite, coefficient in new_reaction.metabolites.items():
+                    new_reaction.add_metabolites({metabolite: -coefficient})
+                    new_reaction.add_metabolites({metabolite: -coefficient})
+                new_reactions.append(new_reaction)
+                reaction.lower_bound = 0
+    model_to_sample.add_reactions(new_reactions)
+    return model_to_sample
 
 
 def achr_sample(filename, biomass_reaction):
-    print('Sampling model: ', filename)
-    folder = '/'.join(filename.split("/")[:-1])
-    model_to_sample = read_sbml_model(filename)
-    model_to_sample.objective = biomass_reaction
-    # initial_solution = model_to_sample.optimize().objective_value
-    model_to_sample.reactions.get_by_id(biomass_reaction).lower_bound = 0.15
-    sampler = ACHRSampler(model_to_sample, thinning=100, seed=42)
-    samples = sampler.sample(10000)
-    result_filename = f"{folder}/{filename.split('/')[-1].split('.xml')[0]}_ACHR_samples.csv"
-    samples.to_csv(result_filename, index=False)
+    try:
+        print('Sampling model: ', filename)
+        folder = '/'.join(filename.split("/")[:-1])
+        model_to_sample = read_sbml_model(filename)
+        model_to_sample.objective = biomass_reaction
+        initial_solution = model_to_sample.optimize().objective_value
+        print('Initial solution: ', initial_solution)
+        model_to_sample = split_reversible_reactions(model_to_sample)
+        initial_solution = model_to_sample.optimize().objective_value
+        print('Initial solution: ', initial_solution)
+        model_to_sample.reactions.get_by_id(biomass_reaction).lower_bound = 0.10
+        model_to_sample.reactions.EX_C00244__dra.lower_bound = -10
+        model_to_sample.reactions.EX_C00009__dra.lower_bound = -10
+        sampler = ACHRSampler(model_to_sample, thinning=100, seed=42)
+        samples = sampler.sample(10000)
+        result_filename = f"{folder}/{filename.split('/')[-1].split('.xml')[0]}_ACHR_samples.csv"
+        samples.to_csv(result_filename, index=False)
+    except Exception as e:
+        print(e)
+        print(f"Error in {filename}")
 
 
 def load_results(file_names):
@@ -98,7 +132,16 @@ def kstest(samples_control: pd.DataFrame, samples_condition: pd.DataFrame, datas
         if (data1.std() != 0 and data1.mean() != 0) or (data2.std() != 0 and data2.mean() != 0):
             kstat, pval = ks_2samp(data1, data2)
 
-            foldc = (data1.mean() - data2.mean()) / abs(data1.mean() + data2.mean())
+            data_1_mean = data1.mean()
+            data_2_mean = data2.mean()
+
+            foldc = (data_1_mean - data_2_mean) / abs(data_1_mean + data_2_mean)
+
+            if data_1_mean < 0 and data_2_mean < 0:
+                foldc = -foldc
+
+            # if (data_1_mean < 0 < data_2_mean) or (data_1_mean > 0 > data_2_mean):
+            #     print()
 
             pvals.append(pval)
             rxnid.append(rxn)
@@ -176,122 +219,105 @@ def pathway_enrichment(rxnlist: list, dataset_name: str):
     dataset_name: str
         The name of the dataset.
     """
+    try:
+        dataset = pd.read_csv("pathways_map.csv")
 
-    dataset = pd.read_csv("pathways_map.csv")
+        listrxn_size = []
+        set_size = []
 
-    listrxn_size = []
-    set_size = []
+        d = [g for g in rxnlist]
 
-    d = [g for g in rxnlist]
+        for col in dataset.columns:
+            dataframe = pd.DataFrame({'Reaction': dataset[col]})
 
-    for col in dataset.columns:
-        dataframe = pd.DataFrame({'Reaction': dataset[col]})
+            out = []
 
-        out = []
+            for reac in dataframe['Reaction']:
+                if reac in rxnlist:
+                    out.append(reac)
+                    if reac in d:
+                        d.remove(reac)
 
-        for reac in dataframe['Reaction']:
-            if reac in rxnlist:
-                out.append(reac)
-                if reac in d:
-                    d.remove(reac)
+            listrxn_size.append(len(out))
+            set_size.append(len(dataset[col].dropna()))
 
-        listrxn_size.append(len(out))
-        set_size.append(len(dataset[col].dropna()))
+        hyperdata = pd.DataFrame({'Pathways': dataset.columns, 'ListReactions': listrxn_size, 'SetSize': set_size})
 
-    hyperdata = pd.DataFrame({'Pathways': dataset.columns, 'ListReactions': listrxn_size, 'SetSize': set_size})
+        hits = hyperdata['ListReactions']
+        pool = hyperdata['SetSize']
 
-    hits = hyperdata['ListReactions']
-    pool = hyperdata['SetSize']
+        allrxns = hyperdata['SetSize'].sum()
+        targetrxns = hyperdata['ListReactions'].sum()
 
-    allrxns = hyperdata['SetSize'].sum()
-    targetrxns = hyperdata['ListReactions'].sum()
+        pval_list = []
 
-    pval_list = []
+        for h, p in zip(hits, pool):
+            rv = hypergeom(allrxns - p, p, targetrxns)
 
-    for h, p in zip(hits, pool):
-        rv = hypergeom(allrxns - p, p, targetrxns)
+            pval = rv.pmf(h)
 
-        pval = rv.pmf(h)
+            pval_list.append(pval)
 
-        pval_list.append(pval)
+        hyperdata['P-value'] = pval_list
 
-    hyperdata['P-value'] = pval_list
+        reject, padj, _, _ = multitest.multipletests(hyperdata['P-value'], alpha=0.05, method='fdr_bh', is_sorted=False, returnsorted=False)
 
-    reject, padj, _, _ = multitest.multipletests(hyperdata['P-value'], alpha=0.05, method='fdr_bh', is_sorted=False, returnsorted=False)
+        hyperdata['P-value_adj'] = padj
+        hyperdata['Reject'] = reject
 
-    hyperdata['P-value_adj'] = padj
-    hyperdata['Reject'] = reject
+        hyperdata_sig = hyperdata[(hyperdata['Reject']) & (hyperdata['ListReactions'] != 0)]
 
-    hyperdata_sig = hyperdata[(hyperdata['Reject']) & (hyperdata['ListReactions'] != 0)]
+        hyperdata_sorted = hyperdata_sig.sort_values(by='P-value_adj', ascending=False)
+        to_ignore = ['Transporters pathway', 'Biosynthesis of cofactors', 'Microbial metabolism in diverse environments']  # 'Drains pathway',
+        hyperdata_sorted = hyperdata_sorted[~hyperdata_sorted['Pathways'].isin(to_ignore)]
 
-    hyperdata_sorted = hyperdata_sig.sort_values(by='P-value_adj', ascending=False)
-    to_ignore = ['Transporters pathway', 'Drains pathway', 'Biosynthesis of cofactors', 'Microbial metabolism in diverse environments']
-    hyperdata_sorted = hyperdata_sorted[~hyperdata_sorted['Pathways'].isin(to_ignore)]
+        plt.figure(figsize=(10, 5))
 
-    plt.figure(figsize=(12, 10))
+        sc = plt.scatter(hyperdata_sorted['P-value_adj'], np.arange(0, len(hyperdata_sorted['Pathways'])), s=hyperdata_sorted['ListReactions'], color=(0.9, 0.3, 0.1, 0.9))
 
-    sc = plt.scatter(hyperdata_sorted['P-value_adj'], np.arange(0, len(hyperdata_sorted['Pathways'])), s=hyperdata_sorted['ListReactions'], color=(0.9, 0.3, 0.1, 0.9))
+        plt.xlabel('Adjusted p-value')
 
-    plt.xlabel('Adjusted p-value')
+        plt.yticks(np.arange(0, len(hyperdata_sorted['Pathways'])), labels=hyperdata_sorted['Pathways'])
 
-    plt.yticks(np.arange(0, len(hyperdata_sorted['Pathways'])), labels=hyperdata_sorted['Pathways'])
+        handles, labels = sc.legend_elements(prop="sizes", alpha=0.8)
 
-    handles, labels = sc.legend_elements(prop="sizes", alpha=0.8)
+        plt.legend(handles, labels, bbox_to_anchor=(1.6, 1.02), loc='upper right', title="Reactions")
 
-    plt.legend(handles, labels, bbox_to_anchor=(1.6, 1.02), loc='upper right', title="Reactions")
+        plt.tight_layout()
 
-    plt.tight_layout()
+        plt.savefig(f'{dataset_name}.png', dpi=600)
 
-    plt.savefig(f'{dataset_name}.png', dpi=600)
-
-    hyperdata_sorted.to_csv(f'{dataset_name}.csv', index=False)
+        hyperdata_sorted.to_csv(f'{dataset_name}.csv', index=False)
+    except Exception as e:
+        print(e)
 
 def remove_exchanges(dataframe: pd.DataFrame) -> pd.DataFrame:
     return dataframe.drop([col for col in dataframe.columns if col.startswith("EX_") or col.startswith("e_")], axis=1)
 
 if __name__ == '__main__':
     os.chdir("../data/omics/")
-    # achr_sample(r"light/HL/Dsalina_HL_Local2_2_4_4_fastcore_t0.xml", "e_Biomass__cytop")
-    # achr_sample(r"light/ML/Dsalina_ML_Local2_2_4_4_fastcore_t0.xml", "e_Biomass__cytop")
-    # achr_sample(r"light/LL/Dsalina_LL_Local2_2_4_4_fastcore_t0.xml", "e_Biomass__cytop")
-    # achr_sample(r"nacl_h2o2_sorb/control/Dsalina_control_Local2_2_4_4_fastcore_t0.xml", "e_Biomass__cytop")
-    # achr_sample(r"nacl_h2o2_sorb/nacl/Dsalina_nacl_Local2_2_4_4_fastcore_t0.xml", "e_Biomass__cytop")
-    # achr_sample(r"nacl_h2o2_sorb/h2o2/Dsalina_h2o2_Local2_2_4_4_fastcore_t0.xml", "e_Biomass__cytop")
-    # achr_sample(r"nacl_h2o2_sorb/sorb/Dsalina_sorb_Local2_2_4_4_fastcore_t0.xml", "e_Biomass__cytop")
     if not os.path.exists("pathways_map.csv"):
         model = MyModel(r"../models/model_with_trials.xml", "e_Biomass__cytop")
         model.get_pathway_reactions_map()
         df = pd.DataFrame.from_dict(data=model.pathway_reactions_map, orient='index').T
         df.to_csv("pathways_map.csv", index=False)
-    # filenames = [r"light/HL_fastcore.xml", r"light/ML_fastcore.xml", r"light/LL_fastcore.xml"]
-    # # Parallel(n_jobs=3)(delayed(achr_sample)(filename, "e_Biomass__cytop") for filename in filenames)
-    # hl_samples = pd.read_csv(r"light/HL_fastcore_ACHR_samples.csv", index_col=0)
-    # ml_samples = pd.read_csv(r"light/ML_fastcore_ACHR_samples.csv", index_col=0)
-    # ll_samples = pd.read_csv(r"light/LL_fastcore_ACHR_samples.csv", index_col=0)
-    # hl_samples.drop([col for col in hl_samples.columns if col.startswith("EX_") or col.startswith("e_")], axis=1, inplace=True)
-    # ml_samples.drop([col for col in ml_samples.columns if col.startswith("EX_") or col.startswith("e_")], axis=1, inplace=True)
-    # ll_samples.drop([col for col in ll_samples.columns if col.startswith("EX_") or col.startswith("e_")], axis=1, inplace=True)
-    # hl_ml_results = kstest(hl_samples, ml_samples, "hl_ml")
-    # ml_ll_results = kstest(ml_samples, ll_samples, "ml_ll")
-    # pathway_enrichment(hl_ml_results, "hl_ml")
-    # pathway_enrichment(ml_ll_results, "ml_ll")
+    filenames = [r"light/HL/Dsalina_HL_Local2_2_4_4_fastcore_t2.xml", r"light/ML/Dsalina_ML_Local2_2_4_4_fastcore_t2.xml", r"light/LL/Dsalina_LL_Local2_2_4_4_fastcore_t2.xml"]
+    Parallel(n_jobs=3)(delayed(achr_sample)(filename, "e_Biomass__cytop") for filename in filenames)
+    hl_samples = pd.read_csv(r"light/HL/Dsalina_HL_Local2_2_4_4_fastcore_t2_ACHR_samples.csv", index_col=0)
+    ml_samples = pd.read_csv(r"light/ML/Dsalina_ML_Local2_2_4_4_fastcore_t2_ACHR_samples.csv", index_col=0)
+    ll_samples = pd.read_csv(r"light/LL/Dsalina_LL_Local2_2_4_4_fastcore_t2_ACHR_samples.csv", index_col=0)
+    hl_samples.drop([col for col in hl_samples.columns if col.startswith("EX_") or col.startswith("e_")], axis=1, inplace=True)
+    ml_samples.drop([col for col in ml_samples.columns if col.startswith("EX_") or col.startswith("e_")], axis=1, inplace=True)
+    ll_samples.drop([col for col in ll_samples.columns if col.startswith("EX_") or col.startswith("e_")], axis=1, inplace=True)
+    hl_ml_results = kstest(hl_samples, ml_samples, "hl_ml")
+    ml_ll_results = kstest(ml_samples, ll_samples, "ml_ll")
+    hl_ll_results = kstest(hl_samples, ll_samples, "hl_ll")
+    pathway_enrichment(hl_ml_results, "hl_ml")
+    pathway_enrichment(ml_ll_results, "ml_ll")
+    pathway_enrichment(hl_ll_results, "hl_ll")
 
-    # control_samples = pd.read_csv(r"nacl_h2o2_sorb/control/Dsalina_control_Local2_2_4_4_fastcore_t0_ACHR_samples.csv", index_col=0)
-    # nacl_samples = pd.read_csv(r"nacl_h2o2_sorb/nacl/Dsalina_nacl_Local2_2_4_4_fastcore_t0_ACHR_samples.csv", index_col=0)
-    # sorb_samples = pd.read_csv(r"nacl_h2o2_sorb/sorb/Dsalina_sorb_Local2_2_4_4_fastcore_t0_ACHR_samples.csv", index_col=0)
-    # h2o2_samples = pd.read_csv(r"nacl_h2o2_sorb/h2o2/Dsalina_h2o2_Local2_2_4_4_fastcore_t0_ACHR_samples.csv", index_col=0)
-    # control_samples.drop([col for col in control_samples.columns if col.startswith("EX_") or col.startswith("e_")], axis=1, inplace=True)
-    # nacl_samples.drop([col for col in nacl_samples.columns if col.startswith("EX_") or col.startswith("e_")], axis=1, inplace=True)
-    # sorb_samples.drop([col for col in sorb_samples.columns if col.startswith("EX_") or col.startswith("e_")], axis=1, inplace=True)
-    # h2o2_samples.drop([col for col in h2o2_samples.columns if col.startswith("EX_") or col.startswith("e_")], axis=1, inplace=True)
-    # nacl_results = kstest(control_samples, nacl_samples, "nacl")
-    # sorb_results = kstest(control_samples, sorb_samples, "sorb")
-    # h2o2_results = kstest(control_samples, h2o2_samples, "h2o2")
-    # pathway_enrichment(nacl_results, "nacl")
-    # pathway_enrichment(sorb_results, "sorb")
-    # pathway_enrichment(h2o2_results, "h2o2")
-
-    filenames = [r"nacl_h2o2_sorb/control/Dsalina_control_gimme.xml",
+    filenames = [
+                r"nacl_h2o2_sorb/control/Dsalina_control_gimme.xml",
                  r"nacl_h2o2_sorb/nacl/Dsalina_nacl_gimme.xml",
                  r"nacl_h2o2_sorb/h2o2/Dsalina_h2o2_gimme.xml",
                  r"nacl_h2o2_sorb/sorb/Dsalina_sorb_gimme.xml",
@@ -300,8 +326,7 @@ if __name__ == '__main__':
                  r"nacl_h2o2_sorb/h2o2/Dsalina_h2o2_Local2_2_4_4_fastcore_t3_7.xml",
                  r"nacl_h2o2_sorb/sorb/Dsalina_sorb_Local2_2_4_4_fastcore_t2_8.xml"
     ]
-
-    # Parallel(n_jobs=8)(delayed(achr_sample)(filename, "e_Biomass__cytop") for filename in filenames)
+    Parallel(n_jobs=8)(delayed(achr_sample)(filename, "e_Biomass__cytop") for filename in filenames)
 
     control_samples_gimme = pd.read_csv(r"nacl_h2o2_sorb/control/Dsalina_control_gimme_ACHR_samples.csv")
     nacl_samples_gimme = pd.read_csv(r"nacl_h2o2_sorb/nacl/Dsalina_nacl_gimme_ACHR_samples.csv")

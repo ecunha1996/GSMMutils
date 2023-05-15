@@ -4,11 +4,11 @@
 %writeCbModel(pre_model, 'format', 'mat', 'fileName', 'C:\Users\Bisbii\PythonProjects\ExpGSMM\data\models\dsalina_dfba.mat');
 
 matrix = readExpMatrix('C:\Users\Bisbii\PythonProjects\ExpGSMM\data\experimental\Matriz- DCCR Dunaliella salina_dfba.xlsx');
-z = 4;
+z = 30;
 
 
-INFO.ro1 = 100; %
-INFO.ro0 = 0.0001; %0
+INFO.ro1 = 104; %
+INFO.ro0 = 0.000005; %0
 INFO.wPmin = 0.12; %0.12;
 INFO.wPopt = 0.17; %0.17;
 INFO.a0 = 0.065; %

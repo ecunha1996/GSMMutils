@@ -4,9 +4,9 @@ from os.path import join
 
 import numpy as np
 
-from ExpAlgae.io import read_csv
-from ExpAlgae.model.COBRAmodel import MyModel
-from ExpAlgae.omics.omics_integration import OmicsIntegration
+from ExpGSMM.io import read_csv
+from ExpGSMM.model.COBRAmodel import MyModel
+from ExpGSMM.omics.omics_integration import OmicsIntegration
 import pickle
 
 def omics_integration(model):

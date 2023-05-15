@@ -2,9 +2,9 @@ from os.path import join
 
 import numpy as np
 
-from ExpAlgae.dynamic.soa import soa
-from ExpAlgae.model.COBRAmodel import MyModel
-from ExpAlgae.utils.utils import get_element_in_biomass, get_biomass_mass
+from ExpGSMM.dynamic.soa import soa
+from ExpGSMM.model.COBRAmodel import MyModel
+from ExpGSMM.utils.utils import get_element_in_biomass, get_biomass_mass
 
 
 def read_model(data_directory):

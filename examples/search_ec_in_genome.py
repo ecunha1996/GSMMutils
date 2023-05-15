@@ -1,9 +1,9 @@
-from ExpAlgae.Annotation.genome_annotation import FunctionalAnnotation
+from ExpGSMM.Annotation.genome_annotation import FunctionalAnnotation
 
 
 def main():
     genome_annotation = FunctionalAnnotation(r"C:\Users\Bisbii\OneDrive - Universidade do Minho\Algae\Models\Plutheri\blast")
-    genome_annotation.identify_gene_by_homology_from_ec("blastp", "3.2.2.6")
+    genome_annotation.identify_gene_by_homology_from_ec("blastp", "1.14.13.81")
 
 
 

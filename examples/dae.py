@@ -1,4 +1,4 @@
-from ExpAlgae.dynamic.DAE import DAE
+from ExpGSMM.dynamic.DAE import DAE
 
 
 

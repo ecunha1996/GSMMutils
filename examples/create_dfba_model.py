@@ -1,9 +1,9 @@
 import os
 import pickle
 from cobra.flux_analysis import find_blocked_reactions
-from ExpAlgae import DATA_PATH
-from ExpAlgae.model.COBRAmodel import MyModel
-from ExpAlgae.utils.utils import get_element_in_biomass, get_molecular_weight
+from ExpGSMM import DATA_PATH
+from ExpGSMM.model.COBRAmodel import MyModel
+from ExpGSMM.utils.utils import get_element_in_biomass, get_molecular_weight
 
 
 def create_active_biomass(model):
@@ -128,6 +128,7 @@ def main():
     model.add_medium("media.xlsx", "base_medium")
     model.setup_condition("default")
     blocked = find_blocked_reactions(model)
+    blocked = list(set(blocked) - {"PRISM_red_LED_674nm__extr"} - {"PRISM_red_LED_array_653nm__extr"})
     model.remove_reactions(blocked)
     print(model.optimize().objective_value)
     with model:
