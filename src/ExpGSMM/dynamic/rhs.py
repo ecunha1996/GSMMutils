@@ -10,10 +10,10 @@ def get_bounds(name, parameters):
 
 def light(parameters):
     Ke = 11.5 * parameters['X'] * parameters['chlorophyll']
-    Ex0 = parameters['Eo'] / (parameters['Lr'] * Ke) * (1 - sp.exp(-parameters['Lr'] * Ke))
+    Ex0 = parameters['Eo'] / (parameters['Lr'] * Ke) * (1 - sp.exp(-parameters['Lr'] * Ke)) * parameters['light_conversion_factor']
     ro = parameters['ro1'] * parameters['chlorophyll'] + parameters['ro0']
-    Ex = ro / (parameters['X'] * parameters['Lr']) * Ex0 * parameters['light_conversion_factor']
-    return Ex
+    # Ex = ro / (parameters['X'] * parameters['Lr']) * Ex0 * parameters['light_conversion_factor']
+    return Ex0
 
 
 

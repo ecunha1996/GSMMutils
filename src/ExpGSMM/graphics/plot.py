@@ -1,4 +1,4 @@
-from typing import Union, List
+from typing import Union, List, Any, Tuple
 import matplotlib.pyplot as plt
 import pandas as pd
 import seaborn as sns
@@ -96,7 +96,7 @@ def plot_two_axis(df, secondary=None):
     plt.show()
 
 
-def plot_concentrations(data: pd.DataFrame(), y:Union[str, list] = None, to_show: bool = False, experimental: List[List] = None, filename=None
+def plot_concentrations(data: pd.DataFrame(), y:Union[str, list] = None, to_show: bool = False, experimental: Union[List[List], List[Tuple[List, Any]]] = None, filename=None
                         , x_label=None, y_label=None, title=None, secondary_axis:Union[str, list]=None, secondary_y_label=None, experimental_label=None):
 
     if not x_label:

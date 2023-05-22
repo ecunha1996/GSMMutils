@@ -120,23 +120,6 @@ def create_dfba_model(condition, parameters, create_plots=False):
     for key, value in get_exchange_fluxes().items():
         exchange_fluxes[key] = ExchangeFlux(value)
 
-
-    # parameters['mu'] = ExchangeFlux(f"e_ActiveBiomass__cytop")
-    # parameters['light_uptake'] = ExchangeFlux("EX_C00205__dra")
-    # parameters['v_N'] = ExchangeFlux("EX_C00244__dra")
-    # parameters['v_CO2'] = ExchangeFlux("EX_C00011__dra")
-    # parameters['v_P'] = ExchangeFlux("EX_C00009__dra")
-    # parameters['v_S'] = ExchangeFlux("DM_C00369__chlo")
-    # parameters['v_tag'] = ExchangeFlux("DM_C00422__lip")
-    # parameters['v_C'] = ExchangeFlux("DM_C02094__chlo")
-    # parameters['v_chla'] = ExchangeFlux("DM_C05306__chlo")
-    # parameters['v_chlb'] = ExchangeFlux("DM_C05307__chlo")
-    # parameters['v_glycerol'] = ExchangeFlux("DM_C00116__cytop")
-    # parameters['v_intraP'] = ExchangeFlux("DM_C00404__vacu")
-    # parameters['v_intraN'] = ExchangeFlux("DM_C00244__cytop")
-    # dfba_model.add_exchange_fluxes([parameters['mu'], parameters['light_uptake'], parameters['v_N'], parameters['v_CO2'], parameters['v_P'], parameters['v_S'], parameters['v_tag'], parameters['v_C'],
-    #                                 parameters['v_chla'], parameters['v_chlb'], parameters['v_glycerol'], parameters['v_intraP'],parameters['v_intraN'] ])
-
     dfba_model.add_exchange_fluxes(list(exchange_fluxes.values()))
     parameters.update(exchange_fluxes)
     parameters['starch_production'] = parameters['v_S'] * 48660.195 / 1000
@@ -146,23 +129,8 @@ def create_dfba_model(condition, parameters, create_plots=False):
     parameters['tag_production'] = parameters['v_tag'] * 904.78 / 1000
     parameters['total_growth_rate'] = parameters['mu'] + parameters['starch_production'] + parameters['chl_production'] + parameters['caro_production'] + parameters['glycerol_production'] + parameters['tag_production']
 
-
     for key, value in get_dynamic_expressions(parameters).items():
         dfba_model.add_rhs_expression(key, value)
-
-    # dfba_model.add_rhs_expression("ActiveBiomass", mu * parameters["X"])
-    # dfba_model.add_rhs_expression("Biomass", total_growth_rate * parameters["X"])
-    # dfba_model.add_rhs_expression("Nitrogen_quota", -v_N - total_growth_rate * parameters["n_quota"])
-    # dfba_model.add_rhs_expression("Phosphate_quota", -v_P - total_growth_rate * parameters["p_quota"])
-    # dfba_model.add_rhs_expression("Light", 0)
-    # dfba_model.add_rhs_expression("Nitrate", v_N * parameters["X"])
-    # dfba_model.add_rhs_expression("Phosphate", v_P * parameters["X"])
-    # dfba_model.add_rhs_expression("Starch", starch_production - total_growth_rate * parameters["starch"])
-    # dfba_model.add_rhs_expression("Starch_concentration", starch_production * parameters["X"])
-    # dfba_model.add_rhs_expression("TAG", tag_production - total_growth_rate * parameters["tag"])
-    # dfba_model.add_rhs_expression("Glycerol", glycerol_production - total_growth_rate * parameters["glycerol"])
-    # dfba_model.add_rhs_expression("Carotene", caro_production - total_growth_rate * parameters["carotene"])
-    # dfba_model.add_rhs_expression("Chlorophyll", chl_production - total_growth_rate * parameters["chlorophyll"])
 
 
     ##### Experiment-dependent ######
@@ -248,14 +216,28 @@ def create_dfba_model(condition, parameters, create_plots=False):
     if create_plots:
 
         if 'Caro' in matrix.matrix[condition].columns:
-            molecules = ['Caro']
-            experimental_caro = [[matrix.matrix[condition][molecule].dropna().index.astype(float).tolist(), matrix.matrix[condition][molecule].dropna().tolist()] for molecule in molecules]
-            plot_concentrations(concentrations, y=['Carotene'], experimental=experimental_caro, filename=f"{DATA_PATH}/dfba/carotene_{condition}.png", y_label="Macromolecule (g/gDW)", experimental_label=molecules)
+            if condition.startswith("fachet") or condition.startswith("Xi") or condition.startswith("Yimei"):
+                molecules = ['Caro']
+                experimental_caro = [[matrix.matrix[condition][molecule].dropna().index.astype(float).tolist(), matrix.matrix[condition][molecule].dropna().tolist()] for molecule in molecules]
+                plot_concentrations(concentrations, y=['Carotene'], experimental=experimental_caro, filename=f"{DATA_PATH}/dfba/carotene_{condition}.png", y_label="Macromolecule (g/gDW)", experimental_label=molecules)
 
         if 'Chl' in matrix.matrix[condition].columns:
-            molecules = ['Chl']
-            experimental_caro = [[matrix.matrix[condition][molecule].dropna().index.astype(float).tolist(), matrix.matrix[condition][molecule].dropna().tolist()] for molecule in molecules]
-            plot_concentrations(concentrations, y=['Chlorophyll'], experimental=experimental_caro, filename=f"{DATA_PATH}/dfba/chlorophyll_{condition}.png", y_label="Macromolecule (g/gDW)", experimental_label=molecules)
+            if condition.startswith("fachet") or condition.startswith("Xi") or condition.startswith("Yimei"):
+                molecules = ['Chl']
+                experimental_caro = [[matrix.matrix[condition][molecule].dropna().index.astype(float).tolist(), matrix.matrix[condition][molecule].dropna().tolist()] for molecule in molecules]
+                plot_concentrations(concentrations, y=['Chlorophyll'], experimental=experimental_caro, filename=f"{DATA_PATH}/dfba/chlorophyll_{condition}.png", y_label="Macromolecule (g/gDW)", experimental_label=molecules)
+
+        if 'Caro_concentration' in matrix.matrix[condition].columns:
+            if condition.startswith("fachet") or condition.startswith("Xi") or condition.startswith("Yimei"):
+                molecules = ['Caro_concentration']
+                experimental_caro = [[matrix.matrix[condition][molecule].dropna().index.astype(float).tolist(), matrix.matrix[condition][molecule].dropna().tolist()] for molecule in molecules]
+                plot_concentrations(concentrations, y=['Carotene_concentration'], experimental=experimental_caro, filename=f"{DATA_PATH}/dfba/carotene_conc_{condition}.png", y_label="Macromolecule (g/L)", experimental_label=molecules)
+
+        if 'Chlorophyll_concentration' in matrix.matrix[condition].columns:
+            if condition.startswith("fachet") or condition.startswith("Xi") or condition.startswith("Yimei"):
+                molecules = ['Chlorophyll_concentration']
+                experimental_caro = [[matrix.matrix[condition][molecule].dropna().index.astype(float).tolist(), matrix.matrix[condition][molecule].dropna().tolist()] for molecule in molecules]
+                plot_concentrations(concentrations, y=['Chlorophyll_concentration'], experimental=experimental_caro, filename=f"{DATA_PATH}/dfba/chlorophyll_conc_{condition}.png", y_label="Macromolecule (g/L)", experimental_label=molecules)
 
         if 'NO3' in matrix.matrix[condition].columns:
             molecules = ['NO3']
@@ -328,9 +310,11 @@ def evaluate_trial(parameters, create_plots=False, condition=None):
     mat['Time (d)'] = [round(e, 2) for e in mat.index.astype(float)]
     try:
         concentrations, trajectories = create_dfba_model(condition, parameters, create_plots)
-        # to_fit = {"Biomass": "DW", "Carotene": "Caro", "Chlorophyll": "Chl", "Starch": "Starch", "Nitrate": "NO3", 'Protein': 'Protein', 'Carbohydrate': 'Carbohydrate', 'Lipid': 'Lipid'}  #
-        to_fit = {"Chlorophyll_concentration": "Chlorophyll_concentration"}
-        # to_fit = {"Carotene_concentration": "Caro_concentration", "Biomass": "DW"}  Chlorophyll_concentration
+        # to_fit = {"Biomass": "DW", "Carotene": "Caro", "Chlorophyll": "Chl", "Starch": "Starch", "Nitrate": "NO3", 'Protein': 'Protein', 'Carbohydrate': 'Carbohydrate', 'Lipid': 'Lipid',
+        #           "Chlorophyll_concentration": "Chlorophyll_concentration", "Carotene_concentration": "Caro_concentration"
+        #           }  #
+        # to_fit = {"Chlorophyll_concentration": "Chlorophyll_concentration"}
+        to_fit = {"Carotene_concentration": "Caro_concentration", "Biomass": "DW", "Carotene": "Caro"}
         experimental_time = np.array(mat["Time (d)"])
         closest = get_closest(experimental_time, concentrations.time)
         at_time = concentrations.loc[concentrations.time.isin(closest)]
@@ -399,8 +383,10 @@ def parameter_optimization():
     bounds = [(0, 100), (0, 0.1), (0, 0.5), (0, 0.5), (0, 100), (0, 100), (0, 1), (0, 500), (0, 10), (0, 100), (0, 2), (0, 0.15), (0, 7), (0, 3), (0, 0.05), (1, 4), (0, 1), (0, 1), (0, 0.5), (0, 20), (0, 1), (0, 0.5), (0, 0.1), (0, 100), (0, 10),
               (0, 0.1), (0, 0.5), (0, 1), (100, 1500), (0, 150), (10, 150), (0, 2000), (0, 10), (0, 10)]  # , (0, 10)
     conditions_names = set(matrix.matrix.keys()) - {"Resume"}
-    validation = select_random_conditions(list(conditions_names), 5, ['fachet_ML'])
+    validation = select_random_conditions(list(conditions_names), 5, ['fachet_HLND', "Yimei_HL"])
     conditions_names = tuple(conditions_names - set(validation))
+    # conditions_names  = tuple(['Xi_cont_S', 'Xi_cont_F'])
+
     # pbar = tqdm(conditions_names, desc="Running initial conditions")
     # initial_error = sum(Parallel(n_jobs=len(conditions_names))(delayed(evaluate_trial)(initial_parameters, True, condition=condition) for condition in pbar))
     # pbar.set_description(f"Initial error: {initial_error}")
@@ -413,15 +399,15 @@ def parameter_optimization():
             f.write(f"{e}\n")
         f.write(f"Initial error was: {initial_error}")
     shutil.make_archive(f'{DATA_PATH}/dfba', 'zip', f'{DATA_PATH}/dfba')
-    max_iterations = 200
+    max_iterations = 1
     initial_parameters_log = [math.log2(e) for e in initial_parameters.values()]
     bounds_log = [(math.log2(e[0] + 1e-10), math.log2(e[1] + 1e-10)) for e in bounds]
-    with tqdm(total=max_iterations, desc=f"Running optimization for {len(conditions_names)}") as pbar:
-        result = minimize(partial(fitness, conditions_names, None), np.array(initial_parameters_log), method=method, bounds=bounds_log, callback=partial(callbackF, pbar),
-                          options={"maxiter": max_iterations})
-    # with tqdm(total=max_iterations, desc="Running optimization") as pbar:
-    #     result = differential_evolution(partial(fitness, conditions_names, None), bounds_log, strategy='best1bin', maxiter=max_iterations, popsize=5, callback=partial(callbackF, pbar),
-    #                                           workers=2, x0=initial_parameters_log)
+    # with tqdm(total=max_iterations, desc=f"Running optimization for {len(conditions_names)}") as pbar:
+    #     result = minimize(partial(fitness, conditions_names, None), np.array(initial_parameters_log), method=method, bounds=bounds_log, callback=partial(callbackF, pbar),
+    #                       options={"maxiter": max_iterations})
+    with tqdm(total=max_iterations, desc="Running optimization") as pbar:
+        result = differential_evolution(partial(fitness, conditions_names, None), bounds_log, strategy='best1bin', maxiter=max_iterations, popsize=5, callback=partial(callbackF, pbar),
+                                              workers=5, x0=initial_parameters_log)
 
     # Extract optimized parameters and fitness value
     optimal_params = [2 ** e for e in result.x]
@@ -569,15 +555,24 @@ def run_all_parallel():
     }
     std_devs = {key: float(value) / 1000 for key, value in st.items()}
     error = list(std_devs.values())
-    data_carotene, data_chl = {}, {}
-    experimental_data_carotene, experimental_data_chl = {}, {}
+    data_carotene, data_chl, data_protein, data_lipid, data_carbohydrate = {}, {}, {}, {}, {}
+    experimental_data_carotene, experimental_data_chl, experimental_data_protein, experimental_data_lipid, experimental_data_carbohydrate = {}, {},{}, {}, {}
     for condition in matrix.conditions.index:
-        if "Caro" in matrix.matrix[condition].columns and not condition.startswith("fachet") and not condition.startswith("Xi") and not condition.startswith("Yimei"):
+        if 'Caro' in matrix.matrix[condition].columns and not condition.startswith("fachet") and not condition.startswith("Xi") and not condition.startswith("Yimei"):
             temp = pd.read_csv(f"{DATA_PATH}/dfba/concentrations_{condition}.csv")
             data_carotene[condition] = temp.iloc[-1]['Carotene'] * temp.iloc[-1]['Biomass']
             data_chl[condition] = temp.iloc[-1]['Chlorophyll'] * temp.iloc[-1]['Biomass']
+            data_protein[condition] = temp.iloc[-1]['Protein']
+            data_lipid[condition] = temp.iloc[-1]['Lipid']
+            data_carbohydrate[condition] = temp.iloc[-1]['Carbohydrate']
             experimental_data_carotene[condition] = matrix.matrix[condition]['Caro'].dropna().tolist()[-1] * matrix.matrix[condition]['DW'].dropna().tolist()[-1]
             experimental_data_chl[condition] = matrix.matrix[condition]['Chl'].dropna().tolist()[-1] * matrix.matrix[condition]['DW'].dropna().tolist()[-1]
+            molecules = ["Protein", "Lipid", "Carbohydrate"]
+            if all(molecule in matrix.matrix[condition].columns for molecule in molecules):
+                experimental_data_protein[condition] =  matrix.matrix[condition]['Protein'].dropna().tolist()[-1]
+                experimental_data_lipid[condition] = matrix.matrix[condition]['Lipid'].dropna().tolist()[-1]
+                experimental_data_carbohydrate[condition] = matrix.matrix[condition]['Carbohydrate'].dropna().tolist()[-1]
+
     ax = plt.subplot(111)
     sns.barplot(x=list(experimental_data_carotene.keys()), y=list(experimental_data_carotene.values()), ci='sd')
     plt.errorbar(x=list(experimental_data_carotene.keys()), y=list(experimental_data_carotene.values()), yerr=error, fmt='none', color='black', capsize=4)
@@ -594,7 +589,37 @@ def run_all_parallel():
     plt.ylabel(r"Chlorophyll (g/L)")
     plt.xlabel(r"Trial")
     plt.savefig(f"{DATA_PATH}/dfba/chlorophyll_in_house.png")
+
+    plt.clf()
+    ax = plt.subplot(111)
+    sns.barplot(x=list(experimental_data_protein.keys()), y=list(experimental_data_protein.values()), ci='sd')
+    plt.errorbar(x=list(experimental_data_protein.keys()), y=list(experimental_data_protein.values()), yerr=error, fmt='none', color='black', capsize=4)
+    ax.scatter(x=list(data_protein.keys()), y=list(data_protein.values()), zorder=2)
+    plt.ylabel(r"Protein (g/gDW)")
+    plt.xlabel(r"Trial")
+    plt.savefig(f"{DATA_PATH}/dfba/protein_in_house.png")
+
+    plt.clf()
+    ax = plt.subplot(111)
+    sns.barplot(x=list(experimental_data_lipid.keys()), y=list(experimental_data_lipid.values()), ci='sd')
+    plt.errorbar(x=list(experimental_data_lipid.keys()), y=list(experimental_data_lipid.values()), yerr=error, fmt='none', color='black', capsize=4)
+    ax.scatter(x=list(data_lipid.keys()), y=list(data_lipid.values()), zorder=2)
+    plt.ylabel(r"Lipid (g/L)")
+    plt.xlabel(r"Trial")
+    plt.savefig(f"{DATA_PATH}/dfba/lipid_in_house.png")
+
+    plt.clf()
+    ax = plt.subplot(111)
+    sns.barplot(x=list(experimental_data_carbohydrate.keys()), y=list(experimental_data_carbohydrate.values()), ci='sd')
+    plt.errorbar(x=list(experimental_data_carbohydrate.keys()), y=list(experimental_data_carbohydrate.values()), yerr=error, fmt='none', color='black', capsize=4)
+    ax.scatter(x=list(data_carbohydrate.keys()), y=list(data_carbohydrate.values()), zorder=2)
+    plt.ylabel(r"Carbohydrate (g/L)")
+    plt.xlabel(r"Trial")
+    plt.savefig(f"{DATA_PATH}/dfba/carbohydrate_in_house.png")
+
     print(f"Total error from set of parameters: {total_error}")
+
+
 
 
 def run_condition():
@@ -623,10 +648,8 @@ def run_all():
 
 
 if __name__ == '__main__':
-    # parameter_optimization()
+    parameter_optimization()
     # optimize_simple_parameters()
     # run_all()
-    run_all_parallel()
-    # run_condition()
-
+    # run_all_parallel()
     ## create random sample of conditions
