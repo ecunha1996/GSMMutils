@@ -2,8 +2,8 @@ import json
 
 import pandas as pd
 
-from ExpGSMM import MyModel, DATA_PATH
-from ExpGSMM.api.kegg import search_pathway_map_id
+from GSMMutils import MyModel, DATA_PATH
+from GSMMutils.api.kegg import search_pathway_map_id
 import webbrowser
 
 def load_data(filenames):

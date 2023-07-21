@@ -2,7 +2,7 @@
 import unittest
 import os
 import matlab.engine
-from ExpGSMM.dynamic.DAE import DAE
+from GSMMutils.dynamic.DAE import DAE
 
 class TestDAE(unittest.TestCase):
 

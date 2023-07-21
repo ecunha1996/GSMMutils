@@ -2,13 +2,13 @@ from pprint import pprint
 
 import pandas as pd
 
-from ExpGSMM import DATA_PATH
+from GSMMutils import DATA_PATH
 
 pd.set_option('display.max_columns', None)
-from ExpGSMM.experimental.Biomass import Biomass
-from ExpGSMM.experimental.ExpMatrix import ExpMatrix
-from ExpGSMM.graphics.plot import boxplot, qqplot
-from ExpGSMM.stats.stats import StatisticalAnalysis
+from GSMMutils.experimental.Biomass import Biomass
+from GSMMutils.experimental.ExpMatrix import ExpMatrix
+from GSMMutils.graphics.plot import boxplot, qqplot
+from GSMMutils.stats.stats import StatisticalAnalysis
 
 def stats(matrix):
     matrix.conditions = "Resume"
@@ -51,6 +51,7 @@ if __name__ == '__main__':
     m = m.dropna()
     m.rename(columns = {"B-carotene (mean)": 'carotene', "Lutein (mean)": 'lutein', "Chlorophyll a (mean)": 'chla', "Chlorophyll b (mean)": 'chlb'}, inplace=True)
 
+    m['caro_lutein'] = m['carotene']/m['lutein']
 
 
     boxplot(m, x_cols=['P', 'N', 'salinity', 'aeration'], y_cols=['carotene'], to_show=True, x_labels={'P': 'P (mM)', 'N': 'N (mM)', 'salinity': 'NaCl $(g \cdot L^{-1})$', 'aeration': 'aeration rate'}
@@ -61,8 +62,13 @@ if __name__ == '__main__':
             , y_labels={'chla': 'chla w/w'})
     boxplot(m, x_cols=['P', 'N', 'salinity', 'aeration'], y_cols=['chlb'], to_show=True, x_labels={'P': 'P (mM)', 'N': 'N (mM)', 'salinity': 'NaCl $(g \cdot L^{-1})$', 'aeration': 'aeration rate'}
             , y_labels={'chlb': 'chlb w/w'})
+
+    m['lutein_concentration'] = m['lutein'] * matrix.conditions['biomass']
     boxplot(m, x_cols=['P', 'N', 'salinity', 'aeration'], y_cols=['lutein'], to_show=True, x_labels={'P': 'P (mM)', 'N': 'N (mM)', 'salinity': 'NaCl $(g \cdot L^{-1})$', 'aeration': 'aeration rate'}
             , y_labels={'lutein': 'lutein w/w'})
+
+    boxplot(m, x_cols=['P', 'N', 'salinity', 'aeration'], y_cols=['lutein_concentration'], to_show=True, x_labels={'P': 'P (mM)', 'N': 'N (mM)', 'salinity': 'NaCl $(g \cdot L^{-1})$', 'aeration': 'aeration rate'}
+            , y_labels={'lutein_concentration': 'lutein g/L'})
 
     stats = StatisticalAnalysis(m)
     cor = stats.get_correlation()
@@ -88,6 +94,11 @@ if __name__ == '__main__':
     stats.anova('N ~ lutein')
     stats.anova('salinity ~ lutein')
     stats.anova('aeration ~ lutein')
+
+    stats.anova('P ~ caro_lutein')
+    stats.anova('N ~ caro_lutein')
+    stats.anova('salinity ~ caro_lutein')
+    stats.anova('aeration ~ caro_lutein')
 
     stats.manova('salinity + aeration ~ carotene')
     stats.manova('P + salinity ~ carotene')

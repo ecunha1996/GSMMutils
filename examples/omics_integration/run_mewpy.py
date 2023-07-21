@@ -4,9 +4,9 @@ from os.path import join
 
 import numpy as np
 
-from ExpGSMM.io import read_csv
-from ExpGSMM.model.COBRAmodel import MyModel
-from ExpGSMM.omics.omics_integration import OmicsIntegration
+from GSMMutils.io import read_csv
+from GSMMutils.model.COBRAmodel import MyModel
+from GSMMutils.omics.omics_integration import OmicsIntegration
 import pickle
 
 def omics_integration(model):

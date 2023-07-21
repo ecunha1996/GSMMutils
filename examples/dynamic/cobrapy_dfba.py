@@ -5,8 +5,8 @@ from matplotlib import pyplot as plt
 from scipy.integrate import solve_ivp
 from tqdm import tqdm
 
-from ExpGSMM import MyModel, DATA_PATH
-from ExpGSMM.dynamic.cobrapy.cobrapy_dfba import CobrapyDFBA
+from GSMMutils import MyModel, DATA_PATH
+from GSMMutils.dynamic.cobrapy.cobrapy_dfba import CobrapyDFBA
 
 
 def main():

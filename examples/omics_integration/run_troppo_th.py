@@ -5,8 +5,8 @@ import sys
 
 from PyQt5.QtWidgets import QVBoxLayout, QWidget
 
-from ExpGSMM.io import read_csv
-from ExpGSMM.omics.omics_integration import OmicsIntegration
+from GSMMutils.io import read_csv
+from GSMMutils.omics.omics_integration import OmicsIntegration
 
 sys.path.insert(0, r"/")
 from Tissue_specific_Reconstruction_Pipeline.Pipeline.utils.config_variables import *

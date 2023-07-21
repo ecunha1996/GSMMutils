@@ -1,9 +1,9 @@
 import os
 import pickle
 from cobra.flux_analysis import find_blocked_reactions
-from ExpGSMM import DATA_PATH
-from ExpGSMM.model.COBRAmodel import MyModel
-from ExpGSMM.utils.utils import get_element_in_biomass, get_molecular_weight
+from GSMMutils import DATA_PATH
+from GSMMutils.model.COBRAmodel import MyModel
+from GSMMutils.utils.utils import get_element_in_biomass, get_molecular_weight
 
 
 def create_active_biomass(model):
@@ -82,18 +82,19 @@ def remove_pigments(model):
     model.set_stoichiometry("e_Pigments_no_car_chl__cytop", "C05306__chlo", 0)
     model.set_stoichiometry("e_Pigments_no_car_chl__cytop", "C05307__chlo", 0)
     model.set_stoichiometry("e_Pigments_no_car_chl__cytop", "C02094__chlo", 0)
+    model.set_stoichiometry("e_Pigments_no_car_chl__cytop", "C08601__chlo", 0)
 
-    model.set_stoichiometry("e_Pigments_no_car_chl__cytop", "C08614__chlo", -1.0095)
-    model.set_stoichiometry("e_Pigments_no_car_chl__cytop", "C05433__chlo", -0.0243)
-    model.set_stoichiometry("e_Pigments_no_car_chl__cytop", "C06098__chlo", -0.0156)
-    model.set_stoichiometry("e_Pigments_no_car_chl__cytop", "C08591__chlo", -0.1576)
+    model.set_stoichiometry("e_Pigments_no_car_chl__cytop", "C08614__chlo", -1.0633)
+    model.set_stoichiometry("e_Pigments_no_car_chl__cytop", "C05433__chlo", -0.0256)
+    model.set_stoichiometry("e_Pigments_no_car_chl__cytop", "C06098__chlo", -0.0164)
+    model.set_stoichiometry("e_Pigments_no_car_chl__cytop", "C08591__chlo", -0.1660)
 
-    model.set_stoichiometry("e_Pigments_no_car_chl__cytop", "C08606__chlo", -0.0030)
+    model.set_stoichiometry("e_Pigments_no_car_chl__cytop", "C08606__chlo", -0.0032)
     model.set_stoichiometry("e_Pigments_no_car_chl__cytop", "C05432__chlo", -0.0008)
     model.set_stoichiometry("e_Pigments_no_car_chl__cytop", "C08579__chlo", -0.0014)
-    model.set_stoichiometry("e_Pigments_no_car_chl__cytop", "C20484__chlo", -0.4298)
+    model.set_stoichiometry("e_Pigments_no_car_chl__cytop", "C20484__chlo", -0.4527)
 
-    model.set_stoichiometry("e_ActiveBiomass__cytop", "e_Pigment__chlo", -0.0172)
+    model.set_stoichiometry("e_ActiveBiomass__cytop", "e_Pigment__chlo", -0.0163)
 
     return model
 

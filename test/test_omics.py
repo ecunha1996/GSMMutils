@@ -2,10 +2,10 @@
 import math
 import os
 
-from ExpGSMM.model.COBRAmodel import MyModel
-from ExpGSMM.io import read_csv
-from ExpGSMM.omics.omics_integration import OmicsIntegration
-from ExpGSMM.utils.utils import flux_change
+from GSMMutils.model.COBRAmodel import MyModel
+from GSMMutils.io import read_csv
+from GSMMutils.omics.omics_integration import OmicsIntegration
+from GSMMutils.utils.utils import flux_change
 from test_all import read_model
 import pandas as pd
 
@@ -201,8 +201,8 @@ def sample():
             model = copy
     print(model.optimize().objective_value)
     print(len(model.reactions))
-    # model.write(r"C:\Users\Bisbii\PythonProjects\ExpGSMM\data\omics\control_tinit_t18.1.xml")
-    # cobra_model = cobra.io.read_sbml_model(r"C:\Users\Bisbii\PythonProjects\ExpGSMM\data\omics\control_tinit_t18.1.xml")
+    # model.write(r"C:\Users\Bisbii\PythonProjects\GSMMutils\data\omics\control_tinit_t18.1.xml")
+    # cobra_model = cobra.io.read_sbml_model(r"C:\Users\Bisbii\PythonProjects\GSMMutils\data\omics\control_tinit_t18.1.xml")
     # print(len(cobra_model.reactions))
     # print(cobra_model.optimize().objective_value)
     # res = model.sample(constraints={"e_Biomass__cytop": (0.1, 1000)})

@@ -1,9 +1,10 @@
 import os
 
+import cobra
 import pandas as pd
 import numpy as np
 from cobra.io import read_sbml_model, write_sbml_model
-from cobra.sampling import ACHRSampler
+from cobra.sampling import ACHRSampler, OptGPSampler
 from joblib import Parallel, delayed
 from matplotlib import pyplot as plt
 from scipy import stats
@@ -14,8 +15,8 @@ import sys
 
 
 sys.path.insert(0, "/home/src/")
-from ExpGSMM.model.COBRAmodel import MyModel
-from ExpGSMM import DATA_PATH
+from GSMMutils.model.COBRAmodel import MyModel
+from GSMMutils import DATA_PATH
 
 
 def split_reversible_reactions(model_to_sample):

@@ -4,8 +4,8 @@ import numpy as np
 import pandas as pd
 from matplotlib import pyplot as plt
 
-from ExpGSMM.graphics.plot import lineplot
-from ExpGSMM.model.COBRAmodel import MyModel
+from GSMMutils.graphics.plot import lineplot
+from GSMMutils.model.COBRAmodel import MyModel
 from os.path import join
 from cobra.flux_analysis import pfba
 from joblib import delayed, Parallel

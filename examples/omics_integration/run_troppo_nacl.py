@@ -3,12 +3,12 @@ import os
 import pandas as pd
 import sys
 
-from ExpGSMM import DATA_PATH
+from GSMMutils import DATA_PATH
 
 sys.path.insert(0, r"/")
 sys.path.insert(0, "/home/src/")
-from ExpGSMM.io import read_csv
-from ExpGSMM.omics.omics_integration import OmicsIntegration
+from GSMMutils.io import read_csv
+from GSMMutils.omics.omics_integration import OmicsIntegration
 from Tissue_specific_Reconstruction_Pipeline.Pipeline.utils.config_variables import *
 from Tissue_specific_Reconstruction_Pipeline.Pipeline.utils.pipeline_paths import *
 from Tissue_specific_Reconstruction_Pipeline.Pipeline.model_handle import load_model, sbml_model_reconstruction

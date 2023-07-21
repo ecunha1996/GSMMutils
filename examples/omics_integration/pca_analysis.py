@@ -9,7 +9,7 @@ from sklearn.preprocessing import StandardScaler
 from matplotlib import colors as mcolors
 import prince
 
-from ExpGSMM import DATA_PATH
+from GSMMutils import DATA_PATH
 from Tissue_specific_Reconstruction_Pipeline.Pipeline.utils.config_variables import DATASET
 
 M_COLORS = list(mcolors.TABLEAU_COLORS.keys())

@@ -1,5 +1,5 @@
-from ExpGSMM.model.COBRAmodel import MyModel
-from ExpGSMM.model.validation import check_consistency
+from GSMMutils.model.COBRAmodel import MyModel
+from GSMMutils.model.validation import check_consistency
 from os.path import join
 
 
