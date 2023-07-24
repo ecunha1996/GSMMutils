@@ -1,6 +1,7 @@
 from pprint import pprint
 
 import pandas as pd
+from matplotlib import pyplot as plt
 
 from GSMMutils import DATA_PATH
 
@@ -41,6 +42,34 @@ if __name__ == '__main__':
             , y_labels={'Carbohydrate': 'Carbohydrate w/w'})
     boxplot(m, x_cols=['P', 'N', 'salinity', 'aeration'], y_cols=['Lipid'], to_show=True, x_labels={'P': 'P (mM)', 'N': 'N (mM)', 'salinity': 'NaCl $(g \cdot L^{-1})$', 'aeration': 'aeration rate'}
             , y_labels={'Lipid': 'Lipid w/w'})
+
+    df = m
+    import scipy
+    slope, intercept, r_value, p_value, std_err = scipy.stats.linregress(df['salinity'], df['Lipid'])
+
+    # Create the regression line equation
+    equation = f'Lipid = {slope:.2f}salinity + {intercept:.2f}'
+
+    # Create a scatter plot of the data points
+    plt.scatter(df['salinity'], df['Lipid'], label='Data Points')
+
+    # Add the regression line to the plot
+    plt.plot(df['salinity'], slope * df['salinity'] + intercept, 'r', label='Regression Line')
+
+    # Add labels and title to the plot
+    plt.xlabel('X-axis')
+    plt.ylabel('Y-axis')
+    plt.title('Linear Regression')
+    plt.legend()
+    print(equation)
+    # Display the equation on the plot
+    plt.text(1, 4, equation, fontsize=12)
+
+    # Show the plot
+    plt.show()
+
+
+
 
     stats = StatisticalAnalysis(m)
     cor = stats.get_correlation()

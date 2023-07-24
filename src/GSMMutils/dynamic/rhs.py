@@ -60,7 +60,7 @@ def chlorophyll(parameters):
 
 
 def tag(parameters):
-    return sp.Max(sp.N(parameters["maximum_tag_production"] / parameters["F"] / 904.78 * parameters["n"]), 0)
+    return sp.Max(sp.N(parameters["maximum_tag_production"] / parameters["F"] / 904.78 * parameters["n"] * parameters["nacl_lipid"]*1/parameters["nacl"]), 0)
 
 
 def glycerol(parameters):

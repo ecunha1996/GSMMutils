@@ -1,11 +1,11 @@
 import json
 import numbers
 import os
+os.environ["OPENBLAS_NUM_THREADS"] = "1"
 import shutil
 import sys
 
 from matplotlib import pyplot as plt
-from scipy.optimize import differential_evolution
 
 sys.path.insert(0, "/home/src/")
 import pandas as pd
@@ -67,7 +67,14 @@ def select_random_conditions(conditions, num_to_select, mandatory_strings):
     return selected
 
 
-def read_model():
+def read_model() -> MyModel:
+    """
+    Reads the model from the xml file and sets the objective function to the biomass reaction, demands, and minimizes the nitrate and phosphorus uptake.
+    Returns
+        MyModel: The model with the objective function set to the biomass reaction and the nitrate and phosphorus uptake minimized.
+    -------
+
+    """
     fba_model = MyModel(join(DATA_PATH, "models/model_dfba.xml"), "e_ActiveBiomass__cytop")
     fba_model.exchanges.EX_C00011__dra.bounds = (-10000, 10000)
     fba_model.solver = "glpk"
@@ -84,7 +91,13 @@ def read_model():
 fba_model = read_model()
 
 
-def get_kinetic_variables():
+def get_kinetic_variables() -> dict:
+    """
+    Creates the kinetic variables used in the model.
+    Returns
+    -------
+
+    """
     light = KineticVariable("Light")
     X = KineticVariable("Biomass")
     F = KineticVariable("ActiveBiomass")
@@ -105,6 +118,18 @@ def get_kinetic_variables():
 
 @timeout(20)
 def create_dfba_model(condition, parameters, create_plots=False):
+    """
+    Creates the dfba model for a given condition and parameters.
+    Parameters
+    ----------
+    condition (str): Condition to create the model for.
+    parameters (dict): Dictionary with the parameters to use in the model.
+    create_plots (bool): Whether to create plots or not.
+
+    Returns
+    -------
+
+    """
     if 'Time (d)' not in matrix.matrix[condition].columns:
         matrix.matrix[condition]['Time (d)'] = matrix.matrix[condition].index
     dfba_model = DfbaModel(fba_model)
@@ -225,49 +250,60 @@ def create_dfba_model(condition, parameters, create_plots=False):
             if condition.startswith("fachet") or condition.startswith("Xi") or condition.startswith("Yimei"):
                 molecules = ['Caro']
                 experimental_caro = [[matrix.matrix[condition][molecule].dropna().index.astype(float).tolist(), matrix.matrix[condition][molecule].dropna().tolist()] for molecule in molecules]
-                plot_concentrations(concentrations, y=['Carotene'], experimental=experimental_caro, filename=f"{DATA_PATH}/dfba/carotene_{condition}.png", y_label="Macromolecule (g/gDW)", experimental_label=molecules)
+                plot_concentrations(concentrations, y=['Carotene'], experimental=experimental_caro, filename=f"{DATA_PATH}/dfba/pigments/carotene_{condition}.png", y_label="Macromolecule (g/gDW)", experimental_label=molecules)
 
         if 'Chl' in matrix.matrix[condition].columns:
             if condition.startswith("fachet") or condition.startswith("Xi") or condition.startswith("Yimei"):
                 molecules = ['Chl']
                 experimental_caro = [[matrix.matrix[condition][molecule].dropna().index.astype(float).tolist(), matrix.matrix[condition][molecule].dropna().tolist()] for molecule in molecules]
-                plot_concentrations(concentrations, y=['Chlorophyll'], experimental=experimental_caro, filename=f"{DATA_PATH}/dfba/chlorophyll_{condition}.png", y_label="Macromolecule (g/gDW)", experimental_label=molecules)
+                plot_concentrations(concentrations, y=['Chlorophyll'], experimental=experimental_caro, filename=f"{DATA_PATH}/dfba/pigments/chlorophyll_{condition}.png", y_label="Macromolecule (g/gDW)", experimental_label=molecules)
 
         if 'Caro_concentration' in matrix.matrix[condition].columns:
             if condition.startswith("fachet") or condition.startswith("Xi") or condition.startswith("Yimei"):
                 molecules = ['Caro_concentration']
                 experimental_caro = [[matrix.matrix[condition][molecule].dropna().index.astype(float).tolist(), matrix.matrix[condition][molecule].dropna().tolist()] for molecule in molecules]
-                plot_concentrations(concentrations, y=['Carotene_concentration'], experimental=experimental_caro, filename=f"{DATA_PATH}/dfba/carotene_conc_{condition}.png", y_label="Macromolecule (g/L)", experimental_label=molecules)
+                plot_concentrations(concentrations, y=['Carotene_concentration'], experimental=experimental_caro, filename=f"{DATA_PATH}/dfba/pigments/carotene_conc_{condition}.png", y_label="Macromolecule (g/L)", experimental_label=molecules)
 
         if 'Chlorophyll_concentration' in matrix.matrix[condition].columns:
             if condition.startswith("fachet") or condition.startswith("Xi") or condition.startswith("Yimei"):
                 molecules = ['Chlorophyll_concentration']
                 experimental_caro = [[matrix.matrix[condition][molecule].dropna().index.astype(float).tolist(), matrix.matrix[condition][molecule].dropna().tolist()] for molecule in molecules]
-                plot_concentrations(concentrations, y=['Chlorophyll_concentration'], experimental=experimental_caro, filename=f"{DATA_PATH}/dfba/chlorophyll_conc_{condition}.png", y_label="Macromolecule (g/L)", experimental_label=molecules)
+                plot_concentrations(concentrations, y=['Chlorophyll_concentration'], experimental=experimental_caro, filename=f"{DATA_PATH}/dfba/pigments/chlorophyll_conc_{condition}.png", y_label="Macromolecule (g/L)", experimental_label=molecules)
 
         if 'NO3' in matrix.matrix[condition].columns:
             molecules = ['NO3']
             experimental_no3 = [[matrix.matrix[condition][molecule].dropna().index.astype(float).tolist(), matrix.matrix[condition][molecule].dropna().tolist()] for molecule in molecules]
             plot_concentrations(concentrations, y=['Nitrate'], experimental=experimental_no3, filename=f"{DATA_PATH}/dfba/nitrate_{condition}.png", y_label="Macromolecule (g/gDW)", experimental_label=molecules)
 
-        fig1 = plot_concentrations(concentrations, y=["Biomass", "ActiveBiomass"], experimental=experimental, filename=f"{DATA_PATH}/dfba/biomass_concentrations_{condition}.png", y_label="Biomass (g/L)")
+        fig1 = plot_concentrations(concentrations, y=["Biomass", "ActiveBiomass"], experimental=experimental, filename=f"{DATA_PATH}/dfba/biomass_concentrations/biomass_concentrations_{condition}.png", y_label="Biomass (g/L)")
 
-        fig2 = plot_concentrations(concentrations, y=["Phosphate"], secondary_axis=["Nitrate"], filename=f"{DATA_PATH}/dfba/external_concentrations_{condition}.png", y_label="Phosphate (mmol/L)", secondary_y_label="Nitrate (mmol/L)")
+        fig2 = plot_concentrations(concentrations, y=["Phosphate"], secondary_axis=["Nitrate"], filename=f"{DATA_PATH}/dfba/concentrations/external_concentrations_{condition}.png", y_label="Phosphate (mmol/L)", secondary_y_label="Nitrate (mmol/L)")
 
-        fig3 = plot_concentrations(concentrations, y=["Glycerol", "Starch", "TAG"], filename=f"{DATA_PATH}/dfba/intracellular_quotas_{condition}.png", y_label="Quota (g/gDW)", secondary_axis=["Carotene", "Chlorophyll"], secondary_y_label="Quota (g/gDW)")
+        fig3 = plot_concentrations(concentrations, y=["Glycerol", "Starch", "TAG"], filename=f"{DATA_PATH}/dfba/quotas/intracellular_quotas_{condition}.png", y_label="Quota (g/gDW)", secondary_axis=["Carotene", "Chlorophyll"], secondary_y_label="Quota (g/gDW)")
 
         molecules = ["Protein", "Lipid", "Carbohydrate"]
         if all(molecule in matrix.matrix[condition].columns for molecule in molecules):
             experimental = [[matrix.matrix[condition][molecule].dropna().index.astype(float).tolist(), matrix.matrix[condition][molecule].dropna().tolist()] for molecule in molecules]
-            fig4 = plot_concentrations(concentrations, y=molecules, experimental=experimental, filename=f"{DATA_PATH}/dfba/macromolecules_{condition}.png", y_label="Macromolecule (g/gDW)", experimental_label=molecules)
+            fig4 = plot_concentrations(concentrations, y=molecules, experimental=experimental, filename=f"{DATA_PATH}/dfba/macros/macromolecules_{condition}.png", y_label="Macromolecule (g/gDW)", experimental_label=molecules)
 
-        concentrations.to_csv(f"{DATA_PATH}/dfba/concentrations_{condition}.csv", index=False)
-        trajectories.to_csv(f"{DATA_PATH}/dfba/trajectories_{condition}.csv", index=False)
+        concentrations.to_csv(f"{DATA_PATH}/dfba/concentrations/concentrations_{condition}.csv", index=False)
+        trajectories.to_csv(f"{DATA_PATH}/dfba/trajectories/trajectories_{condition}.csv", index=False)
 
     return concentrations, trajectories
 
 
 def get_closest(list_a, list_b):
+    """
+    Gets the closest values from list_b to list_a.
+    Parameters
+    ----------
+    list_a
+    list_b
+
+    Returns
+    -------
+
+    """
     closest_values = []
     for num_A in list_a:
         index = np.abs(np.array(list_b) - num_A).argmin()
@@ -276,11 +312,23 @@ def get_closest(list_a, list_b):
 
 
 def fitness(conditions_names, parameters_under_optimization=None, initial_parameters=None):
+    """
+    Calculates the fitness of a set of parameters.
+    Parameters
+    ----------
+    conditions_names
+    parameters_under_optimization
+    initial_parameters
+
+    Returns
+    -------
+
+    """
     if not parameters_under_optimization:
         parameters = {}
         parameters_names = ('ro1', 'ro0', 'a0', 'a1', 'a2', 'a3', 'a4', 'ExA', 'l', 'smoothing_factor', 'wPopt', 'wPmin', 'wNmax', 'wNmin', 'c0', 't_max', 'K_nitrogen_quota', 'VPmax', 'KPm', 'VNmax', 'KNm', 'wgly_max',
                             'maximum_starch_production', 'maximum_tag_production', 'v_nitrate_max', 'v_polyphosphate_max', "v_car_max", "ymax", "Esat", "KEchl", "vco2max", "Kstl", "hill_coeff_starch", "light_conversion_factor",
-                            "v_lut_max", "a0_lut", "a1_lut", "a3_lut", "a4_lut", "smoothing_factor_lut")
+                            "v_lut_max", "a0_lut", "a1_lut", "a3_lut", "a4_lut", "smoothing_factor_lut", "nacl_lipid")
 
         for i, parameter_name in enumerate(parameters_names):
             parameters[parameter_name] = 2 ** initial_parameters[i]
@@ -311,6 +359,18 @@ def fitness(conditions_names, parameters_under_optimization=None, initial_parame
 
 
 def evaluate_trial(parameters, create_plots=False, condition=None):
+    """
+    Evaluates a trial.
+    Parameters
+    ----------
+    parameters (dict): Dictionary with the parameters to use in the model.
+    create_plots (bool): Whether to create plots or not.
+    condition (str): Condition to create the model for.
+
+    Returns (float): The total error of the trial.
+    -------
+
+    """
     print(f"Trial: {condition}")
     total_error = 0
     mat = matrix.matrix[condition]
@@ -341,6 +401,17 @@ def evaluate_trial(parameters, create_plots=False, condition=None):
 
 
 def get_relative_error(experimental, simulated):
+    """
+    Calculates the relative error between two vectors.
+    Parameters
+    ----------
+    experimental
+    simulated
+
+    Returns
+    -------
+
+    """
     relative_error = 0
     if simulated.shape[0] < experimental.shape[0] / 4:
         return 100
@@ -370,6 +441,17 @@ def get_relative_error(experimental, simulated):
 
 
 def callbackF(pbar, x):
+    """
+    Callback function for the optimization.
+    Parameters
+    ----------
+    pbar
+    x
+
+    Returns
+    -------
+
+    """
     with open(f"{DATA_PATH}/dfba/temp_error.log") as file:
         error = float(file.read())
     pbar.set_description(f"Current objective: {round(error, 3)}")
@@ -377,6 +459,12 @@ def callbackF(pbar, x):
 
 
 def parameter_optimization():
+    """
+    Runs the parameter optimization.
+    Returns
+    -------
+
+    """
     from scipy.optimize import minimize
 
     initial_parameters = json.load(open(f"{DATA_PATH}/dfba/inputs/initial_parameters.json", "r"))
@@ -387,10 +475,11 @@ def parameter_optimization():
 
     # Define bounds for parameters (if any)
     bounds = [(0, 100), (0, 0.1), (0, 0.5), (0, 0.5), (0, 100), (0, 100), (0, 1), (0, 500), (0, 10), (0, 100), (0, 2), (0, 0.15), (0, 7), (0, 3), (0, 0.05), (1, 4), (0, 1), (0, 1), (0, 0.5), (0, 20), (0, 1), (0, 0.5), (0, 0.1), (0, 100), (0, 10),
-              (0, 0.1), (0, 0.5), (0, 1), (100, 1500), (0, 150), (10, 150), (0, 2000), (0, 10), (0, 10), (0, 0.5), (0,1), (0,1), (0, 100), (0, 1), (0, 10)]  # , (0, 10)
+              (0, 0.1), (0, 0.5), (0, 1), (100, 1500), (0, 150), (10, 150), (0, 2000), (0, 10), (0, 10), (0, 0.5), (0,1), (0,1), (0, 100), (0, 1), (0, 10), (0,0.1)]  # , (0, 10)
     conditions_names = set(matrix.matrix.keys()) - {"Resume"}
     validation = select_random_conditions(list(conditions_names), 5, ['fachet_HLND', "Yimei_HL"])
-    conditions_names = tuple(conditions_names - set(validation))
+    conditions_names = tuple(conditions_names - set(validation) - {e for e in conditions_names if e.startswith("Xi") or e.startswith("Yimei")
+                                                                   or e.startswith("fachet")})
     # conditions_names  = tuple(['Xi_cont_S', 'Xi_cont_F'])
 
     # pbar = tqdm(conditions_names, desc="Running initial conditions")
@@ -433,7 +522,7 @@ def parameter_optimization():
         for index, param in enumerate(optimal_params):
             f.write(f"{list(initial_parameters.keys())[index]}\t{param}\n")
             print(f"{list(initial_parameters.keys())[index]}:\t{param}\t{optimal_params[index]}\n")
-        f.write(str(optimal_fitness))
+        f.write(f"Error after optimization:\t{str(optimal_fitness)}")
     print("Optimized Fitness Value: ", optimal_fitness)
     # final_error = sum(Parallel(n_jobs=30)(delayed(evaluate_trial)(fba_model, matrix, condition, optimal_parameters, create_plots=True) for condition in conditions_names))
     # print(f"Final error was: {final_error}")
@@ -448,6 +537,12 @@ def parameter_optimization():
 
 
 def optimize_simple_parameters():
+    """
+    Runs the parameter optimization.
+    Returns
+    -------
+
+    """
     from scipy.optimize import minimize
     parameters_to_optimize = [
         'a0',
@@ -523,6 +618,12 @@ def optimize_simple_parameters():
 
 
 def run_all_parallel():
+    """
+    Runs all the conditions in parallel.
+    Returns
+    -------
+
+    """
     initial_parameters = json.load(open(f"{DATA_PATH}/dfba/inputs/initial_parameters.json", "r"))
 
     # model = read_model()
@@ -563,17 +664,19 @@ def run_all_parallel():
     }
     std_devs = {key: float(value) / 1000 for key, value in st.items()}
     error = list(std_devs.values())
-    data_carotene, data_carotene_conc, data_chl, data_protein, data_lipid, data_carbohydrate, data_lutein = {}, {}, {}, {}, {}, {}, {}
-    experimental_data_carotene, experimental_data_carotene_concentration, experimental_data_chl, experimental_data_protein, experimental_data_lipid, experimental_data_carbohydrate, experimental_data_lutein = {}, {},{}, {}, {}, {}, {}
+    data_carotene, data_carotene_conc, data_chl, data_protein, data_lipid, data_carbohydrate, data_lutein, data_lipid_conc = {}, {}, {}, {}, {}, {}, {}, {}
+    experimental_data_carotene, experimental_data_carotene_concentration, experimental_data_chl, experimental_data_protein, \
+        experimental_data_lipid, experimental_data_carbohydrate, experimental_data_lutein, experimental_data_lipid_concentration= {}, {},{}, {}, {}, {}, {}, {}
     for condition in matrix.conditions.index:
         if 'Caro' in matrix.matrix[condition].columns and not condition.startswith("fachet") and not condition.startswith("Xi") and not condition.startswith("Yimei"):
-            temp = pd.read_csv(f"{DATA_PATH}/dfba/concentrations_{condition}.csv")
+            temp = pd.read_csv(f"{DATA_PATH}/dfba/concentrations/concentrations_{condition}.csv")
             data_carotene[condition] = temp.iloc[-1]['Carotene']
             data_carotene_conc[condition] = temp.iloc[-1]['Carotene'] * temp.iloc[-1]['Biomass']
             data_lutein[condition] = temp.iloc[-1]['Lutein']
             data_chl[condition] = temp.iloc[-1]['Chlorophyll'] * temp.iloc[-1]['Biomass']
             data_protein[condition] = temp.iloc[-1]['Protein']
             data_lipid[condition] = temp.iloc[-1]['Lipid']
+            data_lipid_conc[condition] = temp.iloc[-1]['Lipid'] * temp.iloc[-1]['Biomass']
             data_carbohydrate[condition] = temp.iloc[-1]['Carbohydrate']
             experimental_data_carotene[condition] = matrix.matrix[condition]['Caro'].dropna().tolist()[-1]
             experimental_data_lutein[condition] = matrix.matrix[condition]['Lutein'].dropna().tolist()[-1]
@@ -583,6 +686,7 @@ def run_all_parallel():
             if all(molecule in matrix.matrix[condition].columns for molecule in molecules):
                 experimental_data_protein[condition] =  matrix.matrix[condition]['Protein'].dropna().tolist()[-1]
                 experimental_data_lipid[condition] = matrix.matrix[condition]['Lipid'].dropna().tolist()[-1]
+                experimental_data_lipid_concentration[condition] = matrix.matrix[condition]['Lipid'].dropna().tolist()[-1] * matrix.matrix[condition]['DW'].dropna().tolist()[-1]
                 experimental_data_carbohydrate[condition] = matrix.matrix[condition]['Carbohydrate'].dropna().tolist()[-1]
 
     ax = plt.subplot(111)
@@ -591,7 +695,7 @@ def run_all_parallel():
     ax.scatter(x=list(data_carotene.keys()), y=list(data_carotene.values()), zorder=2)
     plt.ylabel(r"$\beta$-Carotene (g/gDW)")
     plt.xlabel(r"Trial")
-    plt.savefig(f"{DATA_PATH}/dfba/carotene_in_house.png")
+    plt.savefig(f"{DATA_PATH}/dfba/macros/carotene_in_house.png")
 
     plt.clf()
     ax = plt.subplot(111)
@@ -600,7 +704,7 @@ def run_all_parallel():
     ax.scatter(x=list(data_carotene_conc.keys()), y=list(data_carotene_conc.values()), zorder=2)
     plt.ylabel(r"$\beta$-Carotene (g/L)")
     plt.xlabel(r"Trial")
-    plt.savefig(f"{DATA_PATH}/dfba/carotene_concentration_in_house.png")
+    plt.savefig(f"{DATA_PATH}/dfba/macros/carotene_concentration_in_house.png")
 
     plt.clf()
     ax = plt.subplot(111)
@@ -609,7 +713,7 @@ def run_all_parallel():
     ax.scatter(x=list(data_lutein.keys()), y=list(data_lutein.values()), zorder=2)
     plt.ylabel(r"Lutein (g/gDW)")
     plt.xlabel(r"Trial")
-    plt.savefig(f"{DATA_PATH}/dfba/lutein_in_house.png")
+    plt.savefig(f"{DATA_PATH}/dfba/macros/lutein_in_house.png")
 
     plt.clf()
     ax = plt.subplot(111)
@@ -618,7 +722,7 @@ def run_all_parallel():
     ax.scatter(x=list(data_chl.keys()), y=list(data_chl.values()), zorder=2)
     plt.ylabel(r"Chlorophyll (g/L)")
     plt.xlabel(r"Trial")
-    plt.savefig(f"{DATA_PATH}/dfba/chlorophyll_in_house.png")
+    plt.savefig(f"{DATA_PATH}/dfba/macros/chlorophyll_in_house.png")
 
     plt.clf()
     ax = plt.subplot(111)
@@ -627,7 +731,7 @@ def run_all_parallel():
     ax.scatter(x=list(data_protein.keys()), y=list(data_protein.values()), zorder=2)
     plt.ylabel(r"Protein (g/gDW)")
     plt.xlabel(r"Trial")
-    plt.savefig(f"{DATA_PATH}/dfba/protein_in_house.png")
+    plt.savefig(f"{DATA_PATH}/dfba/macros/protein_in_house.png")
 
     plt.clf()
     ax = plt.subplot(111)
@@ -636,7 +740,16 @@ def run_all_parallel():
     ax.scatter(x=list(data_lipid.keys()), y=list(data_lipid.values()), zorder=2)
     plt.ylabel(r"Lipid (g/gDW)")
     plt.xlabel(r"Trial")
-    plt.savefig(f"{DATA_PATH}/dfba/lipid_in_house.png")
+    plt.savefig(f"{DATA_PATH}/dfba/macros/lipid_in_house.png")
+
+    plt.clf()
+    ax = plt.subplot(111)
+    sns.barplot(x=list(experimental_data_lipid.keys()), y=list(experimental_data_lipid.values()), ci='sd')
+    plt.errorbar(x=list(experimental_data_lipid.keys()), y=list(experimental_data_lipid.values()), yerr=error, fmt='none', color='black', capsize=4)
+    ax.scatter(x=list(data_lipid_conc.keys()), y=list(data_lipid_conc.values()), zorder=2)
+    plt.ylabel(r"Lipid (g/L)")
+    plt.xlabel(r"Trial")
+    plt.savefig(f"{DATA_PATH}/dfba/macros/lipid_conc_in_house.png")
 
     plt.clf()
     ax = plt.subplot(111)
@@ -645,13 +758,19 @@ def run_all_parallel():
     ax.scatter(x=list(data_carbohydrate.keys()), y=list(data_carbohydrate.values()), zorder=2)
     plt.ylabel(r"Carbohydrate (g/gDW)")
     plt.xlabel(r"Trial")
-    plt.savefig(f"{DATA_PATH}/dfba/carbohydrate_in_house.png")
+    plt.savefig(f"{DATA_PATH}/dfba/macros/carbohydrate_in_house.png")
     print(f"Total error from set of parameters: {total_error}")
 
 
 
 
 def run_condition():
+    """
+    Runs a single condition.
+    Returns
+    -------
+
+    """
     initial_parameters = json.load(open(f"{DATA_PATH}/dfba/inputs/initial_parameters.json", "r"))
     # initial_parameters = json.load(open(f"{DATA_PATH}/dfba/optimized_parameters.json", "r"))
     # model = read_model()
@@ -661,6 +780,12 @@ def run_condition():
 
 
 def run_all():
+    """
+    Runs all the conditions.
+    Returns
+    -------
+
+    """
     initial_parameters = json.load(open(f"{DATA_PATH}/dfba/inputs/initial_parameters.json", "r"))
 
     # model = read_model()
@@ -677,8 +802,8 @@ def run_all():
 
 
 if __name__ == '__main__':
-    # parameter_optimization()
+    parameter_optimization()
     # optimize_simple_parameters()
     # run_all()
-    run_all_parallel()
+    # run_all_parallel()
     ## create random sample of conditions

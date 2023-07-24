@@ -28,7 +28,7 @@ class dFBA:
             print("Container already exists, running...")
             stdin, stdout, stderr = self.client.exec_command('podman start dfba')
         else:
-            cmd = f'podman run --name dfba -v {self.data_directory}:/home/data -v {self.src_directory}:/home/src/ davidtourigny/dfba sh -c "pip install -q matplotlib seaborn scipy joblib openpyxl psutil plotly kaleido timeout-decorator tqdm parallelbar && python3 /home/src/ExpGSMM/dynamic/run_dfba.py > /home/data/output.txt"' #
+            cmd = f'podman run --name dfba -v {self.data_directory}:/home/data -v {self.src_directory}:/home/src/ davidtourigny/dfba sh -c "pip install -q matplotlib seaborn scipy joblib openpyxl psutil plotly kaleido timeout-decorator tqdm parallelbar && python3 /home/src/GSMMutils/dynamic/run_dfba.py > /home/data/output.txt"' #
             print(cmd)
             stdin, stdout, stderr = self.client.exec_command(cmd)
 
