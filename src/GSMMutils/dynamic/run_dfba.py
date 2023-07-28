@@ -802,8 +802,8 @@ def run_all():
 
 
 if __name__ == '__main__':
-    parameter_optimization()
+    # parameter_optimization()
     # optimize_simple_parameters()
     # run_all()
-    # run_all_parallel()
+    run_all_parallel()
     ## create random sample of conditions
