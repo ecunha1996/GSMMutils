@@ -1,4 +1,4 @@
-from GSMMutils.Annotation.genome_annotation import FunctionalAnnotation
+from GSMMutils.annotation.genome_annotation import FunctionalAnnotation
 
 
 def main():

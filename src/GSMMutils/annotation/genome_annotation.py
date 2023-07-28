@@ -2,7 +2,6 @@ from os import getcwd, chdir
 from os.path import getsize
 
 import pandas as pd
-from Bio import SeqIO
 
 from GSMMutils.api.uniprot import Uniprot
 from GSMMutils.utils.utils import run
@@ -20,8 +19,8 @@ class StructuralAnnotation(GenomeAnnotation):
     def gene_prediction_evaluation(self):
         pass
 
-    def alignment_evaluation(self, method: str, filepath: str = None, k: int=1):
-        #data = read_csv(filepath, sep='\t')
+    def alignment_evaluation(self, method: str, filepath: str = None, k: int = 1):
+        # data = read_csv(filepath, sep='\t')
         try:
             data = pd.read_csv(filepath, sep='\t', header=None)
         except Exception as e:
@@ -36,7 +35,7 @@ class StructuralAnnotation(GenomeAnnotation):
                 data = pd.DataFrame(data)
                 data.to_csv(filepath + "_corrected.csv", sep='\t', header=None, index=None)
         unique_genes = len(data[0].unique())
-        #gene_counts = data[0].value_counts()
+        # gene_counts = data[0].value_counts()
         if not k:
             gene_ann_ration = unique_genes / len(self.genes)
         else:
@@ -49,7 +48,6 @@ class FunctionalAnnotation(GenomeAnnotation):
         super().__init__()
         self.blast_directory = blast_directory
 
-
     def identify_gene_by_homology(self, method: str, filepath: str = None):
         """
 
@@ -61,7 +59,7 @@ class FunctionalAnnotation(GenomeAnnotation):
         chdir(self.blast_directory)
         if method == 'blastp':
             run(r'blastp -db protein -query "C:\Users\Bisbii\OneDrive - Universidade do Minho\Algae\Models\Dsalina\query.faa" -out '
-              r'"C:\Users\Bisbii\OneDrive - Universidade do Minho\Algae\Models\Dsalina\results.txt" -evalue 1  -outfmt 6')
+                r'"C:\Users\Bisbii\OneDrive - Universidade do Minho\Algae\Models\Dsalina\results.txt" -evalue 1  -outfmt 6')
         chdir(old_dir)
 
     def identify_gene_by_homology_from_ec(self, method: str, ec_number: str):

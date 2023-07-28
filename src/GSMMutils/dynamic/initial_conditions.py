@@ -1,9 +1,5 @@
-
-
-
-
 def get_initial_conditions(matrix, conditions):
-    active_biomass_percent = 1- (0.05 + 0.15 + 0.0131 + matrix.matrix["Resume"]["caro0"].loc[conditions] + matrix.matrix["Resume"]["chl0"].loc[conditions])
+    active_biomass_percent = 1 - (0.05 + 0.15 + 0.0131 + matrix.matrix["Resume"]["caro0"].loc[conditions] + matrix.matrix["Resume"]["chl0"].loc[conditions])
     initial_conditions = {
         "Biomass": matrix.matrix[conditions]["DW"][0],
         "ActiveBiomass": matrix.matrix[conditions]["DW"][0] * active_biomass_percent,

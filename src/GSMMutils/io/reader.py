@@ -1,6 +1,4 @@
-
 import pandas as pd
-
 
 
 def read_matrix(filename, **kwargs):
@@ -10,10 +8,8 @@ def read_matrix(filename, **kwargs):
     return matrix
 
 
-
 def read_simulation():
     pass
-
 
 
 def read_csv(filename, index_name=None, **kwargs):
@@ -25,7 +21,7 @@ def read_csv(filename, index_name=None, **kwargs):
 
 
 def read_excel(filename, index_name=None, **kwargs):
-    data = pd.read_excel(filename, **kwargs, engine = "openpyxl")
+    data = pd.read_excel(filename, **kwargs, engine="openpyxl")
     for sheet in data:
         data[sheet].index = data[sheet].index.astype(str)
         data[sheet].index = [index_name.split(".")[0] for index_name in data[sheet].index]

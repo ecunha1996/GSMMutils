@@ -1,15 +1,35 @@
+import json
 import math
 import os
 import subprocess
 import sys
+from os.path import join
 
 import numpy as np
 import pandas as pd
 from cobra import Metabolite
 from joblib import Parallel, delayed
 from scipy.stats import linregress
+
+from GSMMutils import CONFIG_PATH
 from GSMMutils.experimental.BiomassComponent import BiomassComponent
 
+def get_login_info(server="turing"):
+    try:
+        if os.path.exists(join(CONFIG_PATH, 'server_connection.json')):
+            with open(join(CONFIG_PATH, 'server_connection.json')) as f:
+                data = json.load(f)
+                host = data[server]['host']
+                username = data[server]['username']
+                password = data[server]['password']
+        else:
+            host = input("Enter host: ")
+            username = input("Enter username: ")
+            password = input("Enter password: ")
+        return host, username, password
+    except Exception as e:
+        print(e)
+        sys.exit(1)
 
 def get_productivity(data, time=48):
     previous_dw = 0
@@ -18,7 +38,7 @@ def get_productivity(data, time=48):
         if int(i) == 0:
             previous_dw = row["DW"]
         if int(i) > 0:
-            productivity_g_l.append((row["DW"] - previous_dw)/time)
+            productivity_g_l.append((row["DW"] - previous_dw) / time)
             previous_dw = row["DW"]
     return productivity_g_l
 
@@ -37,7 +57,7 @@ def get_uptake(data, m_substrate, substrate):
         if int(i) == 0:
             previous_dw = row["DW"]
         if int(i) > 0:
-            avv = (row["DW"] + previous_dw)/2
+            avv = (row["DW"] + previous_dw) / 2
             uptake.append((row[f"{substrate} Fixation (g{substrate}/L.h)"] / avv) * 1000 / m_substrate)
             previous_dw = row["DW"]
     return uptake
@@ -78,12 +98,13 @@ def get_growth_rate_from_slope(data, exponential_phase):
 def get_growth_rate(data, exponential_phase):
     a = np.log(data.loc[str(exponential_phase[0])]["DW"])
     b = np.log(data.loc[str(exponential_phase[1])]["DW"])
-    return round((b - a) / (exponential_phase[1] - exponential_phase[0]),3)
+    return round((b - a) / (exponential_phase[1] - exponential_phase[0]), 3)
+
 
 def get_maximum_productivity(data, exponential_phase):
     a = data.loc[str(exponential_phase[0])]["DW"]
     b = data.loc[str(exponential_phase[1])]["DW"]
-    return round((b - a) / (exponential_phase[1] - exponential_phase[0]),3)
+    return round((b - a) / (exponential_phase[1] - exponential_phase[0]), 3)
 
 
 def run(cmd):
@@ -108,7 +129,7 @@ def get_precursors(macromolecule, temp_precursor, model):
             for precursor in precedent_reaction[0].reactants:
                 precursor = get_precursors(macromolecule, precursor, model)
                 if type(precursor) == str:
-                    if temp_precursor.id  in model.biomass_components:
+                    if temp_precursor.id in model.biomass_components:
                         parent_component = model.biomass_components[temp_precursor.id]
                     else:
                         parent_component = BiomassComponent(temp_precursor, precedent_reaction[0].metabolites[model.metabolites.get_by_id(precursor)], model.biomass_components[macromolecule.id])
@@ -167,14 +188,15 @@ def get_biomass_mass(model, biomass_reaction=None):
                         if key in product.elements:
                             elementar_counter[key] -= abs(reaction.metabolites[product]) * product.elements[key] * stoichiometry
         return round(counter / 1000, 5), elementar_counter
+
     def parse_lipids(biomass_reaction, element_counter):
         counter = 0
         lipid_stoichiometry = abs(biomass_reaction.metabolites[model.metabolites.e_Lipid__cytop])
         lipids_reaction = model.reactions.e_Lipid_no_tag__cytop
         lipid_subreactions = [
             # model.reactions.e_TAG__lip,
-                          model.reactions.e_DAG__er, model.reactions.e_DGTS__er, model.reactions.e_PE__er, model.reactions.e_PC__er, model.reactions.e_PI__er, model.reactions.e_PG__chlo,
-                            model.reactions.e_DGDG__chlo, model.reactions.e_SQDG__chlo, model.reactions.e_MGDG__chlo, model.reactions.e_CL__mito, model.reactions.e_FFA__cytop]
+            model.reactions.e_DAG__er, model.reactions.e_DGTS__er, model.reactions.e_PE__er, model.reactions.e_PC__er, model.reactions.e_PI__er, model.reactions.e_PG__chlo,
+            model.reactions.e_DGDG__chlo, model.reactions.e_SQDG__chlo, model.reactions.e_MGDG__chlo, model.reactions.e_CL__mito, model.reactions.e_FFA__cytop]
         for reaction in lipid_subreactions:
             for reactant in reaction.reactants:
                 counter += abs(reaction.metabolites[reactant] * reactant.formula_weight * lipids_reaction.metabolites[reaction.products[0]] * lipid_stoichiometry)
@@ -213,7 +235,7 @@ def get_biomass_mass(model, biomass_reaction=None):
                         res = get_sum_of_reaction(reaction, abs(biomass_reaction.metabolites[reactant]), ignore_water, element_counter)
                         c += res[0]
                         element_counter = res[1]
-    return round(c,3), element_counter
+    return round(c, 3), element_counter
 
 
 def get_light_kinetics(biomass, concentrations, parameters=None, Eo=None, Lr=None, Ke=None):
@@ -237,40 +259,44 @@ def get_micmen_kinetics(biomass, S, parameters):
 
 def get_caro_kinetics(biomass, S=None, parameters=None):
     if parameters is None:
-        parameters = {'wn': 0.03, 'n':2}
+        parameters = {'wn': 0.03, 'n': 2}
     E = get_light_kinetics(biomass, S)[1]
     vcar_gen = car_gen(E, parameters['n'])
     a0 = 6.5e-2
     a1 = 7e-3 / 3600
     x = a1 * E + a0
-    phi_val = phi(x-parameters['wn'])
+    phi_val = phi(x - parameters['wn'])
     vcar = vcar_gen * phi_val
-    return (vcar,  1000)
+    return (vcar, 1000)
 
 
 def phi(x):
     ns = 40
-    return 1/(1+np.exp(-ns*x))
+    return 1 / (1 + np.exp(-ns * x))
 
 
 def car_gen(E, n):
     vmax = 8e-3 * 24
-    E2 = E**n
-    Exa2 = (420/1000*24)**n
+    E2 = E ** n
+    Exa2 = (420 / 1000 * 24) ** n
     return vmax * E2 / (E2 + Exa2)
-
 
 
 def nitrogen_quota():
     pass
 
+
 def convert_mg_gDW_to_mmol_gDW(mg, MW):
     return mg / MW * 1000
 
+
 def convert_mmol_mol_to_g_molMM(mmol, MW):
     return mmol * MW
+
+
 def normalize(mg_gDW):
     return {key: mg_gDW[key] / sum(mg_gDW.values()) for key in mg_gDW.keys()}
+
 
 def convert_mg_molMM_to_mmolM_gMM(mmol_molMM: dict, total):
     return {key: mmol_molMM[key] / total * 1000 for key in mmol_molMM.keys()}
@@ -284,8 +310,10 @@ def convert_mg_gMM_to_mmol_gMM(mg_gMM, MW):
 def block_print():
     sys.stdout = open(os.devnull, 'w')
 
+
 def enable_print():
     sys.stdout = sys.__stdout__
+
 
 def flux_change(fluxes_control: dict, fluxes_condition: dict, threshold: float = 0.1) -> dict:
     """
@@ -303,6 +331,7 @@ def flux_change(fluxes_control: dict, fluxes_condition: dict, threshold: float =
     for key, value in as_dict.items():
         as_dict[key] = round(value['Flux_change'], 3)
     return as_dict
+
 
 def reaction_capacity(fva_solution: pd.DataFrame):
     """

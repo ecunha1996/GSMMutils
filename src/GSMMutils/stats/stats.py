@@ -1,6 +1,6 @@
+import statsmodels.api as sm
 from statsmodels.formula.api import ols
 from statsmodels.multivariate.manova import MANOVA
-import statsmodels.api as sm
 
 
 class StatisticalAnalysis:
@@ -19,15 +19,13 @@ class StatisticalAnalysis:
         self.print_table(anova_table, formula)
         return anova_table, model
 
-
     def manova(self, formula):
         fit = MANOVA.from_formula(formula, data=self.data)
         test = fit.mv_test()
         self.print_table(test, formula)
         return test
 
-    #method to print anova table
+    # method to print anova table
     def print_table(self, anova_table, title):
         title = title.center(45)
-        print(f" {title} \n {anova_table} \n {'#'*50}")
-
+        print(f" {title} \n {anova_table} \n {'#' * 50}")

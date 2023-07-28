@@ -1,20 +1,22 @@
-import warnings
 import traceback
+import warnings
 from os.path import join
 
 from troppo.methods_wrappers import ReconstructionWrapper
 from troppo.omics.readers.generic import TabularReader
-from GSMMutils.utils.utils import enable_print
+
 from GSMMutils.model.COBRAmodel import MyModel
+from GSMMutils.utils.utils import enable_print
 
 warnings.filterwarnings("ignore")
-
 
 import cobra
 import pandas as pd
 import re
 #
 from cobamp.utilities.parallel import batch_run
+
+
 #
 #
 # protected_reactions = ['Biomass_vvinif2021', 'e-Protein_vvinif2021', 'e-RNA_vvinif2021', 'e-DNA_vvinif2021',
@@ -46,6 +48,7 @@ def print_model_details(cobra_model):
     print('Transporters:', len(transporters))
     print('Exchanges:', len(cobra_model.exchanges))
 
+
 #
 def reconstruction_function(omics_container, parameters: dict):
     """
@@ -62,6 +65,7 @@ def reconstruction_function(omics_container, parameters: dict):
     ----------
     rec_wrapper : Reconstruction Wrapper object with model and omics data.
     """
+
     def integration_fx(data_map):
         """
         Custom integration function for the reconstruction algorithm.
@@ -94,6 +98,8 @@ def reconstruction_function(omics_container, parameters: dict):
         traceback.print_exc()
 
         return {r: False for r in rec_wrapper.model_reader.r_ids}
+
+
 #
 #
 #
@@ -135,7 +141,7 @@ def troppo_integration(template_model, omics_dataset, algorithm: str, threshold:
 
     omics_data = TabularReader(path_or_df=omics_dataset,
                                omics_type='transcriptomics',
-                               nomenclature = 'custom',
+                               nomenclature='custom',
                                ).to_containers()
     reconstruction_wrapper = ReconstructionWrapper(template_model,
                                                    gpr_gene_parse_function=replace_alt_transcripts)
@@ -143,9 +149,9 @@ def troppo_integration(template_model, omics_dataset, algorithm: str, threshold:
     enable_print()
     print('Reconstruction Wrapper Finished.')
 
-    parameters = {'threshold': threshold, 'reconstruction_wrapper': reconstruction_wrapper, 'algorithm': algorithm, "flux_threshold": 1e-6, #
-                  "protected": ["e_Biomass__cytop"]} #reaction.id for reaction in template_model.reactions
-                                                                                                                                                          #if not reaction.genes
+    parameters = {'threshold': threshold, 'reconstruction_wrapper': reconstruction_wrapper, 'algorithm': algorithm, "flux_threshold": 1e-6,  #
+                  "protected": ["e_Biomass__cytop"]}  # reaction.id for reaction in template_model.reactions
+    # if not reaction.genes
 
     batch_fastcore_res = batch_run(reconstruction_function, omics_data, parameters, threads=thread_number)
 
@@ -158,6 +164,8 @@ def troppo_integration(template_model, omics_dataset, algorithm: str, threshold:
     print('Omics Integration with the %s method Finished.' % details[1])
 
     return result_dict
+
+
 #
 #
 # def define_medium_conditions(model_template: cobra.Model):
@@ -193,7 +201,7 @@ def troppo_integration(template_model, omics_dataset, algorithm: str, threshold:
 #     return model_template
 #
 #
-def reconstruct_context_specific_models(model_template: cobra.Model, integration_result_dict: dict, details: list, output_dir:str):
+def reconstruct_context_specific_models(model_template: cobra.Model, integration_result_dict: dict, details: list, output_dir: str):
     """
     Function to obtain the context-specific models from the troppo integration results.
 
@@ -252,6 +260,8 @@ def reconstruct_context_specific_models(model_template: cobra.Model, integration
             print_model_details(temp_model)
 
             cobra.io.write_sbml_model(temp_model, join(output_dir, f'{sample}_{details[1]}_{details[2]}.xml'))
+
+
 #
 def integration_pipeline(dataset: pd.DataFrame, dataset_name: str, algorithm: str, threshold: float, thread_number: int, model: MyModel, output_dir="./"):
     """
@@ -283,7 +293,6 @@ def integration_pipeline(dataset: pd.DataFrame, dataset_name: str, algorithm: st
     #     directories = {'Model': 'Marta/vvinif2021_v500_comparts_transports_noconstraints_noblocked.xml',
     #                    'Omics': 'Marta/GSE36128_final_transp.csv',
     #                    'Troppo_results': 'Marta/tinit_results.csv'}
-
 
     # define_medium_conditions(model)
 

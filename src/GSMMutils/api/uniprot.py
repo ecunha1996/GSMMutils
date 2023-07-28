@@ -1,13 +1,13 @@
+import json
 import re
 
 import requests
-import json
 from requests.adapters import HTTPAdapter, Retry
+
+
 class Uniprot:
     def __init__(self):
         pass
-
-
 
     def search(self):
         pass
@@ -40,7 +40,6 @@ class Uniprot:
             total = response.headers["x-total-results"]
             yield response, total
             batch_url = self.get_next_link(response.headers)
-
 
     def search_by_ec_number(self, ec_number: str):
 

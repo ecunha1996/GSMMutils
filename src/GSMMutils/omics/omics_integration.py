@@ -3,17 +3,17 @@ import os
 from os.path import join
 from pprint import pprint
 
-
 import numpy as np
 import pandas as pd
 from bioinfokit.analys import norm
+from cobra.flux_analysis import flux_variability_analysis as fva
 # from mewpy.omics import ExpressionSet, eFlux, GIMME, iMAT
 from mewpy.simulation import get_simulator
-from cobra.flux_analysis import flux_variability_analysis as fva
+
 from GSMMutils.bio.genes import Genes
 from GSMMutils.graphics.plot import clustermap
-from GSMMutils.io import write_specific_models
 from GSMMutils.io import read_csv
+from GSMMutils.io import write_specific_models
 from GSMMutils.utils.utils import run, differential_reaction_capacity
 
 
@@ -82,8 +82,7 @@ class OmicsIntegration:
         nm.tpm(df=df_for_calculation, gl='Length')
         self.tpm = nm.tpm_norm
 
-
-    def get_getmm(self, counts_file=None, data_path = None, output_file=None):
+    def get_getmm(self, counts_file=None, data_path=None, output_file=None):
         if not output_file:
             output_file = join(os.getcwd(), "getmm.tsv")
         if not data_path:
@@ -91,10 +90,10 @@ class OmicsIntegration:
         if not os.path.exists(data_path):
             self.data.to_csv(data_path, sep='\t')
         if not counts_file:
-            counts_file  = join(os.getcwd(), "counts.tsv")
+            counts_file = join(os.getcwd(), "counts.tsv")
         if not os.path.exists(output_file):
             self.counts.to_csv(counts_file, sep='\t')
-        cmd = ["Rscript", join(os.getcwd(), "../../src/GSMMutils/omics/GeTMM.R"), counts_file , data_path, output_file, ','.join(self.groups)]
+        cmd = ["Rscript", join(os.getcwd(), "../../src/GSMMutils/omics/GeTMM.R"), counts_file, data_path, output_file, ','.join(self.groups)]
         run(cmd)
         self.getmm = read_csv(output_file, index_name='GeneID', index_col=0, comment='#', sep='\t')
 
@@ -145,7 +144,8 @@ class OmicsIntegration:
             samples = list(set(self.groups))
         if method not in self.specific_models.keys():
             self.specific_models[method] = {}
-        if tool == "troppo": self.integrate_troppo(method, samples, **kwargs)
+        if tool == "troppo":
+            self.integrate_troppo(method, samples, **kwargs)
         else:
             for sample in samples:
                 print("Integrating sample: {}".format(sample))
@@ -167,11 +167,12 @@ class OmicsIntegration:
                         sol = simulator.simulate()
                         sol.dataframe.to_csv(join(os.getcwd(), "results_{}_{}.tsv".format(method, sample)), sep='\t')
                         print(sol.status)
-                        pprint(sol.dataframe.loc[result.dataframe.index=='EX_e_Biomass__dra'])
+                        pprint(sol.dataframe.loc[result.dataframe.index == 'EX_e_Biomass__dra'])
                 except Exception as e:
                     print(e)
                     print(f"Error in {method} for {sample}")
         print("#" * 100)
+
     @staticmethod
     def get_method(method) -> callable:
         if method == 'eFlux':
@@ -219,7 +220,6 @@ class OmicsIntegration:
     def integrate_with_mewpy(self):
         pass
 
-
     def get_flux_change(self, combine_all=False, method_1=None, condition_1=None, method_2=None, condition_2=None, threshold: float = 0.1):
         from GSMMutils.utils.utils import flux_change
         if combine_all:
@@ -240,13 +240,11 @@ class OmicsIntegration:
                 constraints_2[reaction] = flux['Flux rate']
             self.flux_change[f"{method_1}_{condition_1}_{method_2}_{condition_2}"] = flux_change(constraints_1, constraints_2, threshold)
 
-
     def get_reaction_capacity(self, condition, fva_solution):
         from GSMMutils.utils.utils import reaction_capacity
         if not hasattr(self, "reaction_capacity"):
             self.reaction_capacity = {}
         self.reaction_capacity[condition] = reaction_capacity(fva_solution)
-
 
     def get_differential_reaction_capacity(self, method, condition_1, condition_2):
         fva_sol_1 = fva(self.specific_models[method][condition_1].model)

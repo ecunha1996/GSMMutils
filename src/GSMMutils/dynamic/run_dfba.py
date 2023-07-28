@@ -1,6 +1,7 @@
 import json
 import numbers
 import os
+
 os.environ["OPENBLAS_NUM_THREADS"] = "1"
 import shutil
 import sys
@@ -158,7 +159,6 @@ def create_dfba_model(condition, parameters, create_plots=False):
 
     for key, value in get_dynamic_expressions(parameters).items():
         dfba_model.add_rhs_expression(key, value)
-
 
     ##### Experiment-dependent ######
     parameters["Eo"] = matrix.conditions["Light (umol/m^2.s)"].loc[condition]
@@ -475,7 +475,7 @@ def parameter_optimization():
 
     # Define bounds for parameters (if any)
     bounds = [(0, 100), (0, 0.1), (0, 0.5), (0, 0.5), (0, 100), (0, 100), (0, 1), (0, 500), (0, 10), (0, 100), (0, 2), (0, 0.15), (0, 7), (0, 3), (0, 0.05), (1, 4), (0, 1), (0, 1), (0, 0.5), (0, 20), (0, 1), (0, 0.5), (0, 0.1), (0, 100), (0, 10),
-              (0, 0.1), (0, 0.5), (0, 1), (100, 1500), (0, 150), (10, 150), (0, 2000), (0, 10), (0, 10), (0, 0.5), (0,1), (0,1), (0, 100), (0, 1), (0, 10), (0,0.1)]  # , (0, 10)
+              (0, 0.1), (0, 0.5), (0, 1), (100, 1500), (0, 150), (10, 150), (0, 2000), (0, 10), (0, 10), (0, 0.5), (0, 1), (0, 1), (0, 100), (0, 1), (0, 10), (0, 0.1)]  # , (0, 10)
     conditions_names = set(matrix.matrix.keys()) - {"Resume"}
     validation = select_random_conditions(list(conditions_names), 5, ['fachet_HLND', "Yimei_HL"])
     conditions_names = tuple(conditions_names - set(validation) - {e for e in conditions_names if e.startswith("Xi") or e.startswith("Yimei")
@@ -666,7 +666,7 @@ def run_all_parallel():
     error = list(std_devs.values())
     data_carotene, data_carotene_conc, data_chl, data_protein, data_lipid, data_carbohydrate, data_lutein, data_lipid_conc = {}, {}, {}, {}, {}, {}, {}, {}
     experimental_data_carotene, experimental_data_carotene_concentration, experimental_data_chl, experimental_data_protein, \
-        experimental_data_lipid, experimental_data_carbohydrate, experimental_data_lutein, experimental_data_lipid_concentration= {}, {},{}, {}, {}, {}, {}, {}
+        experimental_data_lipid, experimental_data_carbohydrate, experimental_data_lutein, experimental_data_lipid_concentration = {}, {}, {}, {}, {}, {}, {}, {}
     for condition in matrix.conditions.index:
         if 'Caro' in matrix.matrix[condition].columns and not condition.startswith("fachet") and not condition.startswith("Xi") and not condition.startswith("Yimei"):
             temp = pd.read_csv(f"{DATA_PATH}/dfba/concentrations/concentrations_{condition}.csv")
@@ -684,7 +684,7 @@ def run_all_parallel():
             experimental_data_chl[condition] = matrix.matrix[condition]['Chl'].dropna().tolist()[-1] * matrix.matrix[condition]['DW'].dropna().tolist()[-1]
             molecules = ["Protein", "Lipid", "Carbohydrate"]
             if all(molecule in matrix.matrix[condition].columns for molecule in molecules):
-                experimental_data_protein[condition] =  matrix.matrix[condition]['Protein'].dropna().tolist()[-1]
+                experimental_data_protein[condition] = matrix.matrix[condition]['Protein'].dropna().tolist()[-1]
                 experimental_data_lipid[condition] = matrix.matrix[condition]['Lipid'].dropna().tolist()[-1]
                 experimental_data_lipid_concentration[condition] = matrix.matrix[condition]['Lipid'].dropna().tolist()[-1] * matrix.matrix[condition]['DW'].dropna().tolist()[-1]
                 experimental_data_carbohydrate[condition] = matrix.matrix[condition]['Carbohydrate'].dropna().tolist()[-1]
@@ -760,8 +760,6 @@ def run_all_parallel():
     plt.xlabel(r"Trial")
     plt.savefig(f"{DATA_PATH}/dfba/macros/carbohydrate_in_house.png")
     print(f"Total error from set of parameters: {total_error}")
-
-
 
 
 def run_condition():

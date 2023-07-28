@@ -12,7 +12,7 @@ class CobrapyDFBA:
     def add_dynamic_bounds(self, y):
         """Use external concentrations to bound the uptake flux of glucose."""
         biomass, phosphate = y  # expand the boundary species
-        phospahte_max_import = -0.04*phosphate/(0.00185+phosphate)
+        phospahte_max_import = -0.04 * phosphate / (0.00185 + phosphate)
         self.model.reactions.EX_C00009__dra.lower_bound = phospahte_max_import
 
     def dynamic_system(self, t, y):

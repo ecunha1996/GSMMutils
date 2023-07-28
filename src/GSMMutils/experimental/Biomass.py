@@ -19,4 +19,3 @@ class Biomass:
 
     def load(self, filename):
         self.biomass_matrix = read_excel(filename, index_col=0, sheet_name=None)
-

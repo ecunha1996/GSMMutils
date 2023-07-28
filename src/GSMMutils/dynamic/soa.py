@@ -1,6 +1,4 @@
 import pandas as pd
-from cobra.flux_analysis import pfba
-from sympy import sympify
 
 from GSMMutils.graphics.plot import plot_two_axis
 from GSMMutils.utils.utils import get_light_kinetics, get_micmen_kinetics, get_caro_kinetics
@@ -12,7 +10,6 @@ class soa:
         self.model = model
         self.initial_conditions = None
         self.parameters = {}
-
 
     @property
     def timestamps(self):
@@ -56,14 +53,13 @@ class soa:
             val = value(biomass, conc, self.parameters[key])
             self.model.reactions.get_by_id(key).bounds = val
 
-
     def run(self):
-        concentrations, fluxes= pd.DataFrame.from_dict(self.initial_conditions, orient='index', columns = ['0']), pd.DataFrame(index=[r.id for r in self.model.reactions])
+        concentrations, fluxes = pd.DataFrame.from_dict(self.initial_conditions, orient='index', columns=['0']), pd.DataFrame(index=[r.id for r in self.model.reactions])
         self.update_kinetics(self.initial_conditions[self.model.bio_reaction.id], concentrations)
         X = self.initial_conditions[self.model.bio_reaction.id]
         [setattr(x, 'objective_coefficient', 0) for x in self.model.reactions if x.objective_coefficient != 0]
-        reaction_1 =  self.model.reactions.get_by_id(self.model.bio_reaction.id)
-        reaction_2 =  self.model.reactions.DM_C02094__chlo
+        reaction_1 = self.model.reactions.get_by_id(self.model.bio_reaction.id)
+        reaction_2 = self.model.reactions.DM_C02094__chlo
         reaction_1.objective_coefficient = 1
         reaction_2.objective_coefficient = -1
         for i in self.time_span:
@@ -76,17 +72,14 @@ class soa:
             for key, value in self.metabolites_to_follow.items():
                 if "biomass" not in key.lower():
                     new_conc = concentrations.loc[key, str(i)] + solution.fluxes.loc[value] * X
-                    concentrations.loc[key, str(i+1)] = max(new_conc, 0)
-            concentrations.loc[self.model.bio_reaction.id, str(i+1)] = X
+                    concentrations.loc[key, str(i + 1)] = max(new_conc, 0)
+            concentrations.loc[self.model.bio_reaction.id, str(i + 1)] = X
             self.update_kinetics(X, concentrations)
         self.concentrations = concentrations
         self.fluxes = fluxes
 
-
-
     def assing_light_kinetics(self, key):
         self.kinetics[key] = get_light_kinetics
-
 
     def assign_micmen_kinetics(self, key):
         self.kinetics[key] = get_micmen_kinetics
@@ -94,7 +87,6 @@ class soa:
     def assin_caro_kinetics(self, key):
         self.kinetics[key] = get_caro_kinetics
 
-    def plot_concentrations(self, columns = None):
+    def plot_concentrations(self, columns=None):
         if columns:
-            plot_two_axis(self.concentrations.T[columns], secondary= ['e_Biomass_trial4__cytop'])
-
+            plot_two_axis(self.concentrations.T[columns], secondary=['e_Biomass_trial4__cytop'])

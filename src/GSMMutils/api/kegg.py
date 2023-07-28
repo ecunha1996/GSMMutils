@@ -1,8 +1,8 @@
 import json
 
+from Bio.KEGG.REST import kegg_get
 from KEGG_parser.parsers import parse_pathway
 from requests import get
-from Bio.KEGG.REST import kegg_get
 
 
 def search_pathway_map_id(pathway_name):

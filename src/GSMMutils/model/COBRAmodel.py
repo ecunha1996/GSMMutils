@@ -5,16 +5,17 @@ Created on Mon Jun 29 14:52:26 2020
 @author: ecunha
 """
 import copy
+import os
+import warnings
 from os.path import join
 
 import cobra
-import os
-import warnings
 import numpy as np
 import pandas as pd
 import seaborn
 from openpyxl import load_workbook
 from sympy import Add
+
 from GSMMutils.experimental.Biomass import Biomass
 from GSMMutils.experimental.BiomassComponent import BiomassComponent
 from GSMMutils.io import write_simulation
@@ -26,8 +27,9 @@ import matplotlib.pyplot as plt
 from cobra import flux_analysis, Model, Reaction, Metabolite
 from cobra.flux_analysis import find_essential_genes
 
+
 class MyModel(Model):
-    def __init__(self, file_name = None, biomass_reaction=None, directory=None, prune_mets=False):
+    def __init__(self, file_name=None, biomass_reaction=None, directory=None, prune_mets=False):
         self.pathway_reactions_map = {}
         self.biomass_reaction = None
         if not directory:
@@ -70,6 +72,7 @@ class MyModel(Model):
     @property
     def biomass_composition(self):
         return self._biomass_composition
+
     @biomass_composition.setter
     def biomass_composition(self, biomass_composition=None):
         if type(biomass_composition) == str or not biomass_composition:
@@ -84,6 +87,7 @@ class MyModel(Model):
             self._biomass_composition = biomass_composition
         else:
             raise Exception("Biomass composition must be a string or a Biomass object")
+
     def load_model(self, directory, file_name):
         """
         This function loads the model. Returns a COBRApy object, the model
@@ -95,16 +99,16 @@ class MyModel(Model):
 
         print("Loading")
         print("")
-        
+
         os.chdir(directory)
-        
+
         self.model = cobra.io.read_sbml_model(join(directory, file_name))
         # self.model_first = cobra.io.read_sbml_model(os.path.join(directory, file_name))
         if not self.model.exchanges:
             for reaction in self.model.reactions:
                 if "EX_" in reaction.id:
                     met = reaction.products[0]
-                    reaction.add_metabolites({met:-1})
+                    reaction.add_metabolites({met: -1})
         # print("deleting b")
         self.delete_b_metabolites()
         return self.model
@@ -117,7 +121,6 @@ class MyModel(Model):
         for key in compartments:
             if "outside" in self.model.compartments[key]: self.extra_compartment = key
             if "inside" in self.model.compartments[key]: self.intra_compartment = key
-        
 
     def search_biomass(self):
         for reaction in self.model.reactions:
@@ -138,32 +141,32 @@ class MyModel(Model):
 
     def get_metabolite(self, metabolite):
         return self.model.metabolites.get_by_id(metabolite)
-        
+
     def get_reactants(self, reaction):
         return self.get_reaction(reaction).reactants
-        
+
     def get_products(self, reaction):
         return self.get_reaction(reaction).products
-            
+
     def get_bio_reac(self):
         return self.bio_reaction
-        
+
     def get_exchanges(self):
         return self.model.exchanges
-        
+
     def get_bio_precursors(self):
-        
+
         ''' This function returns the biomass precursors, i.e. reactants in the biomass reaction '''
-        
+
         self.bio_precursors = []
         reactants = self.get_reactants(self.bio_reaction.id)
         for reactant in reactants:
             self.bio_precursors.append(reactant)
-            
+
         return self.bio_precursors
-    
+
     def get_pre_precursors(self):
-        
+
         ''' This function returns the precursors of the biomass precursors 
         retrieved earlier in the get_bio_precursors() function'''
         try:
@@ -190,7 +193,7 @@ class MyModel(Model):
         self.get_reaction(reaction).add_metabolites({self.get_metabolite(metabolite): -self.get_reaction(reaction).metabolites[self.get_metabolite(metabolite)]})
         self.get_reaction(reaction).add_metabolites({self.get_metabolite(metabolite): stoichiometry})
 
-    def maximize(self, value = True, pfba = True):
+    def maximize(self, value=True, pfba=True):
         """ This function maximizes the biomass reaction.
         If value is True, it returns the objective value.
         If value is False, it returns the solution object.
@@ -210,11 +213,12 @@ class MyModel(Model):
         except Exception as e:
             print(e)
             return 0
-    def summary(self, solution=None, pfba = True, **kwargs):
+
+    def summary(self, solution=None, pfba=True, **kwargs):
         if solution:
             return self.model.summary(solution, **kwargs)
         if not pfba or kwargs:
-            return  self.model.summary(**kwargs)
+            return self.model.summary(**kwargs)
         else:
             print("Runnning pFBA")
             try:
@@ -227,102 +231,101 @@ class MyModel(Model):
     def create_reaction(self, reaction):
         self.add_reactions([cobra.Reaction(reaction)])
         return self.get_reaction(reaction)
-        
-    def create_metabolite(self, metabolite, is_Ex_metabolite = True):
-        if is_Ex_metabolite: 
+
+    def create_metabolite(self, metabolite, is_Ex_metabolite=True):
+        if is_Ex_metabolite:
             Compartment = self.extra_compartment
-            metabolite_id = "Ex_" + metabolite 
-        else: 
+            metabolite_id = "Ex_" + metabolite
+        else:
             Compartment = self.intra_compartment
             metabolite_id = "In_" + metabolite
-        
-        self.model.add_metabolites([cobra.Metabolite(metabolite_id, compartment = Compartment)])
+
+        self.model.add_metabolites([cobra.Metabolite(metabolite_id, compartment=Compartment)])
         return self.get_metabolite(metabolite_id)
-        
+
     def parse_reactions_versions(self):
         for reaction in self.model.reactions:
             for i in range(10):
                 if "_V" + str(i) in reaction.id:
                     try:
-                        reaction.id = reaction.id.replace("_V1","")
-                        reaction.id = reaction.id.replace("_V2","")
-                        reaction.id = reaction.id.replace("_V3","")
-                        reaction.id = reaction.id.replace("_V4","")
-                        reaction.id = reaction.id.replace("_V5","")
-                        reaction.id = reaction.id.replace("_V6","")
+                        reaction.id = reaction.id.replace("_V1", "")
+                        reaction.id = reaction.id.replace("_V2", "")
+                        reaction.id = reaction.id.replace("_V3", "")
+                        reaction.id = reaction.id.replace("_V4", "")
+                        reaction.id = reaction.id.replace("_V5", "")
+                        reaction.id = reaction.id.replace("_V6", "")
                     except:
                         pass
-        
-        
-    def create_exchange(self, metabolite_id, bounds = (-10000,10000)):
-        
-        
+
+    def create_exchange(self, metabolite_id, bounds=(-10000, 10000)):
+
         reaction_name = "Dr_" + metabolite_id
         self.create_reaction(reaction_name).add_metabolites({self.get_metabolite(metabolite_id): -1})
         self.get_reaction(reaction_name).bounds = bounds
         return self.get_reaction(reaction_name)
-        
-    def create_transport(self, ex_metabolite, in_metabolite, uptake = True, bounds = (-10000,10000)):
-        
-        
-        if uptake: stoichiometry = 1
-        else: stoichiometry = -1
-        
+
+    def create_transport(self, ex_metabolite, in_metabolite, uptake=True, bounds=(-10000, 10000)):
+
+        if uptake:
+            stoichiometry = 1
+        else:
+            stoichiometry = -1
+
         reaction_name = "Tr_" + ex_metabolite + "_" + in_metabolite
         self.create_reaction(reaction_name).add_metabolites({self.get_metabolite(ex_metabolite): -stoichiometry, self.get_metabolite(in_metabolite): stoichiometry})
         self.get_reaction(reaction_name).bounds = bounds
         return self.get_reaction(reaction_name)
-        
+
     def create_demand(self, metabolite_id):
-        
+
         ''' This function creates a demand reaction'''
-        
+
         reaction_name = "DM_" + metabolite_id
         self.create_reaction(reaction_name).add_metabolites({self.get_metabolite(metabolite_id): -1})
         self.get_reaction(reaction_name).bounds = (0, 10000)
         return self.get_reaction(reaction_name)
-        
-    def create_sink(self, metabolite_id, bounds = (-10000, 10000)):
-        
+
+    def create_sink(self, metabolite_id, bounds=(-10000, 10000)):
+
         ''' This function creates a sink reaction '''
-        
+
         reaction_name = "Sk_" + metabolite_id
         self.create_reaction(reaction_name).add_metabolites({self.get_metabolite(metabolite_id): 1})
         self.get_reaction(reaction_name).bounds = bounds
         return self.get_reaction(reaction_name)
-        
-    def create_exchange_transport(self, ex_metabolite, in_metabolite, uptake = True, bounds = (-10000,10000)):
-        
+
+    def create_exchange_transport(self, ex_metabolite, in_metabolite, uptake=True, bounds=(-10000, 10000)):
+
         ''' This function creates the transport and exchange reactions at once '''
-        
-        drain = self.create_exchange(ex_metabolite,bounds)
+
+        drain = self.create_exchange(ex_metabolite, bounds)
         transport = self.create_transport(ex_metabolite, in_metabolite, uptake, bounds)
-        return drain, transport        
-    
+        return drain, transport
+
     def save(self):
         if len(self.model_old) > 5: self.model_old.pop()
-        self.model_old.insert(0,self.model.copy())
-        
+        self.model_old.insert(0, self.model.copy())
+
     def undo(self):
         previous_model = self.model_old.pop(0)
         self.model = previous_model.copy()
-        
+
     def reset(self):
         self.model = self.model_first
-    
+
     def test_bio_precursors(self):
-        
+
         """This function tests any precursor of the biomass. 
         Reactants in the biomass equation"""
-        
+
         if self.bio_precursors == None: self.get_bio_precursors()
-        
+
         self.save()
-        
+
         bio_precursors_res = {"Flux": []}
-                              
+
         meta_val = []
-        
+
         for precursor in self.bio_precursors:
             self.save()
             reaction = self.create_demand(precursor.id)
@@ -330,26 +333,26 @@ class MyModel(Model):
             bio_precursors_res["Flux"].append(self.maximize())
             meta_val.append(precursor.name)
             self.undo()
-            
+
         self.bio_precursors_res = pd.DataFrame(bio_precursors_res, index=meta_val)
-        
+
         return self.bio_precursors_res
-    
+
     def test_e_precursors(self):
-        
+
         """This function tests any precursor of the biomass (known as e-metabolites), which are
         reactants in the biomass equation.
         Moreover, reactants in the e-metabolite synthesis reaction are also tested
         This function returns a pandas.series data frame"""
-            
+
         if self.bio_precursors == None: self.get_bio_precursors()
         if self.pre_precursors == None: self.get_pre_precursors()
-        
+
         self.save()
-        
+
         e_precursors_res = {"Flux": []}
         meta_val = []
-        
+
         for precursor in self.bio_precursors:
             self.save()
             reaction = self.create_demand(precursor.id)
@@ -357,9 +360,9 @@ class MyModel(Model):
             val = self.maximize()
             e_precursors_res["Flux"].append(val)
             meta_val.append(precursor.name)
-                    
+
             self.undo()
-                    
+
             for pre_precursor in self.pre_precursors[precursor.id]:
                 self.save()
                 reaction = self.create_demand(pre_precursor.id)
@@ -367,25 +370,25 @@ class MyModel(Model):
                 val_2 = self.maximize()
                 e_precursors_res["Flux"].append(val_2)
                 meta_val.append(pre_precursor.name)
-            
+
                 self.undo()
-            
+
         self.e_res_precursors = pd.DataFrame(e_precursors_res, index=meta_val)
-        
+
         return self.e_res_precursors
-        
+
     def test_e_reaction(self, e_metabolite):
-        
+
         """The input should be the name of the e_metabolite (e.g. e-Protein_e-Protein)
         This function tests any reactant in the e-metabolite synthesis reaction"""
-        
+
         if self.pre_precursors == None: self.get_pre_precursors()
-        
+
         self.save()
-        
+
         e_precursors_res = {"Flux": []}
         meta_val = []
-        
+
         for pre_precursor in self.pre_precursors[e_metabolite]:
             self.save()
             reaction = self.create_demand(pre_precursor.id)
@@ -393,21 +396,21 @@ class MyModel(Model):
             val_2 = self.maximize()
             e_precursors_res["Flux"].append(val_2)
             meta_val.append(pre_precursor.name)
-        
+
             self.undo()
-        
+
         res = pd.DataFrame(e_precursors_res, index=meta_val)
-        
-        return res    
-        
+
+        return res
+
     def test_reaction(self, reaction):
-        
+
         """The input should be the id of the reaction (e.g. 00001)
         This function tests any reactant in such reaction"""
-        
+
         old_objective = self.objective
         precursors = self.get_reactants(reaction)
-        
+
         e_precursors_res = {"Flux": []}
         meta_val = []
         demands_ids = [demand.id for demand in self.demands]
@@ -427,21 +430,21 @@ class MyModel(Model):
 
         res = pd.DataFrame(e_precursors_res, index=meta_val)
         self.objective = old_objective
-        return res 
-        
-    def create_test_drains_to_reaction(self, reaction, reactants = True, products = False, uptake = True, bounds = (-10000,10000)):
-        
+        return res
+
+    def create_test_drains_to_reaction(self, reaction, reactants=True, products=False, uptake=True, bounds=(-10000, 10000)):
+
         '''This function adds to the model drains or exchange reactions for the reactants or products in a given reaction '''
-        
+
         self.save()
-        
-        if reactants: 
+
+        if reactants:
             reactant = self.get_reactants(reaction)
             for r in reactant:
                 ex_m = self.create_metabolite(r.id)
                 self.create_exchange_transport(ex_m.id, r.id, uptake, bounds)
             print("Drains for all reactants created")
-        
+
         elif reactants and products:
             reactant = self.get_reactants(reaction)
             product = self.get_products(reaction)
@@ -450,20 +453,20 @@ class MyModel(Model):
                 ex_m = self.create_metabolite(r.id)
                 self.create_exchange_transport(ex_m.id, r.id, uptake, bounds)
             print("Drains for all reactants and products created")
-        
+
         else:
             product = self.get_products(reaction)
             for r in product:
                 ex_m = self.create_metabolite(r.id)
                 self.create_exchange_transport(ex_m.id, r.id, uptake, bounds)
             print("Drains for all products created")
-            
+
     def create_tRNAs_reactions(self, protein_id="e-Protein"):
-        
+
         ''' This function creates specifically demand reactions for the tRNAs in the aminoacyls forms '''
-        
+
         if self.pre_precursors == None: self.get_pre_precursors()
-        
+
         self.save()
 
         trnas = self.get_products(self.precursors_reactions[protein_id][0])
@@ -472,103 +475,99 @@ class MyModel(Model):
             if "H2O" not in trna.name:
                 if "e-Protein" not in trna.name:
                     self.create_sink(trna.id)
-                    
-        
-    
-    def create_reporting_file (self, spreadsheet_name):
-        
+
+    def create_reporting_file(self, spreadsheet_name):
+
         ''' This function creates an excel spreadsheet 
         with test_e_precursors() output
         '''
-        
+
         res = self.test_e_precursors()
-        
+
         res["Alterations into the model"] = " "
-    
+
         workbook = pd.ExcelWriter(spreadsheet_name)
         res.to_excel(workbook)
         workbook.save()
-    
+
         print(spreadsheet_name, "created")
-        
-        
+
     def load_reactions_information(self, file_name):
-        
+
         ''' This function reads the merlin's output file of reactions '''
-        
+
         file = pd.read_excel(file_name)
-        
+
         return file
-    
-    def create_fluxes (self):
-        
+
+    def create_fluxes(self):
+
         ''' This function run FBA maximizing the objective function and retrieves
         the reactions fluxes'''
-        
+
         self.objective = self.bio_reaction.id
-        
+
         solution = self.optimize()
-        
+
         return solution.fluxes
-        
-    
-    def merge_fluxes (self, reactions_file_name, version):
-        
+
+    def merge_fluxes(self, reactions_file_name, version):
+
         ''' This function merges merlin's reactions information with the corresponding fluxes '''
-        
+
         fluxes = self.create_fluxes()
-        
+
         merlin_file = self.load_reactions_information(reactions_file_name)
-        
+
         fluxes_ids = list(fluxes.index)
 
         fluxes_names = [self.get_reaction(reac).name for reac in fluxes_ids]
-                        
+
         fluxes_names_2 = [name.split("__")[0] for name in fluxes_names]
-                        
+
         fluxes_values = [fluxes[val] for val in fluxes_ids]
-        
+
         flux = list(zip(fluxes_ids, fluxes_names_2, fluxes_values))
-        
+
         res = []
-        
+
         res_model_id = []
-        
+
         for f in flux:
             pathway = merlin_file["Pathway Name"][merlin_file["Reaction Name"] == f[1]].values
             equation = merlin_file["Equation"][merlin_file["Reaction Name"] == f[1]].values
             for path in pathway:
-                res.append((f[1],path,equation[0],f[2]))
+                res.append((f[1], path, equation[0], f[2]))
                 res_model_id.append(f[0])
-        
-        df = pd.DataFrame(data = res, index = res_model_id, columns = ["Reaction ID", "Pathway", "Equation", "Flux " + version])
-        
+
+        df = pd.DataFrame(data=res, index=res_model_id, columns=["Reaction ID", "Pathway", "Equation", "Flux " + version])
+
         return df
-        
+
     def create_fluxes_spreadsheet(self, reactions_file_name, spreadsheet_name, version):
-        
+
         ''' This function generates an excel spreadsheet with the reactions information and fluxes'''
-        
+
         df = self.merge_fluxes(reactions_file_name, version)
-        
+
         workbook = pd.ExcelWriter(spreadsheet_name)
         df.to_excel(workbook)
         workbook.save()
-        
+
         print(spreadsheet_name, "created")
 
     def add_medium(self, medium_file_name, medium_sheet_name):
-        
+
         ''' This function constrains the environmental conditions according to the medium composition
         previously defined in a excel spreadsheet file using the exchange reactions
         '''
-        
+
         self.save()
-        
-        file = pd.read_excel(medium_file_name, medium_sheet_name, converters = {"Model ID": str}, engine = "openpyxl")
+
+        file = pd.read_excel(medium_file_name, medium_sheet_name, converters={"Model ID": str}, engine="openpyxl")
 
         for reaction in file["Reaction ID"]:
-            
+
             reac = self.get_reaction(reaction)
             if reac:
                 reac.lower_bound = float(file["LB"][file["Reaction ID"] == reaction].values[0])
@@ -579,38 +578,40 @@ class MyModel(Model):
     def write(self, filename):
         ''' This function saves the model in a .xml file '''
         cobra.io.write_sbml_model(self, filename)
-    
+
     def update_fluxes_spreadsheet(self, file_name, sheet_name, column_to_write, version, medium):
-        
+
         ''' This function adds new fluxes to an existing excel spreadsheet '''
-    
+
         wb = load_workbook(file_name)
-        
+
         ws = wb[sheet_name]
-        
+
         model_ids = ws["A"]
-        
+
         fluxes = self.create_fluxes()
-                        
+
         for model_id in model_ids:
-            
+
             i = model_id.row
-            
+
             i_2 = column_to_write + str(i)
-            
-            if i != 1: ws[i_2].value = fluxes[model_id.value]
-            else: ws[i_2].value = "Flux " + version + " / " + medium 
-        
+
+            if i != 1:
+                ws[i_2].value = fluxes[model_id.value]
+            else:
+                ws[i_2].value = "Flux " + version + " / " + medium
+
         wb.save(file_name)
-                       
-    def get_metabolite_by_name(self, name, compartment = "C00002"):
+
+    def get_metabolite_by_name(self, name, compartment="C00002"):
         found = False
         for met in self.model.metabolites:
             if name == met.name and met.compartment == compartment:
                 found = True
                 return met
         if not found:
-            print(name + "\t"*2+"Not found")
+            print(name + "\t" * 2 + "Not found")
             return None
 
     def apply_env_conditions_from_excel(self, conditions_file_name, conditions_sheet_name):
@@ -621,21 +622,20 @@ class MyModel(Model):
             except:
                 pass
 
-    def apply_env_conditions_from_dict(self, data, metabolites = None, aliases = None):
-            try:
-                for metabolite in metabolites:
-                    if metabolite in data.keys():
-                        if type(data[metabolite]) != tuple:
-                            data[metabolite] = (-data[metabolite], 1000)
-                        if aliases and metabolite in aliases.keys():
-                            metabolite_in_model = aliases[metabolite]
-                        else:
-                            metabolite_in_model = metabolite
-                        self.exchanges.get_by_id(f"EX_{metabolite_in_model}__dra").bounds = data[metabolite]
-            except Exception as e:
-                print("Error applying environmental conditions")
-                print(e)
-
+    def apply_env_conditions_from_dict(self, data, metabolites=None, aliases=None):
+        try:
+            for metabolite in metabolites:
+                if metabolite in data.keys():
+                    if type(data[metabolite]) != tuple:
+                        data[metabolite] = (-data[metabolite], 1000)
+                    if aliases and metabolite in aliases.keys():
+                        metabolite_in_model = aliases[metabolite]
+                    else:
+                        metabolite_in_model = metabolite
+                    self.exchanges.get_by_id(f"EX_{metabolite_in_model}__dra").bounds = data[metabolite]
+        except Exception as e:
+            print("Error applying environmental conditions")
+            print(e)
 
     def minimal_medium(self, conditions_file_name, conditions_sheet_name, output_file_name, minimal_growth):
         ''' '''
@@ -648,7 +648,7 @@ class MyModel(Model):
         exchanges = self.get_exchanges()
 
         for exchange in exchanges:
-            self.get_reaction(exchange.id).lower_bound =  float(-file["Uptake Rate"][file["Exchange"] == exchange.id].values[0])
+            self.get_reaction(exchange.id).lower_bound = float(-file["Uptake Rate"][file["Exchange"] == exchange.id].values[0])
 
         exchanges_2 = [exchange for exchange in exchanges]
         output = []
@@ -744,7 +744,7 @@ class MyModel(Model):
             writer.save()
             writer.close()
 
-    def minimize_uptake_sum(self, substrates = None, to_mininimize = None, to_maximize=None):
+    def minimize_uptake_sum(self, substrates=None, to_mininimize=None, to_maximize=None):
         if substrates == None:
             substrates = [ex.id for ex in self.exchanges]
         qp_expression = [arg for substrate in substrates for arg in self.get_reaction(substrate).flux_expression.args]
@@ -762,7 +762,6 @@ class MyModel(Model):
         qp_objective = self.problem.Objective(qp_expression, direction='max')
 
         self.objective = qp_objective
-
 
     def gene_essentiality(self, conditions_file_name, conditions_sheet_name):
 
@@ -852,21 +851,21 @@ class MyModel(Model):
             reaction.add_metabolites({met: -old_st})
             reaction.add_metabolites({met: -old_st})
 
-    def set_photoautotrophy(self, previous_carbon_source = "EX_C00033__dra", photon_uptake = -855):
+    def set_photoautotrophy(self, previous_carbon_source="EX_C00033__dra", photon_uptake=-855):
         self.exchanges.EX_C00205__dra.bounds = (photon_uptake, 1000)
         self.exchanges.get_by_id(previous_carbon_source).bounds = (0, 1000)
         self.reactions.e_Biomass__cytop.bounds = (0, 1000)
         self.reactions.e_Biomass_ht__cytop.bounds = (0, 0)
         self.objective = "e_Biomass__cytop"
 
-    def set_heterotrophy(self, carbon_source = "EX_C00033__dra", update_value = -10):
+    def set_heterotrophy(self, carbon_source="EX_C00033__dra", update_value=-10):
         self.exchanges.EX_C00205__dra.bounds = (0, 1000)
         self.reactions.get_by_id(carbon_source).bounds = (update_value, 1000)
-        self.reactions.e_Biomass_ht__cytop.bounds = (0,1000)
+        self.reactions.e_Biomass_ht__cytop.bounds = (0, 1000)
         self.reactions.e_Biomass__cytop.bounds = (0, 0)
         self.objective = "e_Biomass_ht__cytop"
 
-    def set_mixotrophy(self, carbon_source = "EX_C00033__dra", update_value = -10, photon_uptake = -855):
+    def set_mixotrophy(self, carbon_source="EX_C00033__dra", update_value=-10, photon_uptake=-855):
         self.exchanges.get_by_id(carbon_source).bounds = (update_value, 1000)
         self.exchanges.EX_C00205__dra.bounds = (photon_uptake, 1000)
         self.reactions.e_Biomass__cytop.bounds = (0, 1000)
@@ -877,7 +876,6 @@ class MyModel(Model):
         for reaction in self.reactions:
             if reaction.id.startswith("PRISM") and reaction.id != reaction_id:
                 reaction.bounds = (0, 0)
-
 
     def adjust_biomass(self, new_value, suffix="v2", biomass_reaction_id=None):
         if not biomass_reaction_id:
@@ -900,7 +898,7 @@ class MyModel(Model):
             print(mmol_gMM)
 
     def adjust_precursors(self, reaction_id, composition, units, suffix="v2"):
-        old_composition = {key: value for key, value in self.reactions.get_by_id(reaction_id).metabolites.items() if value <0}
+        old_composition = {key: value for key, value in self.reactions.get_by_id(reaction_id).metabolites.items() if value < 0}
         for key, value in composition.items():
             if self.metabolites.get_by_id(key) in old_composition:
                 old_composition[self.metabolites.get_by_id(key)] = -value / self.metabolites.get_by_id(key).formula_weight
@@ -916,7 +914,6 @@ class MyModel(Model):
         self.add_reactions([new_reaction])
         self.reactions.get_by_id(reaction_id).bounds = (0, 0)
 
-
     def setup_condition(self, condition):
         for reaction in self.reactions:
             if reaction.id.startswith("e_Biomass") and f"trial{condition}" not in reaction.id:
@@ -928,6 +925,7 @@ class MyModel(Model):
             self.reactions.e_Pigment__chlo.bounds = (0, 1000)
         else:
             self.objective = f"e_Biomass_trial{condition}__cytop"
+
     def infer_biomass_from_model(self, biomass_reaction_name="e_Biomass__cytop", biomass_met_id="e_Biomass__cytop"):
         """
         Infer biomass composition from biomass reaction
@@ -947,7 +945,6 @@ class MyModel(Model):
             macromolecule_component = BiomassComponent(macromolecule.id, biomass_reaction.metabolites[macromolecule], e_biomass)
             self.biomass_components[macromolecule.id] = macromolecule_component
             get_precursors(macromolecule_component, macromolecule, self)
-
 
     def get_reactions_pathways_map(self):
         pathway_map = {}
@@ -994,8 +991,6 @@ class MyModel(Model):
                     to_remove.append(gene)
         cobra.manipulation.remove_genes(self, to_remove)
 
-
-
     def sample(self, method="achr", constraints=None):
         if constraints is None:
             constraints = {}
@@ -1016,181 +1011,182 @@ class MyModel(Model):
 
 def test_carbohydrate(model):
     file = open("sugars_to_test.txt")
-    sugars=file.readlines()
+    sugars = file.readlines()
     file.close()
     for r in model.model.exchanges:
         glucose = model.get_metabolite_by_name("alpha-D-Glucose", "C00001")
         if glucose in r.metabolites:
-            r.bounds = (0,0)  
+            r.bounds = (0, 0)
     for sugar in sugars:
-        sugar=sugar.replace("\n","")
-        if model.get_metabolite_by_name(sugar,"C00001") is not None:
-            met = model.get_metabolite_by_name(sugar,"C00001")
+        sugar = sugar.replace("\n", "")
+        if model.get_metabolite_by_name(sugar, "C00001") is not None:
+            met = model.get_metabolite_by_name(sugar, "C00001")
             biomass = 0
             for r in model.model.exchanges:
                 if met in r.metabolites:
                     c_number = int(re.search('C(\d*)(.*)', met.formula).group(1))
-                    uptake = 6*13/c_number
-                    r.bounds = (-uptake,0)
-                    biomass = round(model.model.optimize().objective_value,2)
-                    r.bounds = (0,0)
+                    uptake = 6 * 13 / c_number
+                    r.bounds = (-uptake, 0)
+                    biomass = round(model.model.optimize().objective_value, 2)
+                    r.bounds = (0, 0)
             try:
                 check_biomass(sugar, biomass)
             except Exception as e:
                 print(e)
-    
+
 
 def amino_acid_requirements(model, amino_acids):
     for aa in amino_acids:
-        if model.get_metabolite_by_name(aa,"C00001") != None:
-            m_laa = model.get_metabolite_by_name(aa,"C00001")
+        if model.get_metabolite_by_name(aa, "C00001") != None:
+            m_laa = model.get_metabolite_by_name(aa, "C00001")
             for r in model.model.exchanges:
                 if m_laa in r.metabolites:
-                    original_l=r.bounds
-                    r.bounds = (0,99999)                  
-                    biomass = round(model.model.optimize().objective_value,2)
+                    original_l = r.bounds
+                    r.bounds = (0, 99999)
+                    biomass = round(model.model.optimize().objective_value, 2)
                     check_biomass(aa, biomass)
-                    r.bounds=original_l
+                    r.bounds = original_l
 
 
-def check_biomass(name,biomass):
+def check_biomass(name, biomass):
     if biomass <= 0:
-        print(name + "\t"*3 + "No growth")
+        print(name + "\t" * 3 + "No growth")
     elif biomass > 0:
-        print(name + "\t"*3 + "Growth" + "\t"*3 + str(biomass))
-        
-        
+        print(name + "\t" * 3 + "Growth" + "\t" * 3 + str(biomass))
+
+
 def atp_m(model, m_reaction, mu, values=None):
     if values is None:
         values = {0.36: 0, 1: 0, 1.5: 0, 2: 0, 3: 0, 4: 0, 1.48: 0}
     m_reaction = model.get_reaction(m_reaction)
     original_bounds = m_reaction.bounds
-    for key in values.keys():    
-        m_reaction.bounds = (key,key)
-        values[key] = round(model.model.optimize().objective_value,4)
+    for key in values.keys():
+        m_reaction.bounds = (key, key)
+        values[key] = round(model.model.optimize().objective_value, 4)
     m_reaction.bounds = original_bounds
     x = np.array(list(values.keys())).reshape((-1, 1))
     y = np.array(list(values.values()))
     from sklearn.linear_model import LinearRegression
-    regressor = LinearRegression()  
-    regressor.fit(x,y)
-    print((mu-regressor.intercept_)/regressor.coef_)
+    regressor = LinearRegression()
+    regressor.fit(x, y)
+    print((mu - regressor.intercept_) / regressor.coef_)
     return values
 
 
-
 def get_metabolite_compartment(model):
-    c=0
-    e=0
-    unique_met=[]
+    c = 0
+    e = 0
+    unique_met = []
     for met in model.model.metabolites:
         if met.compartment == "C_00002":
-            c+=1
+            c += 1
             unique_met.append(met.name)
         elif met.compartment == "C_00001":
-            e+=1
+            e += 1
             unique_met.append(met.name)
-        
-        
-    print("Cytoplasmatic:",c,"\nExtracellular:",e,"\nUnique metabolites:", len(set(unique_met)))
+
+    print("Cytoplasmatic:", c, "\nExtracellular:", e, "\nUnique metabolites:", len(set(unique_met)))
 
 
 def get_transport_number(model):
-    tr=[]
+    tr = []
     for r in model.model.reactions:
         if r not in model.model.exchanges:
-            cyt  = False
+            cyt = False
             extr = False
             for met in r.metabolites:
                 if met.compartment == "e":
-                    extr=True
+                    extr = True
                 if met.compartment == "c":
                     cyt = True
             if extr and cyt:
                 tr.append(r)
-    
-    print("Number of transport reactions:",len(set(tr)))
+
+    print("Number of transport reactions:", len(set(tr)))
 
 
 def anaerobic(lr):
-    lr.model.reactions.R00209__cytop.bounds = (0,0)
-    lr.model.exchanges.EX_C00007__dra.bounds= (0, 99999)
-    lr.model.reactions.R00212__cytop.bounds = (0,99999)
-    lr.model.reactions.R00258__cytop.bounds = (-99999,0)
-    lr.model.reactions.R01827__cytop.bounds = (0,99999)
+    lr.model.reactions.R00209__cytop.bounds = (0, 0)
+    lr.model.exchanges.EX_C00007__dra.bounds = (0, 99999)
+    lr.model.reactions.R00212__cytop.bounds = (0, 99999)
+    lr.model.reactions.R00258__cytop.bounds = (-99999, 0)
+    lr.model.reactions.R01827__cytop.bounds = (0, 99999)
+
 
 def aerobic(lr):
-    lr.model.exchanges.EX_C00007__dra.bounds= (-3.61, 999999)
-    lr.model.reactions.R00209__cytop.bounds = (0,99999)
-    lr.model.reactions.R00212__cytop.bounds = (0,0)
-    lr.model.reactions.R01827__cytop.bounds = (0,99999)
+    lr.model.exchanges.EX_C00007__dra.bounds = (-3.61, 999999)
+    lr.model.reactions.R00209__cytop.bounds = (0, 99999)
+    lr.model.reactions.R00212__cytop.bounds = (0, 0)
+    lr.model.reactions.R01827__cytop.bounds = (0, 99999)
 
-def define_medium(model,m,sheet="rhamnosus", bigg = False):
-    for ex in model.model.exchanges: 
-        ex.bounds=(0,99999)
+
+def define_medium(model, m, sheet="rhamnosus", bigg=False):
+    for ex in model.model.exchanges:
+        ex.bounds = (0, 99999)
     if bigg:
-        data = pd.read_excel("Media_bigg_updated.xlsx",sheet_name = sheet)
+        data = pd.read_excel("Media_bigg_updated.xlsx", sheet_name=sheet)
     else:
-        data = pd.read_excel("Media_backup.xlsx",sheet_name = sheet)
+        data = pd.read_excel("Media_backup.xlsx", sheet_name=sheet)
     res = {}
-    medium = data["M"+str(m)].dropna().to_list()
+    medium = data["M" + str(m)].dropna().to_list()
     for el in medium:
-        res[el]= data["M"+str(m)+"_q"].loc[data["M"+str(m)]==el].values[0]
+        res[el] = data["M" + str(m) + "_q"].loc[data["M" + str(m)] == el].values[0]
     for key in res:
         for ex in model.model.exchanges:
             if ex.id == "EX_" + key + "__dra" or ex.id == "EX_" + key + "_e":
                 ex.bounds = (-res[key], 99999)
-        
+
     try:
         if m == 3:
-            model.model.reactions.R00754__cytop.bounds = (0,0)
+            model.model.reactions.R00754__cytop.bounds = (0, 0)
     except:
         pass
 
 
 def aerobic_v2(model):
-    o = model.get_metabolite_by_name("Oxygen","extr")
+    o = model.get_metabolite_by_name("Oxygen", "extr")
     for ex in model.model.exchanges:
         if o in ex.metabolites:
-            ex.bounds = (-99999,99999)
+            ex.bounds = (-99999, 99999)
     return model
+
 
 def growth_carbs(model, m_reaction):
     sugars = ["C00984__extr", "C00243__extr"]
     for r in model.model.exchanges:
         glucose = model.get_metabolite("C00267__cytop")
         if glucose in r.metabolites:
-            r.bounds = (0,0)  
+            r.bounds = (0, 0)
     for sugar in sugars:
         for r in model.model.exchanges:
             if sugar in r.metabolites:
                 if sugar == "C00984__extr":
-                    r.bounds = (-2.54,0)
+                    r.bounds = (-2.54, 0)
                     print(atp_m(model, m_reaction, 0.1))
-                    r.bounds = (0,0)
+                    r.bounds = (0, 0)
                 if sugar == "C00243__cytop":
-                    r.bounds = (-6.58,0)
+                    r.bounds = (-6.58, 0)
                     print(atp_m(model, m_reaction, 0.1))
-                
+
+
 # growth_carbs(la, atp)
 
 
-
 def get_essential(model):
-    res=[]
+    res = []
     for r in model.model.reactions:
-        original_l=r.bounds
-        r.bounds = (0,0)                  
-        biomass = round(model.model.optimize().objective_value,2)
-        r.bounds=original_l
-        if biomass<=0:
+        original_l = r.bounds
+        r.bounds = (0, 0)
+        biomass = round(model.model.optimize().objective_value, 2)
+        r.bounds = original_l
+        if biomass <= 0:
             res.append(r)
     return res
 
 
-def compare_reacts(model1,model2):
-    not_in_1=[]
-    not_in_2=[]
+def compare_reacts(model1, model2):
+    not_in_1 = []
+    not_in_2 = []
     reacts_1 = model1.model.reactions
     reacts_2 = model2.model.reactions
     for r in reacts_1:
@@ -1199,33 +1195,34 @@ def compare_reacts(model1,model2):
     for r in reacts_2:
         if r not in reacts_1:
             not_in_1.append(r.id)
-    file = open("compare_models.csv","w")
+    file = open("compare_models.csv", "w")
     if len(not_in_1) < len(not_in_2):
         for i in range(len(not_in_1)):
-            file.write(str(not_in_1[i]) + "\t" + str(not_in_2[i])+ "\n")
+            file.write(str(not_in_1[i]) + "\t" + str(not_in_2[i]) + "\n")
         for i in range(len(not_in_1), len(not_in_2)):
-            file.write("NAN" + "\t" + str(not_in_2[i])+ "\n")
+            file.write("NAN" + "\t" + str(not_in_2[i]) + "\n")
     if len(not_in_1) >= len(not_in_2):
         for i in range(len(not_in_2)):
-            file.write(str(not_in_1[i]) + "\t" + str(not_in_2[i])+ "\n")
+            file.write(str(not_in_1[i]) + "\t" + str(not_in_2[i]) + "\n")
         for i in range(len(not_in_2), len(not_in_1)):
             file.write(str(not_in_1[i]) + "\t" + "NAN" + "\n")
     file.close()
-    
+
+
 def define_medium_quercus(model):
     for exchange in model.exchanges:
-        exchange.bounds = (0,9999)
-    model.exchanges.EX_C00205__dra.bounds = (-100,999)
-    model.exchanges.EX_C00011__dra.bounds = (-999,999)
-    model.exchanges.EX_C00001__dra.bounds = (-999,999)
-    model.exchanges.EX_C00014__dra.bounds = (-999,999)
-    model.exchanges.EX_C00080__dra.bounds = (-999,999)
-    model.exchanges.EX_C00009__dra.bounds = (-999,999)
-    model.exchanges.EX_C00305__dra.bounds = (-999,999)
-    model.exchanges.EX_C14818__dra.bounds = (-999,999)
-    model.exchanges.EX_C00059__dra.bounds = (-999,999)
-    model.exchanges.EX_C00007__dra.bounds = (-999,999)
-    
+        exchange.bounds = (0, 9999)
+    model.exchanges.EX_C00205__dra.bounds = (-100, 999)
+    model.exchanges.EX_C00011__dra.bounds = (-999, 999)
+    model.exchanges.EX_C00001__dra.bounds = (-999, 999)
+    model.exchanges.EX_C00014__dra.bounds = (-999, 999)
+    model.exchanges.EX_C00080__dra.bounds = (-999, 999)
+    model.exchanges.EX_C00009__dra.bounds = (-999, 999)
+    model.exchanges.EX_C00305__dra.bounds = (-999, 999)
+    model.exchanges.EX_C14818__dra.bounds = (-999, 999)
+    model.exchanges.EX_C00059__dra.bounds = (-999, 999)
+    model.exchanges.EX_C00007__dra.bounds = (-999, 999)
+
 
 def react_without_gene(model):
     all_reactions = list(model.reactions)
@@ -1239,35 +1236,38 @@ def react_without_gene(model):
     for i in range(len(all_reactions)):
         all_reactions[i] = all_reactions[i].id
     print(all_reactions)
-    
+
+
 def photosynthesis(model):
     copy = model.model.copy()
-    copy.reactions.R03140__chlo.bounds = (0,0)
-    copy.reactions.R00024__chlo.bounds = (0,9999)
+    copy.reactions.R03140__chlo.bounds = (0, 0)
+    copy.reactions.R00024__chlo.bounds = (0, 9999)
     copy.objective = "EX_C00205__dra"
     return copy
 
-def photorespiration_v1(model,q=3):
+
+def photorespiration_v1(model, q=3):
     copy = model.model.copy()
     same_flux = model.model.problem.Constraint(
-    copy.reactions.R00024__chlo.flux_expression - copy.reactions.R03140__chlo.flux_expression*q,
-    lb=0,
-    ub=0)
+        copy.reactions.R00024__chlo.flux_expression - copy.reactions.R03140__chlo.flux_expression * q,
+        lb=0,
+        ub=0)
     copy.add_cons_vars(same_flux)
     copy.objective = "EX_C00205__dra"
-    copy.reactions.e_Biomass_Leaf__cyto.bounds = (0.1,0.1)
-    copy.exchanges.EX_C00205__dra.lower_bound=-1000
+    copy.reactions.e_Biomass_Leaf__cyto.bounds = (0.1, 0.1)
+    copy.exchanges.EX_C00205__dra.lower_bound = -1000
     return copy
+
 
 def photorespiration_v2(model, q=3):
     copy = model.model.copy()
     same_flux = model.model.problem.Constraint(
-    copy.reactions.R00024__chlo.flux_expression - copy.reactions.R03140__chlo.flux_expression*q,
-    lb=0,
-    ub=0)
+        copy.reactions.R00024__chlo.flux_expression - copy.reactions.R03140__chlo.flux_expression * q,
+        lb=0,
+        ub=0)
     copy.add_cons_vars(same_flux)
     copy.objective = "e_Biomass_Leaf__cyto"
-    copy.exchanges.EX_C00205__dra.bounds = (-100,999)
+    copy.exchanges.EX_C00205__dra.bounds = (-100, 999)
     return copy
 
 
@@ -1280,12 +1280,11 @@ def update_biomass(model, biomass_reaction, metabolites_to_remove):
         if metabolite in model.reactions.get_by_id(biomass_reaction).metabolites:
             st = model.reactions.get_by_id(biomass_reaction).metabolites[metabolite]
             model.reactions.get_by_id(biomass_reaction).add_metabolites({model.metabolites.get_by_id(metabolite): -st})
-    for reactant in  model.reactions.get_by_id(biomass_reaction).reactants:
+    for reactant in model.reactions.get_by_id(biomass_reaction).reactants:
         pass
 
 
-
-def photorespiration_mt(model,q):
+def photorespiration_mt(model, q):
     copy = model.copy()
     same_flux = copy.problem.Constraint(
         copy.reactions.R00024__plst_Leaf_Light.flux_expression - copy.reactions.R03140__plst_Leaf_Light.flux_expression * q,
@@ -1323,7 +1322,7 @@ def photorespiration_mt(model,q):
     copy.add_cons_vars(same_flux4)
     copy.add_cons_vars(same_flux5)
     same_flux6 = copy.problem.Constraint(
-        copy.reactions.EX_C00244__dra_Light.flux_expression *2 - copy.reactions.EX_C00244__dra_Dark.flux_expression * 3,
+        copy.reactions.EX_C00244__dra_Light.flux_expression * 2 - copy.reactions.EX_C00244__dra_Dark.flux_expression * 3,
         lb=0,
         ub=0)
     copy.add_cons_vars(same_flux6)
@@ -1334,17 +1333,17 @@ def photorespiration_mt(model,q):
     #     ub=0)
     # copy.add_cons_vars(same_flux7)
     copy.objective = "EX_C00205__dra_Light"
-    copy.reactions.EX_C00205__dra_Light.bounds = (-1000,1000)
-    copy.reactions.Total_biomass.bounds = (0.11,0.11)
+    copy.reactions.EX_C00205__dra_Light.bounds = (-1000, 1000)
+    copy.reactions.Total_biomass.bounds = (0.11, 0.11)
     return copy
 
 
 def photorespiration_dn(model, q=3):
     copy = model.model.copy()
     same_flux = model.model.problem.Constraint(
-    copy.reactions.R00024__chlo_Light.flux_expression - copy.reactions.R03140__chlo_Light.flux_expression*q,
-    lb=0,
-    ub=0)
+        copy.reactions.R00024__chlo_Light.flux_expression - copy.reactions.R03140__chlo_Light.flux_expression * q,
+        lb=0,
+        ub=0)
     same_flux2 = model.model.problem.Constraint(
         copy.reactions.R00024__chlo_Dark.flux_expression - copy.reactions.R03140__chlo_Dark.flux_expression * q,
         lb=0,
@@ -1356,23 +1355,22 @@ def photorespiration_dn(model, q=3):
     return copy
 
 
-def photorespiration_v3(model,q=3):
+def photorespiration_v3(model, q=3):
     copy = model.model.copy()
     same_flux = model.model.problem.Constraint(
-    copy.reactions.R00024__chlo.flux_expression - copy.reactions.R03140__chlo.flux_expression*q,
-    lb=0,
-    ub=0)
+        copy.reactions.R00024__chlo.flux_expression - copy.reactions.R03140__chlo.flux_expression * q,
+        lb=0,
+        ub=0)
     copy.add_cons_vars(same_flux)
     copy.objective = "e_Biomass__cyto"
-    copy.exchanges.EX_C00205__dra.bounds = (-100,0)
+    copy.exchanges.EX_C00205__dra.bounds = (-100, 0)
     return copy
-
 
 
 def respiration(model):
     copy = model.model.copy()
-    copy.exchanges.EX_C00205__dra.bounds=(0,999)
-    copy.exchanges.EX_C00089__dra.bounds=(-9999,0)
+    copy.exchanges.EX_C00205__dra.bounds = (0, 999)
+    copy.exchanges.EX_C00089__dra.bounds = (-9999, 0)
     copy.objective = "EX_C00089__dra"
     return copy
 
@@ -1384,20 +1382,20 @@ def get_dataframe(model):
     res4 = pd.DataFrame()
     res5 = pd.DataFrame()
     res6 = pd.DataFrame()
-    calvin_cycle = ["R00024", "R01512","R01063","R01015_V2", "R01070","R04780", "R01830", "R01829",
-                     "R01845","R01641", "R01056", "R01523", "R01529"]
+    calvin_cycle = ["R00024", "R01512", "R01063", "R01015_V2", "R01070", "R04780", "R01830", "R01829",
+                    "R01845", "R01641", "R01056", "R01523", "R01529"]
     photorespirationp = ["R00372__pero", "R00475__pero", "R00588__pero", "R01221__mito",
-                       "R01334__chlo", "R01388__pero", "R01514__chlo", "R03140__chlo",
-                        "R00009__pero"]
-    TCA = ["R00342__mito", "Cytochrome_C_Oxidase__mito", "ATP_Synthase__mito", 
+                         "R01334__chlo", "R01388__pero", "R01514__chlo", "R03140__chlo",
+                         "R00009__pero"]
+    TCA = ["R00342__mito", "Cytochrome_C_Oxidase__mito", "ATP_Synthase__mito",
            "Cytochrome_C_Reductase__mito", "NADH_Dehydrogenase__mito"]
     GS_GOGAT = ["Ferredoxin_NADP_Reductase__chlo", "R00021__chlo",
                 "R00253__chlo"]
     mva = ["R00238__cyto", "R01978__cyto", "R02082__cyto", "R02245__cyto", "R03245__pero", "R01121__pero"]
     mep = ["R05636__chlo", "R05688__chlo", "R05633__chlo", "R05634__chlo", "R05637__chlo", "R08689__chlo"]
     for i in range(len(calvin_cycle)):
-        calvin_cycle[i] += "__chlo"        
-    for i in range(1,6):
+        calvin_cycle[i] += "__chlo"
+    for i in range(1, 6):
         pr = photorespiration_v2(model, i)
         fba = flux_analysis.pfba(pr)
         temp = fba.fluxes.loc[fba.fluxes.index.isin(calvin_cycle)]
@@ -1406,35 +1404,36 @@ def get_dataframe(model):
         temp4 = fba.fluxes.loc[fba.fluxes.index.isin(GS_GOGAT)]
         temp5 = fba.fluxes.loc[fba.fluxes.index.isin(mva)]
         temp6 = fba.fluxes.loc[fba.fluxes.index.isin(mep)]
-        res = pd.concat([res,temp], axis = 1)
-        res2 = pd.concat([res2,temp2], axis = 1)
-        res3 = pd.concat([res3,temp3], axis = 1)
-        res4 = pd.concat([res4,temp4], axis = 1)
-        res5 = pd.concat([res5,temp5], axis = 1)
-        res6 = pd.concat([res6,temp6], axis = 1)
-        res.rename({"fluxes": str(i)}, inplace = True, axis=1)
-        res2.rename({"fluxes": str(i)}, inplace = True, axis=1)
-        res3.rename({"fluxes": str(i)}, inplace = True, axis=1)
-        res4.rename({"fluxes": str(i)}, inplace = True, axis=1)
-        res5.rename({"fluxes": str(i)}, inplace = True, axis=1)
-        res6.rename({"fluxes": str(i)}, inplace = True, axis=1)
-    final_res = pd.concat([res,res2,res3,res4, res5, res6])
+        res = pd.concat([res, temp], axis=1)
+        res2 = pd.concat([res2, temp2], axis=1)
+        res3 = pd.concat([res3, temp3], axis=1)
+        res4 = pd.concat([res4, temp4], axis=1)
+        res5 = pd.concat([res5, temp5], axis=1)
+        res6 = pd.concat([res6, temp6], axis=1)
+        res.rename({"fluxes": str(i)}, inplace=True, axis=1)
+        res2.rename({"fluxes": str(i)}, inplace=True, axis=1)
+        res3.rename({"fluxes": str(i)}, inplace=True, axis=1)
+        res4.rename({"fluxes": str(i)}, inplace=True, axis=1)
+        res5.rename({"fluxes": str(i)}, inplace=True, axis=1)
+        res6.rename({"fluxes": str(i)}, inplace=True, axis=1)
+    final_res = pd.concat([res, res2, res3, res4, res5, res6])
     return final_res
 
 
 def get_biomass_co2_plot(model):
     res_co2 = {}
-    res_biomass= {}
-    for i in range(1,11):
+    res_biomass = {}
+    for i in range(1, 11):
         pr = photorespiration_v2(model, i)
         fba = pr.optimize()
         res_co2[i] = fba["EX_C00011__dra"]
 
+
 def check_under_limit(reaction):
-    balance= reaction.check_mass_balance()
+    balance = reaction.check_mass_balance()
     if balance:
         for key in balance:
-            if round(balance[key],5) != 0:
+            if round(balance[key], 5) != 0:
                 return False
     return True
 
@@ -1446,10 +1445,11 @@ def check_balance(model, show_biomass_reactions=False):
             if str(reaction.id.split('__')[0]) + str(reaction.check_mass_balance()) not in res:
                 if str(reaction.id).startswith("e_"):
                     if show_biomass_reactions:
-                        res[str(reaction.id)] =  reaction.check_mass_balance()
+                        res[str(reaction.id)] = reaction.check_mass_balance()
                 else:
                     res[str(reaction.id)] = reaction.check_mass_balance()
     return res
+
 
 def simulation_for_conditions(model, conditions_df, growth_rate_df, save_in_file=False, filename=None, objective=None):
     as_dict = conditions_df.to_dict(orient='index')
@@ -1485,9 +1485,6 @@ def simulation_for_conditions(model, conditions_df, growth_rate_df, save_in_file
     return complete_results, values_for_plot, round(error_sum, 6)
 
 
-
-
-
 def get_reactions_nadh_nadph(model):
     print("starting.....")
     for reaction in model.reactions:
@@ -1514,7 +1511,7 @@ def add_reaction_string_to_dataframe(dataframe, model):
         reac_string = ''
         for reactant in reac.reactants:
             reac_string += str(abs(reac.get_coefficient(reactant.id))) + ' ' + reactant.name + ' + '
-        reac_string = reac_string[0:len(reac_string)-3]
+        reac_string = reac_string[0:len(reac_string) - 3]
         if reac.reversibility:
             reac_string += ' <=> '
         else:
@@ -1522,23 +1519,22 @@ def add_reaction_string_to_dataframe(dataframe, model):
         for products in reac.products:
             reac_string += str(abs(reac.get_coefficient(products.id))) + ' ' + products.name + ' + '
         if reac_string.strip()[-1] == '+':
-            reac_string = reac_string[0:len(reac_string)-3]
+            reac_string = reac_string[0:len(reac_string) - 3]
 
         dataframe['Reaction'].loc[dataframe.index == reaction] = reac_string
     return dataframe
 
 
-
 def get_heatmap(model):
     res = get_dataframe(model)
-    ax = seaborn.clustermap(res, cmap ="YlGnBu", col_cluster = False, row_cluster = False, z_score = 0)
-    
-    
+    ax = seaborn.clustermap(res, cmap="YlGnBu", col_cluster=False, row_cluster=False, z_score=0)
+
+
 def count_reactions_by_compartment(model):
     compartments = {}
     for reaction in model.model.reactions:
-        
-        if len(reaction.compartments)>1:
+
+        if len(reaction.compartments) > 1:
             membrane = check_transport(reaction)
             if membrane is not None:
                 if membrane not in compartments.keys():
@@ -1547,24 +1543,23 @@ def count_reactions_by_compartment(model):
                     compartments[membrane] += 1
         else:
             reaction_compartment = list(reaction.compartments)[0]
-            if str(reaction.id).endswith('extr_b') is False: 
+            if str(reaction.id).endswith('extr_b') is False:
                 compartment = model.model.compartments[reaction_compartment]
                 if compartment not in compartments.keys():
                     compartments[compartment] = 1
                 else:
                     compartments[compartment] += 1
-            
+
     return compartments
 
- 
 
 def check_transport(reaction):
-    d = {"['C_00004', 'C_00006']": 'Chloroplast_Membrane', "['C_00001', 'C_00004']": 'Plasma_Membrane', 
+    d = {"['C_00004', 'C_00006']": 'Chloroplast_Membrane', "['C_00001', 'C_00004']": 'Plasma_Membrane',
          "['C_00002', 'C_00004']": 'Mitochondrial_Membrane', "['C_00003', 'C_00004']": 'Peroxisome_Membrane',
-         "['C_00004', 'C_00008']": 'Vacuole_Membrane', "['C_00004', 'C_00005']": 'Golgi_Membrane', 
-         "['C_00004', 'C_00007']": 'Endoplasmic_Reticulum_Membrane', 
+         "['C_00004', 'C_00008']": 'Vacuole_Membrane', "['C_00004', 'C_00005']": 'Golgi_Membrane',
+         "['C_00004', 'C_00007']": 'Endoplasmic_Reticulum_Membrane',
          "['C_00006', 'C_00007']": 'Endoplasmic_Reticulum_Membrane'}
-    
+
     compartments = list(reaction.compartments)
     compartments.sort()
     if str(compartments) not in d.keys():
@@ -1573,15 +1568,15 @@ def check_transport(reaction):
     else:
         membrane = d[str(compartments)]
         return membrane
-    
-    
+
+
 def get_dataframe_all(model):
-    res = pd.DataFrame()   
-    for i in range(1,6):
+    res = pd.DataFrame()
+    for i in range(1, 6):
         pr = photorespiration_v2(model, i)
         fba = pr.optimize()
-        res = pd.concat([res,fba.fluxes], axis = 1)
-        res.rename({"fluxes": str(i)}, inplace = True, axis=1)
+        res = pd.concat([res, fba.fluxes], axis=1)
+        res.rename({"fluxes": str(i)}, inplace=True, axis=1)
     return res
 
 
@@ -1596,10 +1591,10 @@ def get_dataframe_3(model):
     res2 = pd.DataFrame()
     res3 = pd.DataFrame()
     res4 = pd.DataFrame()
-    calvin_cycle = ["R00024", "R01512","R01063","R01015","R04780", "R01830", "R01829",
-                     "R01845","R01641", "R01056", "R01523", "R01529"]
+    calvin_cycle = ["R00024", "R01512", "R01063", "R01015", "R04780", "R01830", "R01829",
+                    "R01845", "R01641", "R01056", "R01523", "R01529"]
     photorespiration = ["R00372__pero", "R00475__pero", "R00588__pero",
-                       "R01334__chlo", "R01388__pero", "R01514__chlo", "R03140__chlo",
+                        "R01334__chlo", "R01388__pero", "R01514__chlo", "R03140__chlo",
                         "R00009__pero"]
     TCA = ["Cytochrome_C_Oxidase__mito", "ATP_Synthase__mito",
            "Cytochrome_C_Reductase__mito", "NADH_Dehydrogenase__mito"]
@@ -1612,22 +1607,22 @@ def get_dataframe_3(model):
     TCA = get_dark_reactions(TCA)
     GS_GOGAT = get_dark_reactions(GS_GOGAT)
 
-    for i in range(1,6):
+    for i in range(1, 6):
         pr = photorespiration_mt(model, i)
         pfba = flux_analysis.pfba(pr)
         temp = pfba.fluxes.loc[pfba.fluxes.index.isin(calvin_cycle)]
         temp2 = pfba.fluxes.loc[pfba.fluxes.index.isin(photorespiration)]
         temp3 = pfba.fluxes.loc[pfba.fluxes.index.isin(TCA)]
         temp4 = pfba.fluxes.loc[pfba.fluxes.index.isin(GS_GOGAT)]
-        res = pd.concat([res,temp], axis = 1)
-        res2 = pd.concat([res2,temp2], axis = 1)
-        res3 = pd.concat([res3,temp3], axis = 1)
-        res4 = pd.concat([res4,temp4], axis = 1)
-        res.rename({"fluxes": str(i)}, inplace = True, axis=1)
-        res2.rename({"fluxes": str(i)}, inplace = True, axis=1)
-        res3.rename({"fluxes": str(i)}, inplace = True, axis=1)
-        res4.rename({"fluxes": str(i)}, inplace = True, axis=1)
-    final_res= change_name([res,res2,res3,res4])
+        res = pd.concat([res, temp], axis=1)
+        res2 = pd.concat([res2, temp2], axis=1)
+        res3 = pd.concat([res3, temp3], axis=1)
+        res4 = pd.concat([res4, temp4], axis=1)
+        res.rename({"fluxes": str(i)}, inplace=True, axis=1)
+        res2.rename({"fluxes": str(i)}, inplace=True, axis=1)
+        res3.rename({"fluxes": str(i)}, inplace=True, axis=1)
+        res4.rename({"fluxes": str(i)}, inplace=True, axis=1)
+    final_res = change_name([res, res2, res3, res4])
     return final_res
 
 
@@ -1637,20 +1632,20 @@ def get_dataframe_2(model):
     res3 = pd.DataFrame()
     res4 = pd.DataFrame()
     res5 = pd.DataFrame()
-    calvin_cycle = ["R00024","R01641", "R01512","R01063", "R01830", "R01829", #"R01070",  "R04780","R01015","R01056","R01845",
-                       "R01523", "R01529"]
+    calvin_cycle = ["R00024", "R01641", "R01512", "R01063", "R01830", "R01829",  # "R01070",  "R04780","R01015","R01056","R01845",
+                    "R01523", "R01529"]
     photorespiration = ["R00372__pero", "R00475__pero", "R00588__pero", "R01221__mito",
-                       "R01334__chlo", "R01388__pero", "R01514__chlo", "R03140__chlo",
+                        "R01334__chlo", "R01388__pero", "R01514__chlo", "R03140__chlo",
                         "R00009__pero"]
-    TCA = ["R00342__mito","R00351__mito", "Cytochrome_C_Oxidase__mito", "ATP_Synthase__mito",
+    TCA = ["R00342__mito", "R00351__mito", "Cytochrome_C_Oxidase__mito", "ATP_Synthase__mito",
            "Cytochrome_C_Reductase__mito", "NADH_Dehydrogenase__mito"]
     GS_GOGAT = ["Ferredoxin_NADP_Reductase__chlo", "R00021__chlo",
                 "R00253__chlo"]
     mva = ["R00238__cyto", "R01978__cyto", "R02082__cyto", "R02245__cyto", "R03245__pero", "R01121__pero"]
-    mep = ["R05636__chlo", "R05688__chlo", "R05633__chlo", "R08689__chlo"] # "R05634__chlo", "R05637__chlo",
+    mep = ["R05636__chlo", "R05688__chlo", "R05633__chlo", "R08689__chlo"]  # "R05634__chlo", "R05637__chlo",
     for i in range(len(calvin_cycle)):
-        calvin_cycle[i] += "__chlo"        
-    for i in range(1,6):
+        calvin_cycle[i] += "__chlo"
+    for i in range(1, 6):
         pr = photorespiration_v2(model, i)
         pfba = flux_analysis.pfba(pr)
         temp = pfba.fluxes.loc[pfba.fluxes.index.isin(calvin_cycle)]
@@ -1658,17 +1653,17 @@ def get_dataframe_2(model):
         temp3 = pfba.fluxes.loc[pfba.fluxes.index.isin(TCA)]
         temp4 = pfba.fluxes.loc[pfba.fluxes.index.isin(GS_GOGAT)]
         temp5 = pfba.fluxes.loc[pfba.fluxes.index.isin(mep)]
-        res = pd.concat([res,temp], axis = 1)
-        res2 = pd.concat([res2,temp2], axis = 1)
-        res3 = pd.concat([res3,temp3], axis = 1)
-        res4 = pd.concat([res4,temp4], axis = 1)
-        res5 = pd.concat([res5,temp5], axis = 1)
-        res.rename({"fluxes": str(i)}, inplace = True, axis=1)
-        res2.rename({"fluxes": str(i)}, inplace = True, axis=1)
-        res3.rename({"fluxes": str(i)}, inplace = True, axis=1)
-        res4.rename({"fluxes": str(i)}, inplace = True, axis=1)
-        res5.rename({"fluxes":str(i)}, inplace =True, axis =1)
-    final_res= change_name([res,res2,res3,res4, res5])
+        res = pd.concat([res, temp], axis=1)
+        res2 = pd.concat([res2, temp2], axis=1)
+        res3 = pd.concat([res3, temp3], axis=1)
+        res4 = pd.concat([res4, temp4], axis=1)
+        res5 = pd.concat([res5, temp5], axis=1)
+        res.rename({"fluxes": str(i)}, inplace=True, axis=1)
+        res2.rename({"fluxes": str(i)}, inplace=True, axis=1)
+        res3.rename({"fluxes": str(i)}, inplace=True, axis=1)
+        res4.rename({"fluxes": str(i)}, inplace=True, axis=1)
+        res5.rename({"fluxes": str(i)}, inplace=True, axis=1)
+    final_res = change_name([res, res2, res3, res4, res5])
     return final_res
 
 
@@ -1683,13 +1678,14 @@ def get_pfba(model):
         fba = flux_analysis.pfba(model)
         return fba
 
+
 def get_inner_bark_model(model, conditions_file_name, conditions_sheet_name):
     model.apply_env_conditions_from_excel(conditions_file_name, conditions_sheet_name)
     biomass_reactions = ["e_Biomass_Leaf__cyto", "e_Carbohydrate__cyto", "e_CellWall_Leaf__cyto", "e_Cofactor_Leaf__cyto"]
     model.model.objective = 'e_Biomass_Ibark__cyto'
     try:
         for reaction in biomass_reactions:
-            model.model.reactions.get_by_id(reaction).bounds = (0,0)
+            model.model.reactions.get_by_id(reaction).bounds = (0, 0)
     except Exception as e:
         print(e)
 
@@ -1697,69 +1693,72 @@ def get_inner_bark_model(model, conditions_file_name, conditions_sheet_name):
 def get_phellogen_model(model, conditions_file_name, conditions_sheet_name):
     model.apply_env_conditions_from_excel(conditions_file_name, conditions_sheet_name)
     biomass_reactions = ["e_Biomass_Leaf__cyto", "e_Carbohydrate_Leaf__cyto", "e_CellWall_Leaf__cyto", "e_Cofactor_Leaf__cyto",
-                         "e_Biomass_Ibark__cyto", "e_Carbohydrate_Ibark__cyto", "e_CellWall_Ibark__cyto", "e_Cofactor_Ibark__cyto","e_Suberin_Ibark__cyto"]
+                         "e_Biomass_Ibark__cyto", "e_Carbohydrate_Ibark__cyto", "e_CellWall_Ibark__cyto", "e_Cofactor_Ibark__cyto", "e_Suberin_Ibark__cyto"]
     model.model.objective = 'e_Biomass_Phellogen__cyto'
     try:
         for reaction in biomass_reactions:
-            model.model.reactions.get_by_id(reaction).bounds = (0,0)
+            model.model.reactions.get_by_id(reaction).bounds = (0, 0)
     except Exception as e:
         print(e)
-    
+
 
 def change_name(dfs):
     for df in dfs:
         index = df.index.values
         for i in index:
-            df.rename(index = {i: i.replace("ATP_Synthase", "ATPS").replace("Cytochrome_C_Reductase","CCOR").replace("Cytochrome_C_Oxidase","COX").replace("NADH_Dehydrogenase","NAD9").replace("Ferredoxin_NADP_Reductase","FNR").replace("__chlo","").replace("__pero","").replace("__mito","")}
-                              ,inplace=True)
+            df.rename(index={
+                i: i.replace("ATP_Synthase", "ATPS").replace("Cytochrome_C_Reductase", "CCOR").replace("Cytochrome_C_Oxidase", "COX").replace("NADH_Dehydrogenase", "NAD9").replace("Ferredoxin_NADP_Reductase", "FNR").replace("__chlo", "").replace("__pero", "").replace(
+                    "__mito", "")}
+                      , inplace=True)
     return dfs
 
+
 def build_heatmap(model):
-    res,res2,res3,res4,res5 = get_dataframe_2(model)
-    normalized1=res.div(res["3"],axis=0)
-    normalized2=res2.div(res2["3"],axis=0)
-    normalized3=res3.div(res3["3"],axis=0)
-    normalized4=res4.div(res4["3"],axis=0)
+    res, res2, res3, res4, res5 = get_dataframe_2(model)
+    normalized1 = res.div(res["3"], axis=0)
+    normalized2 = res2.div(res2["3"], axis=0)
+    normalized3 = res3.div(res3["3"], axis=0)
+    normalized4 = res4.div(res4["3"], axis=0)
     normalized5 = res5.div(res5["3"], axis=0)
     vmin = 9999
     vmax = -9999
-    res = [normalized1,normalized2,normalized3,normalized4,normalized5 ]
+    res = [normalized1, normalized2, normalized3, normalized4, normalized5]
     for df in res:
         temp_min = df.min().min()
         temp_max = df.max().max()
         if temp_min < vmin:
-            vmin=temp_min
-        if temp_max> vmax:
-            vmax=temp_max
-    grid_kws = {"height_ratios": (5,5,5,5,1), "hspace": .3}
-    f, (ax, ax2,ax3,ax5,cbar_ax) = plt.subplots(5,gridspec_kw=grid_kws,figsize = (7,18))
+            vmin = temp_min
+        if temp_max > vmax:
+            vmax = temp_max
+    grid_kws = {"height_ratios": (5, 5, 5, 5, 1), "hspace": .3}
+    f, (ax, ax2, ax3, ax5, cbar_ax) = plt.subplots(5, gridspec_kw=grid_kws, figsize=(7, 18))
     ax.tick_params(colors='k', grid_color='k')
     f.tight_layout(pad=0.0001)
-    ax1 = seaborn.heatmap(normalized1, ax=ax, cmap ="YlGnBu",
-                 cbar=False, vmin = vmin, vmax = vmax,
-                 cbar_kws={"orientation": "horizontal"}) 
-    ax1.set_ylabel("Calvin Cycle", rotation = 0, fontsize = 16, color="k")
+    ax1 = seaborn.heatmap(normalized1, ax=ax, cmap="YlGnBu",
+                          cbar=False, vmin=vmin, vmax=vmax,
+                          cbar_kws={"orientation": "horizontal"})
+    ax1.set_ylabel("Calvin Cycle", rotation=0, fontsize=16, color="k")
     ax1.yaxis.set_label_coords(-0.35, 0.4)
     ax1.axes.xaxis.set_visible(False)
     pos1 = ax1.get_position()
-    pos = [pos1.x0, pos1.y0, pos1.width , 0.15]
+    pos = [pos1.x0, pos1.y0, pos1.width, 0.15]
     ax.set_position(pos)
-    ax2 = seaborn.heatmap(normalized2, ax=ax2, cmap ="YlGnBu",
-                 cbar=False,vmin = vmin, vmax = vmax,
-                 cbar_kws={"orientation": "horizontal"})
-    pos2 = [pos1.x0, pos1.y0 - 0.14, pos1.width , 0.13] 
+    ax2 = seaborn.heatmap(normalized2, ax=ax2, cmap="YlGnBu",
+                          cbar=False, vmin=vmin, vmax=vmax,
+                          cbar_kws={"orientation": "horizontal"})
+    pos2 = [pos1.x0, pos1.y0 - 0.14, pos1.width, 0.13]
     ax2.set_position(pos2)
-    ax2.set_ylabel("Photorespiration", rotation = 0, fontsize = 16, color="k")
+    ax2.set_ylabel("Photorespiration", rotation=0, fontsize=16, color="k")
     ax2.yaxis.set_label_coords(-0.35, 0.5)
     ax2.axes.xaxis.set_visible(False)
-    ax3 = seaborn.heatmap(normalized3, ax=ax3, cmap ="YlGnBu",
-                 cbar=False,vmin = vmin, vmax = vmax,
-                 cbar_kws={"orientation": "horizontal"})
-    ax3.set_ylabel("TCA and\nOxidative\nPhosphorylation", rotation = 0, fontsize = 16, color="k")
+    ax3 = seaborn.heatmap(normalized3, ax=ax3, cmap="YlGnBu",
+                          cbar=False, vmin=vmin, vmax=vmax,
+                          cbar_kws={"orientation": "horizontal"})
+    ax3.set_ylabel("TCA and\nOxidative\nPhosphorylation", rotation=0, fontsize=16, color="k")
     ax3.yaxis.set_label_coords(-0.35, 0.35)
     ax3.axes.xaxis.set_visible(False)
     pos2 = ax2.get_position()
-    pos3 = [pos2.x0, pos2.y0 - 0.09, pos2.width , 0.08] 
+    pos3 = [pos2.x0, pos2.y0 - 0.09, pos2.width, 0.08]
     ax3.set_position(pos3)
     # ax4 = seaborn.heatmap(normalized4, ax=ax4, cmap ="YlGnBu"
     #              ,vmin = vmin, vmax = vmax, cbar_ax=cbar_ax,
@@ -1779,11 +1778,10 @@ def build_heatmap(model):
     ax5.set_ylabel("MEP\nPathway", rotation=0, fontsize=16, color="k")
     ax5.yaxis.set_label_coords(-0.35, 0.25)
     pos4 = ax3.get_position()
-    pos5 = [pos4.x0, pos4.y0 - 0.06, pos4.width , 0.05]
-    ax5.set_xlabel("Vc/Vo",  fontsize = 20, color="k")
+    pos5 = [pos4.x0, pos4.y0 - 0.06, pos4.width, 0.05]
+    ax5.set_xlabel("Vc/Vo", fontsize=20, color="k")
     ax5.xaxis.set_label_coords(0.5, -0.3)
     ax5.set_position(pos5)
     pos5 = ax5.get_position()
-    cbar_ax.set_position([pos5.x0, pos5.y0 - 0.08, pos5.width , 0.01])
+    cbar_ax.set_position([pos5.x0, pos5.y0 - 0.08, pos5.width, 0.01])
     cbar_ax.title.set_text("Fold change in fluxes")
-

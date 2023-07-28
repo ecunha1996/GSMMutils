@@ -2,14 +2,14 @@ import os
 from os.path import join
 from typing import Union
 
-from cobra import Model
+import matlab.engine
 import numpy as np
 import pandas as pd
 import scipy
+from cobra import Model
 
 from GSMMutils import SRC_PATH, DATA_PATH
 from GSMMutils.model.COBRAmodel import MyModel
-import matlab.engine
 
 
 class FAME2Biomass:
@@ -252,7 +252,7 @@ class FAME2Biomass:
         eng.cd(self.data_directory)
         eng.addpath(join(SRC_PATH, 'matlab'))
         eng.addpath(r'C:\gurobi912\win64\matlab')
-        b_list = [1/3,
+        b_list = [1 / 3,
                   0,
                   0.066765796,
                   0,
@@ -277,7 +277,7 @@ class FAME2Biomass:
                   0,
                   0
                   ]
-        b_vector = matlab.double(vector=[e*3 for e in b_list])
+        b_vector = matlab.double(vector=[e * 3 for e in b_list])
         np_a = np.array(met_mat)
         scipy.io.savemat(rf"{DATA_PATH}\fame2biomass\{self.model.id}\{lipid_abb.lower()}_metmat.mat", {'metmat': np_a})
         function_name = getattr(eng, f"lipids_{lipid_abb.lower()}")

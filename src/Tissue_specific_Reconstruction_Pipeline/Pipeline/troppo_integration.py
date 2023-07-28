@@ -77,7 +77,7 @@ def reconstruction_function(omics_container, parameters: dict):
 
 
 def troppo_omics_integration(model: cobra.Model, algorithm: str, threshold: float, thread_number: int,
-                             omics_dataset: pandas.DataFrame, thresholds_map = {}):
+                             omics_dataset: pandas.DataFrame, thresholds_map=None):
     """
     This function is used to run the Troppo's integration algorithms.
 
@@ -99,8 +99,9 @@ def troppo_omics_integration(model: cobra.Model, algorithm: str, threshold: floa
     integration_results: dict
         Dataframe containing the results of the omics integration.
         Each sample as a dictionary containing a boolean value for each reaction.
-
     """
+    if thresholds_map is None:
+        thresholds_map = {}
     block_print()
 
     patt = re.compile('__COBAMPGPRDOT__[0-9]{1}')

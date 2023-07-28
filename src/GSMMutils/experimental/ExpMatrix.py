@@ -6,7 +6,6 @@ from GSMMutils.io import write_matrix
 from GSMMutils.utils.utils import *
 
 
-
 class ExpMatrix:
     def __init__(self, experimental_filename, model=None):
         self._conditions = None
