@@ -1,5 +1,5 @@
 from GSMMutils.model.COBRAmodel import MyModel
-from GSMMutils.model.validation import check_consistency
+from GSMMutils.model.model_validator import check_consistency
 from os.path import join
 
 

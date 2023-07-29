@@ -10,7 +10,7 @@ from matplotlib import colors as mcolors
 import prince
 
 from GSMMutils import DATA_PATH
-from Tissue_specific_Reconstruction_Pipeline.Pipeline.utils.config_variables import DATASET
+from GSMMutils.utils.config_variables import DATASET
 
 M_COLORS = list(mcolors.TABLEAU_COLORS.keys())
 COLORS = M_COLORS + ['#1f6357', '#017374', '#0cb577', '#ff0789', '#afa88b']
@@ -172,21 +172,21 @@ if __name__ == '__main__':
     contents = ['Reaction']
 
     for content in contents:
-        df = pd.read_csv(f'{DATA_PATH}/omics/{DATASET}/Dsalina_light_fastcore_Local2_2_4_4.csv', index_col=[0])
-        df = df*1
+        results_dataframe = pd.read_csv(f'{DATA_PATH}/omics/{DATASET}/Dsalina_light_fastcore_Local2_2_4_4.csv', index_col=[0])
+        results_dataframe = results_dataframe * 1
         conditions, threshold = [], []
-        for i, index in enumerate(df.index):
+        for i, index in enumerate(results_dataframe.index):
             conditions.append(index.split('_')[1])
             threshold.append('.'.join(index.split('_')[-2:]))
 
-        df['Condition'] = conditions
-        df['Threshold'] = threshold
+        results_dataframe['Condition'] = conditions
+        results_dataframe['Threshold'] = threshold
 
         categorical = ['Condition', 'Threshold']
 
-        df = scaling(dataframe=df, categorical=categorical)
-        pca_df, pca = pca_analysis(dataframe=df, categorical=categorical, components=3)
-        mca_df, explained_inertia = run_mca(n_components=3, data=df, categorical=categorical)
+        results_dataframe = scaling(dataframe=results_dataframe, categorical=categorical)
+        pca_df, pca = pca_analysis(dataframe=results_dataframe, categorical=categorical, components=3)
+        mca_df, explained_inertia = run_mca(n_components=3, data=results_dataframe, categorical=categorical)
 
         factor_list = categorical
 

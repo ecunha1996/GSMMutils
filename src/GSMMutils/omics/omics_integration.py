@@ -208,14 +208,14 @@ class OmicsIntegration:
                 in_pathway = [reaction_id for reaction_id, value in self.model.reactions_pathways_map.items() if pathway in value]
                 clustermap(variance.loc[variance.index.isin(in_pathway)], title=pathway, to_show=False, path=f"./omics/\clustermaps_reactions/clustermaps_gimme/{pathway.replace(' ', '_').replace('/', '_')}.png")
 
-    def integrate_troppo(self, method, samples):
+    def integrate_troppo(self, method, samples, **kwargs):
         from GSMMutils.omics.troppo import integration_pipeline
         for sample in samples:
             if "control" in sample:
                 df = pd.DataFrame(self.counts[sample]).T
-                # median = df.median(axis=1).values[0]/3
                 median = 0
-                integration_pipeline(dataset=df, dataset_name=sample, algorithm=method, threshold=median, thread_number=8, model=self.model.model.copy())
+                integration_pipeline(dataset=df, dataset_name=sample, algorithm=method, threshold=median,
+                                     thread_number=8, model=self.model.model.copy())
 
     def integrate_with_mewpy(self):
         pass

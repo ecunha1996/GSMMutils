@@ -1,22 +1,13 @@
-import math
 import os
 import pandas as pd
-import sys
 
-sys.path.insert(0, r"/")
-sys.path.insert(0, "/home/src/")
-from GSMMutils.io import read_csv
-from GSMMutils.omics.omics_integration import OmicsIntegration
-from GSMMutils.utils.config_variables import *
-from GSMMutils.utils.pipeline_paths import *
-from GSMMutils.omics.model_handle import load_model, sbml_model_reconstruction
-from Tissue_specific_Reconstruction_Pipeline.Pipeline.troppo_integration import troppo_omics_integration
-from Tissue_specific_Reconstruction_Pipeline.Pipeline.omics_processing import thresholding_filter
-from Tissue_specific_Reconstruction_Pipeline.Pipeline.task_evaluation import task_eval
+from utils.pipeline_paths import *
+from utils.config_variables import *
+from model_handle import load_model, sbml_model_reconstruction
+from troppo_integration import troppo_omics_integration
+from omics_processing import thresholding_filter
+from task_evaluation import task_eval
 
-
-# TODO: Add the option for more integration algorithms in the pipeline.
-# TODO: Add gap-filling to the pipeline.
 
 def reconstruction_pipeline():
     """
@@ -37,29 +28,8 @@ def reconstruction_pipeline():
     print('-------------------------------------------------------------------------------------------------------')
     print('-------------------------------------- Processing Omics Dataset. --------------------------------------')
     print('-------------------------------------------------------------------------------------------------------')
-    omics = OmicsIntegration('omics/raw_counts.txt', samples_names={"SRR6825159_Aligned.sortedByCoord.out.bam": "control_1",
-                                                                  "SRR6825160_Aligned.sortedByCoord.out.bam": "control_2",
-                                                                  "SRR6825161_Aligned.sortedByCoord.out.bam": "control_3",
-                                                                  "SRR6825162_Aligned.sortedByCoord.out.bam": "nacl_1",
-                                                                  "SRR6825163_Aligned.sortedByCoord.out.bam": "nacl_2",
-                                                                  "SRR6825164_Aligned.sortedByCoord.out.bam": "nacl_3",
-                                                                  "SRR6825165_Aligned.sortedByCoord.out.bam": "h2o2_1",
-                                                                  "SRR6825166_Aligned.sortedByCoord.out.bam": "h2o2_2",
-                                                                  "SRR6825167_Aligned.sortedByCoord.out.bam": "h2o2_3",
-                                                                  "SRR6825168_Aligned.sortedByCoord.out.bam": "sorb_1",
-                                                                  "SRR6825169_Aligned.sortedByCoord.out.bam": "sorb_2",
-                                                                  "SRR6825170_Aligned.sortedByCoord.out.bam": "sorb_3",
-                                                                  }, model=template_model)
-    omics.getmm = read_csv(r"omics/getmm_salinity.tsv", index_name='GeneID', index_col=0, comment='#', sep='\t')
-    omics.sum_tech_reps()
-    omics_data = omics.counts.applymap(lambda x: math.log2(x + 1))
-    omics_data_temp = omics_data.loc[(omics_data != 0).any(axis=1)]
-    print(omics_data_temp.describe())
-    import matplotlib.pyplot as plt
-    fig = omics_data.plot.density()
-    fig.set_xticks([x / 2 for x in range(0, 40)])
-    plt.savefig(r"omics/counts_density_nacl.png")
-    omics_data = omics_data.T
+
+    omics_data = pd.read_csv(OMICS_DATA_PATH, index_col=0, sep="\t")
     print('Omics dataset Loaded.')
 
     if THRESHOLDING_STRATEGY != 'default':
@@ -141,5 +111,4 @@ def reconstruction_pipeline():
 
 
 if __name__ == '__main__':
-    os.chdir(DATA_PATH)
     reconstruction_pipeline()

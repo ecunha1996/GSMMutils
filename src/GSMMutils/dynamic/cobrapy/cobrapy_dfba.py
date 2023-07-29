@@ -26,7 +26,8 @@ class CobrapyDFBA:
 
             cobra.util.add_lp_feasibility(self.model)
             feasibility = cobra.util.fix_objective_as_constraint(self.model)
-            lex_constraints = cobra.util.add_lexicographic_constraints(self.model, ['e_ActiveBiomass__cytop', 'EX_C00009__dra'], ['max', 'max'])
+            lex_constraints = cobra.util.add_lexicographic_constraints(self.model,
+                                                                       ['e_ActiveBiomass__cytop', 'EX_C00009__dra'], ['max', 'max'])
 
         # Since the calculated fluxes are specific rates, we multiply them by the
         # biomass concentration to get the bulk exchange rates.

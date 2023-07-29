@@ -300,8 +300,8 @@ if __name__ == '__main__':
     if not os.path.exists("pathways_map.csv"):
         model = MyModel(r"../models/model_with_trials.xml", "e_Biomass__cytop")
         model.get_pathway_reactions_map()
-        df = pd.DataFrame.from_dict(data=model.pathway_reactions_map, orient='index').T
-        df.to_csv("pathways_map.csv", index=False)
+        results_dataframe = pd.DataFrame.from_dict(data=model.pathway_reactions_map, orient='index').T
+        results_dataframe.to_csv("pathways_map.csv", index=False)
     filenames = [r"light/HL/Dsalina_HL_Local2_2_4_4_fastcore_t2.xml", r"light/ML/Dsalina_ML_Local2_2_4_4_fastcore_t2.xml", r"light/LL/Dsalina_LL_Local2_2_4_4_fastcore_t2.xml"]
     Parallel(n_jobs=3)(delayed(achr_sample)(filename, "e_Biomass__cytop") for filename in filenames)
     hl_samples = pd.read_csv(r"light/HL/Dsalina_HL_Local2_2_4_4_fastcore_t2_ACHR_samples.csv", index_col=0)

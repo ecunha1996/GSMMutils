@@ -20,7 +20,7 @@ def barplot(dataframe, to_show=True, path=None):
 
 
 def lineplot(x, y, **kwargs):
-    plot = sns.lineplot(x, y).set(**kwargs)
+    sns.lineplot(x=x, y=y).set(**kwargs)
     plt.show()
 
 

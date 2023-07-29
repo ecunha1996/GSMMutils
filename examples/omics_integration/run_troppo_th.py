@@ -3,15 +3,13 @@ import os
 import pandas as pd
 import sys
 
-from PyQt5.QtWidgets import QVBoxLayout, QWidget
-
 from GSMMutils.io import read_csv
 from GSMMutils.omics.omics_integration import OmicsIntegration
 
 sys.path.insert(0, r"/")
-from Tissue_specific_Reconstruction_Pipeline.Pipeline.utils.config_variables import *
-from Tissue_specific_Reconstruction_Pipeline.Pipeline.utils.pipeline_paths import *
-from Tissue_specific_Reconstruction_Pipeline.Pipeline.model_handle import load_model, sbml_model_reconstruction
+from GSMMutils.utils.config_variables import *
+from GSMMutils.utils.pipeline_paths import *
+from GSMMutils.omics.model_handle import load_model, sbml_model_reconstruction
 from Tissue_specific_Reconstruction_Pipeline.Pipeline.troppo_integration import troppo_omics_integration
 from Tissue_specific_Reconstruction_Pipeline.Pipeline.omics_processing import thresholding_filter
 from Tissue_specific_Reconstruction_Pipeline.Pipeline.task_evaluation import task_eval

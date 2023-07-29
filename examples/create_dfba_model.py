@@ -129,7 +129,8 @@ def main():
     model.add_medium("media.xlsx", "base_medium")
     model.setup_condition("default")
     blocked = find_blocked_reactions(model)
-    blocked = list(set(blocked) - {"PRISM_red_LED_674nm__extr"} - {"PRISM_red_LED_array_653nm__extr"})
+    blocked = list(set(blocked) - {model.reactions.get_by_id("PRISM_red_LED_674nm__extr"),
+                                   model.reactions.get_by_id("PRISM_red_LED_array_653nm__extr")})
     model.remove_reactions(blocked)
     print(model.optimize().objective_value)
     with model:

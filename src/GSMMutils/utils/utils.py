@@ -11,7 +11,6 @@ from cobra import Metabolite
 from joblib import Parallel, delayed
 from scipy.stats import linregress
 
-from GSMMutils import CONFIG_PATH
 from GSMMutils.experimental.BiomassComponent import BiomassComponent
 
 def get_login_info(server="turing"):

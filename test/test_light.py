@@ -31,7 +31,7 @@ def simulate_light_sources(model_copy: MyModel):
                     model_copy.reactions.get_by_id(other_reaction).bounds = [0, 0]
             sol = model_copy.optimize()
             results[light_reaction] = {'biomass': sol["e_Biomass__cytop"], "light_reaction": sol[light_reaction]}
-    sns.barplot(list(key.split("__")[0] for key in results.keys()), list(val['light_reaction'] for val in results.values()))
+    sns.barplot(x=list(key.split("__")[0] for key in results.keys()), y=list(val['light_reaction'] for val in results.values()))
     plt.show()
 
 
@@ -39,7 +39,8 @@ def run_simulation(model_copy, i):
     growth_rate =  [0, 0]
     with model_copy:
         constraint = model_copy.problem.Constraint(
-            model_copy.reactions.R09542_hn437__chlo.flux_expression + model_copy.reactions.R09542_hn680__chlo.flux_expression,
+            model_copy.reactions.R09542_hn437__chlo.flux_expression +
+            model_copy.reactions.R09542_hn680__chlo.flux_expression,
             lb=i,
             ub=i)
         model_copy.add_cons_vars(constraint)
