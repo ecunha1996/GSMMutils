@@ -1,6 +1,7 @@
 
 import pandas as pd
-from Tissue_specific_Reconstruction_Pipeline import DATA_PATH
+
+from GSMMutils import DATA_PATH
 
 media = pd.read_excel(rf"{DATA_PATH}/media.xlsx", index_col=0, sheet_name=None, engine='openpyxl')['media_with_starch'].to_dict(orient='index')
 MEDIUM_CONDITIONS = {'f2 medium': {key: (value['LB'], value['UB']) for key, value in media.items()}}
