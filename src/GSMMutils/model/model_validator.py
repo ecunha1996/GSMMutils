@@ -1,6 +1,8 @@
+from os.path import join
 from cobra.flux_analysis import pfba, find_blocked_reactions, flux_variability_analysis as fva, fastcc
+from pandas import DataFrame
 
-from GSMMutils import MyModel
+from GSMMutils import MyModel, DATA_PATH
 
 
 class ModelValidator:
@@ -38,7 +40,8 @@ class ModelValidator:
         return mass_balance
 
     def check_energy_producing_cycles(self):
-        def check_energy_production_for_met(current_model: MyModel, reactant_product_pair: tuple[str, str], metabolites: dict):
+        def check_energy_production_for_met(current_model: MyModel, reactant_product_pair: tuple[str, str],
+                                            metabolites: dict):
             current_model.create_reaction(f"test_reaction_for_{reactant_product_pair[0]}",
                                           metabolites)
             for ex in current_model.exchanges:
@@ -100,33 +103,38 @@ class ModelValidator:
 
         pfba_sol = pfba(self.model)
         print(self.model.summary(pfba_sol))
+        return pfba_sol
 
     def check_blocked_reactions(self):
         blocked = find_blocked_reactions(self.model, open_exchanges=True)
-        with open("blocked_reactions.txt", "w") as f:
+        with open(join(DATA_PATH, "blocked_reactions.txt"), "w") as f:
             for reaction in blocked:
-                f.write(reaction.id + "\n")
+                f.write(str(reaction) + "\n")
         print(f"Blocked reactions: {len(blocked)} -> ({round(len(blocked) / len(self.model.reactions), 2) * 100}%)")
         print("Running fastcc...")
         consistent_model = fastcc(self.model)
         print("Consistent reactions: ", len(consistent_model.reactions))
         print("Inconsistent reactions: ", len(self.model.reactions) - len(consistent_model.reactions))
+        consistent_model_reaction_ids = set([r.id for r in consistent_model.reactions])
+        return blocked, list(set(self.model.reaction_ids) - consistent_model_reaction_ids)
 
-    def check_unbounded_flux(self):
+    def check_unbounded_flux(self) -> DataFrame:
         fva_sol = fva(self.model, fraction_of_optimum=1.0)
         sbc = fva_sol.loc[(fva_sol["minimum"].round(5) < 0) & (fva_sol["maximum"].round(5) > 0)]
         print(f"Reactions with Unbounded flux: {len(sbc)} -> ({round(len(sbc) / len(self.model.reactions), 2) * 100}%)")
         print(sbc)
+        return sbc
 
     def check_sbc(self):
         for ex in self.model.exchanges:
             ex.bounds = (0, 0)
-        self.model.reactions.get_by_id(self.atpm_reaction).bounds = (0, 1000)
+        if self.atpm_reaction and self.atpm_reaction in self.model.reaction_ids:
+            self.model.reactions.get_by_id(self.atpm_reaction).bounds = (0, 1000)
         fva_sol = fva(self.model, fraction_of_optimum=1.0)
         sbc = fva_sol.loc[(fva_sol["minimum"].round(5) < 0) & (fva_sol["maximum"].round(5) > 0)]
-        sbc.to_csv("sbc.csv")
+        sbc.to_csv(join(DATA_PATH, "sbc.csv"))
         print(f"SBC: {len(sbc)} -> ({round(len(sbc) / len(self.model.reactions), 2) * 100}%)")
-        print(sbc)
+        return sbc
 
     def check_reactions_equal_metabolites(self):
         inconsistency = False
@@ -154,3 +162,4 @@ class ModelValidator:
                             inconsistency = True
         if not inconsistency:
             print("No duplicate reactions found!")
+        return already_printed

@@ -269,10 +269,10 @@ class FAME2Biomass:
         res_df.to_csv(f"{self.data_directory}/model_ngaditana_lipids/{lipid}_model_stoichiometry.csv", index=False)
 
     def run(self, lipid_abb, compartment="er", compartment_id="C_00001"):
-        met_mat, final_map, faas, final_map_rev, lipid_class = parse_2fa_lipid(lipid_abb, self.model,
-                                                                               compartment_id=compartment_id,
-                                                                               parent_reaction=f"e_{lipid_abb}_complete"
-                                                                                               f"__{compartment}")
+        met_mat, _, _, final_map_rev, lipid_class = parse_2fa_lipid(lipid_abb, self.model,
+                                                                    compartment_id=compartment_id,
+                                                                    parent_reaction=f"e_{lipid_abb}_complete"
+                                                                                    f"__{compartment}")
         eng = matlab.engine.start_matlab()
         eng.cd(self.data_directory)
         eng.addpath(join(SRC_PATH, 'matlab'))

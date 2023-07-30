@@ -3,7 +3,7 @@ import math
 import os
 import subprocess
 import sys
-from os.path import join
+from os.path import join, abspath, dirname
 
 import numpy as np
 import pandas as pd
@@ -13,6 +13,7 @@ from scipy.stats import linregress
 
 from GSMMutils.experimental.BiomassComponent import BiomassComponent
 
+CONFIG_PATH = abspath(join(dirname(__file__), '../../config'))
 def get_login_info(server="turing"):
     try:
         if os.path.exists(join(CONFIG_PATH, 'server_connection.json')):
@@ -120,7 +121,7 @@ def get_precursors(macromolecule, temp_precursor, model):
     precedent_reaction = [reaction for reaction in temp_precursor.reactions if "Biomass" not in reaction.id and
                           reaction.id.startswith("e_") and reaction.metabolites[temp_precursor] > 0]
     if len(precedent_reaction) > 1:
-        raise Exception("More than one precedent reaction")
+        raise Exception(f"More than one reaction found for {temp_precursor.id}")
     if len(precedent_reaction) == 0:
         return temp_precursor.id
     else:
@@ -135,20 +136,6 @@ def get_precursors(macromolecule, temp_precursor, model):
                         model.biomass_components[temp_precursor.id] = parent_component
                     BiomassComponent(model.metabolites.get_by_id(precursor), precedent_reaction[0].metabolites[model.metabolites.get_by_id(precursor)], parent_component)
 
-
-# def update_st(stoichiometries, new_value):
-#     old_sum = 1 + sum(value for key, value in stoichiometries.items() if key in new_value.keys())
-#     new_sum = 1 + sum(new_value.values())
-#     for key, value in new_value.items():
-#         stoichiometries[key] = value
-#     for key, value in stoichiometries.items():
-#         if key not in new_value.keys():
-#             stoichiometries[key] = value * abs(new_sum) / abs(old_sum)
-#     mysum = sum(stoichiometries.values())
-#     for key, value in stoichiometries.items():
-#         stoichiometries[key] = value / abs(mysum)
-#     mysum = sum(stoichiometries.values())
-#     return stoichiometries
 
 def update_st(stoichiometries, new_value):
     for key, value in new_value.items():
@@ -165,7 +152,6 @@ def get_biomass_mass(model, biomass_reaction=None):
         for reactant in reaction.reactants:
             copy = reactant.copy()
             copy.elements = {key: value for key, value in copy.elements.items() if key != "T"}
-            temp = round(abs(reaction.metabolites[reactant]) * copy.formula_weight * stoichiometry, 5)
             counter += abs(reaction.metabolites[reactant]) * copy.formula_weight * stoichiometry
             for key in elementar_counter.keys():
                 if key in reactant.elements:
@@ -237,7 +223,7 @@ def get_biomass_mass(model, biomass_reaction=None):
     return round(c, 3), element_counter
 
 
-def get_light_kinetics(biomass, concentrations, parameters=None, Eo=None, Lr=None, Ke=None):
+def get_light_kinetics(biomass, Eo=None, Lr=None, Ke=None):
     if not biomass: biomass = 0
     if not Eo:
         Eo = 1200
@@ -251,9 +237,9 @@ def get_light_kinetics(biomass, concentrations, parameters=None, Eo=None, Lr=Non
     return (0, E)
 
 
-def get_micmen_kinetics(biomass, S, parameters):
+def get_micmen_kinetics(S, parameters):
     res = -parameters["Vmax"] * S / (parameters["Km"] + S)
-    return (res, 1000)
+    return res, 1000
 
 
 def get_caro_kinetics(biomass, S=None, parameters=None):
@@ -282,6 +268,7 @@ def car_gen(E, n):
 
 
 def nitrogen_quota():
+    # TODO implement
     pass
 
 

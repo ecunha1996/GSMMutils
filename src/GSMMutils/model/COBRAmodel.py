@@ -8,13 +8,11 @@ import copy
 import os
 import re
 from os.path import join
-from typing import Union
+from typing import Union, List
 
 import cobra
-import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-import seaborn
 from cobra import flux_analysis, Model, Reaction, Metabolite
 from cobra.flux_analysis import find_essential_genes
 from cobra.io import write_sbml_model
@@ -77,6 +75,7 @@ class MyModel(Model):
         # self.parse_genes()
         self.model_first = self.model
         self.get_pathway_reactions_map()
+        self.reaction_ids = [reaction.id for reaction in self.reactions]
         print("Reactions:", len(self.model.reactions))
         print("Metabolites:", len(self.model.metabolites))
         print("Genes:", len(self.model.genes))
@@ -99,7 +98,11 @@ class MyModel(Model):
         elif type(biomass_composition) == Biomass:
             self._biomass_composition = biomass_composition
         else:
-            raise Exception("Biomass composition must be a string or a Biomass object")
+            raise TypeError("Biomass composition must be a string or a Biomass object")
+
+    @property
+    def exchanges(self) -> List[Reaction]:
+        return self.exchanges
 
     def load_model(self, directory, file_name):
         """
@@ -606,9 +609,8 @@ class MyModel(Model):
         trnas = self.get_products(self.precursors_reactions[protein_id][0])
 
         for trna in trnas:
-            if "H2O" not in trna.name:
-                if "e-Protein" not in trna.name:
-                    self.create_sink(trna.id)
+            if "H2O" not in trna.name and "e-Protein" not in trna.name:
+                self.create_sink(trna.id)
 
     def create_reporting_file(self, spreadsheet_name):
         """
@@ -950,7 +952,7 @@ class MyModel(Model):
             n_ex = len(exchanges_2)
             exchanges_3 = [exchange for exchange in exchanges_2]
 
-            for i in range(n_ex):
+            for _ in range(n_ex):
                 extra_sources = []
                 level = "level 2 ;"
                 get_combinations(compounds, exchanges_2, level, extra_sources, minimal_growth)
@@ -1024,13 +1026,12 @@ class MyModel(Model):
                     data[met_id] = [met.name, 0, len(met.reactions)]
 
         for met in metabolites:
-            if periplasm:
-                if met.compartment == periplasm:
-                    met_id = str(met.id)
-                    if met_id in data:
-                        data[met_id][1] = data[met_id][1] + len(met.reactions)
-                    else:
-                        data[met_id] = [met.name, len(met.reactions), 0]
+            if periplasm and met.compartment == periplasm:
+                met_id = str(met.id)
+                if met_id in data:
+                    data[met_id][1] = data[met_id][1] + len(met.reactions)
+                else:
+                    data[met_id] = [met.name, len(met.reactions), 0]
 
         df = DataFrame.from_dict(data, orient='index', columns=col)
         df.to_excel(writer, "Output")
@@ -1512,154 +1513,6 @@ def update_biomass(model, biomass_reaction, metabolites_to_remove):
             model.reactions.get_by_id(biomass_reaction).add_metabolites({model.metabolites.get_by_id(metabolite): -st})
 
 
-def photorespiration_mt(model, q):
-    model_copy = model.copy()
-    same_flux = model_copy.problem.Constraint(
-        model_copy.reactions.R00024__plst_Leaf_Light.flux_expression -
-        model_copy.reactions.R03140__plst_Leaf_Light.flux_expression * q,
-        lb=0,
-        ub=0)
-
-    same_flux1 = model_copy.problem.Constraint(
-        model_copy.reactions.R00024__plst_Leaf_Dark.flux_expression -
-        model_copy.reactions.R03140__plst_Leaf_Dark.flux_expression * q,
-        lb=0,
-        ub=0)
-
-    same_flux2 = model_copy.problem.Constraint(
-        model_copy.reactions.R00024__plst_Phellogen_Light.flux_expression -
-        model_copy.reactions.R03140__plst_Phellogen_Light.flux_expression * q,
-        lb=0,
-        ub=0)
-
-    same_flux3 = model_copy.problem.Constraint(
-        model_copy.reactions.R00024__plst_Phellogen_Dark.flux_expression -
-        model_copy.reactions.R03140__plst_Phellogen_Dark.flux_expression * q,
-        lb=0,
-        ub=0)
-
-    same_flux4 = model_copy.problem.Constraint(
-        model_copy.reactions.R00024__plst_Ibark_Light.flux_expression -
-        model_copy.reactions.R03140__plst_Ibark_Light.flux_expression * q,
-        lb=0,
-        ub=0)
-    same_flux5 = model_copy.problem.Constraint(
-        model_copy.reactions.R00024__plst_Ibark_Dark.flux_expression -
-        model_copy.reactions.R03140__plst_Ibark_Dark.flux_expression * q,
-        lb=0,
-        ub=0)
-
-    model_copy.add_cons_vars(same_flux)
-    model_copy.add_cons_vars(same_flux1)
-    model_copy.add_cons_vars(same_flux2)
-    model_copy.add_cons_vars(same_flux3)
-    model_copy.add_cons_vars(same_flux4)
-    model_copy.add_cons_vars(same_flux5)
-    same_flux6 = model_copy.problem.Constraint(
-        model_copy.reactions.EX_C00244__dra_Light.flux_expression * 2 -
-        model_copy.reactions.EX_C00244__dra_Dark.flux_expression * 3,
-        lb=0,
-        ub=0)
-    model_copy.add_cons_vars(same_flux6)
-
-    model_copy.objective = "EX_C00205__dra_Light"
-    model_copy.reactions.EX_C00205__dra_Light.bounds = (-1000, 1000)
-    model_copy.reactions.Total_biomass.bounds = (0.11, 0.11)
-    return model_copy
-
-
-def photorespiration_dn(model, q=3):
-    model_copy = model.copy()
-    same_flux = model.problem.Constraint(
-        model_copy.reactions.R00024__chlo_Light.flux_expression -
-        model_copy.reactions.R03140__chlo_Light.flux_expression * q,
-        lb=0,
-        ub=0)
-    same_flux2 = model.problem.Constraint(
-        model_copy.reactions.R00024__chlo_Dark.flux_expression -
-        model_copy.reactions.R03140__chlo_Dark.flux_expression * q,
-        lb=0,
-        ub=0)
-    model_copy.add_cons_vars(same_flux)
-    model_copy.add_cons_vars(same_flux2)
-    # model_copy.objective = "e_Biomass_Leaf__cyto"
-    # model_copy.exchanges.EX_C00205__dra.bounds = (-100,999)
-    return model_copy
-
-
-def photorespiration_v3(model, q=3):
-    model_copy = model.model.copy()
-    same_flux = model.model.problem.Constraint(
-        model_copy.reactions.R00024__chlo.flux_expression - model_copy.reactions.R03140__chlo.flux_expression * q,
-        lb=0,
-        ub=0)
-    model_copy.add_cons_vars(same_flux)
-    model_copy.objective = "e_Biomass__cyto"
-    model_copy.exchanges.EX_C00205__dra.bounds = (-100, 0)
-    return model_copy
-
-
-def respiration(model):
-    model_copy = model.model.copy()
-    model_copy.exchanges.EX_C00205__dra.bounds = (0, 999)
-    model_copy.exchanges.EX_C00089__dra.bounds = (-9999, 0)
-    model_copy.objective = "EX_C00089__dra"
-    return model_copy
-
-
-def get_dataframe(model):
-    res = DataFrame()
-    res2 = DataFrame()
-    res3 = DataFrame()
-    res4 = DataFrame()
-    res5 = DataFrame()
-    res6 = DataFrame()
-    calvin_cycle = ["R00024", "R01512", "R01063", "R01015_V2", "R01070", "R04780", "R01830", "R01829",
-                    "R01845", "R01641", "R01056", "R01523", "R01529"]
-    photorespiration = ["R00372__pero", "R00475__pero", "R00588__pero", "R01221__mito",
-                        "R01334__chlo", "R01388__pero", "R01514__chlo", "R03140__chlo",
-                        "R00009__pero"]
-    tca = ["R00342__mito", "Cytochrome_C_Oxidase__mito", "ATP_Synthase__mito",
-           "Cytochrome_C_Reductase__mito", "NADH_Dehydrogenase__mito"]
-    gs_gogat = ["Ferredoxin_NADP_Reductase__chlo", "R00021__chlo",
-                "R00253__chlo"]
-    mva = ["R00238__cyto", "R01978__cyto", "R02082__cyto", "R02245__cyto", "R03245__pero", "R01121__pero"]
-    mep = ["R05636__chlo", "R05688__chlo", "R05633__chlo", "R05634__chlo", "R05637__chlo", "R08689__chlo"]
-    for i in range(len(calvin_cycle)):
-        calvin_cycle[i] += "__chlo"
-    for i in range(1, 6):
-        pr = photorespiration_v2(model, i)
-        fba = flux_analysis.pfba(pr)
-        temp = fba.fluxes.loc[fba.fluxes.index.isin(calvin_cycle)]
-        temp2 = fba.fluxes.loc[fba.fluxes.index.isin(photorespiration)]
-        temp3 = fba.fluxes.loc[fba.fluxes.index.isin(tca)]
-        temp4 = fba.fluxes.loc[fba.fluxes.index.isin(gs_gogat)]
-        temp5 = fba.fluxes.loc[fba.fluxes.index.isin(mva)]
-        temp6 = fba.fluxes.loc[fba.fluxes.index.isin(mep)]
-        res = pd.concat([res, temp], axis=1)
-        res2 = pd.concat([res2, temp2], axis=1)
-        res3 = pd.concat([res3, temp3], axis=1)
-        res4 = pd.concat([res4, temp4], axis=1)
-        res5 = pd.concat([res5, temp5], axis=1)
-        res6 = pd.concat([res6, temp6], axis=1)
-        res.rename({"fluxes": str(i)}, inplace=True, axis=1)
-        res2.rename({"fluxes": str(i)}, inplace=True, axis=1)
-        res3.rename({"fluxes": str(i)}, inplace=True, axis=1)
-        res4.rename({"fluxes": str(i)}, inplace=True, axis=1)
-        res5.rename({"fluxes": str(i)}, inplace=True, axis=1)
-        res6.rename({"fluxes": str(i)}, inplace=True, axis=1)
-    final_res = pd.concat([res, res2, res3, res4, res5, res6])
-    return final_res
-
-
-def get_biomass_co2_plot(model):
-    res_co2 = {}
-    for i in range(1, 11):
-        pr = photorespiration_v2(model, i)
-        fba = pr.optimize()
-        res_co2[i] = fba["EX_C00011__dra"]
-
-
 def check_under_limit(reaction):
     balance = reaction.check_mass_balance()
     if balance:
@@ -1756,12 +1609,6 @@ def add_reaction_string_to_dataframe(dataframe, model):
         dataframe['Reaction'].loc[dataframe.index == reaction] = reaction_as_string
     return dataframe
 
-
-def get_heatmap(model):
-    res = get_dataframe(model)
-    seaborn.clustermap(res, cmap="YlGnBu", col_cluster=False, row_cluster=False, z_score=0)
-
-
 def count_reactions_by_compartment(model):
     compartments = {}
     for reaction in model.model.reactions:
@@ -1796,207 +1643,7 @@ def check_transport(reaction):
     compartments.sort()
     if str(compartments) not in d.keys():
         print(reaction)
-        return
     else:
         membrane = d[str(compartments)]
         return membrane
 
-
-def get_dataframe_all(model):
-    res = DataFrame()
-    for i in range(1, 6):
-        pr = photorespiration_v2(model, i)
-        fba = pr.optimize()
-        res = pd.concat([res, fba.fluxes], axis=1)
-        res.rename({"fluxes": str(i)}, inplace=True, axis=1)
-    return res
-
-
-def get_dark_reactions(reactions):
-    for i in range(len(reactions)):
-        reactions[i] = reactions[i] + "_Leaf_Light"
-    return reactions
-
-
-def get_dataframe_3(model):
-    res = DataFrame()
-    res2 = DataFrame()
-    res3 = DataFrame()
-    res4 = DataFrame()
-    calvin_cycle = ["R00024", "R01512", "R01063", "R01015", "R04780", "R01830", "R01829",
-                    "R01845", "R01641", "R01056", "R01523", "R01529"]
-    photorespiration = ["R00372__pero", "R00475__pero", "R00588__pero",
-                        "R01334__chlo", "R01388__pero", "R01514__chlo", "R03140__chlo",
-                        "R00009__pero"]
-    tca = ["Cytochrome_C_Oxidase__mito", "ATP_Synthase__mito",
-           "Cytochrome_C_Reductase__mito", "NADH_Dehydrogenase__mito"]
-    gs_gogat = ["Ferredoxin_NADP_Reductase__chlo", "R00021__chlo",
-                "R00253__chlo"]
-    for i in range(len(calvin_cycle)):
-        calvin_cycle[i] += "__chlo"
-    calvin_cycle = get_dark_reactions(calvin_cycle)
-    photorespiration = get_dark_reactions(photorespiration)
-    tca = get_dark_reactions(tca)
-    gs_gogat = get_dark_reactions(gs_gogat)
-
-    for i in range(1, 6):
-        pr = photorespiration_mt(model, i)
-        pfba = pr.maximize(value=False)
-        temp = pfba.fluxes.loc[pfba.fluxes.index.isin(calvin_cycle)]
-        temp2 = pfba.fluxes.loc[pfba.fluxes.index.isin(photorespiration)]
-        temp3 = pfba.fluxes.loc[pfba.fluxes.index.isin(tca)]
-        temp4 = pfba.fluxes.loc[pfba.fluxes.index.isin(gs_gogat)]
-        res = pd.concat([res, temp], axis=1)
-        res2 = pd.concat([res2, temp2], axis=1)
-        res3 = pd.concat([res3, temp3], axis=1)
-        res4 = pd.concat([res4, temp4], axis=1)
-        res.rename({"fluxes": str(i)}, inplace=True, axis=1)
-        res2.rename({"fluxes": str(i)}, inplace=True, axis=1)
-        res3.rename({"fluxes": str(i)}, inplace=True, axis=1)
-        res4.rename({"fluxes": str(i)}, inplace=True, axis=1)
-    final_res = change_name([res, res2, res3, res4])
-    return final_res
-
-
-def get_dataframe_2(model):
-    res = DataFrame()
-    res2 = DataFrame()
-    res3 = DataFrame()
-    res4 = DataFrame()
-    res5 = DataFrame()
-    calvin_cycle = ["R00024", "R01641", "R01512", "R01063", "R01830", "R01829",
-                    # "R01070",  "R04780","R01015","R01056","R01845",
-                    "R01523", "R01529"]
-    photorespiration = ["R00372__pero", "R00475__pero", "R00588__pero", "R01221__mito",
-                        "R01334__chlo", "R01388__pero", "R01514__chlo", "R03140__chlo",
-                        "R00009__pero"]
-    tca = ["R00342__mito", "R00351__mito", "Cytochrome_C_Oxidase__mito", "ATP_Synthase__mito",
-           "Cytochrome_C_Reductase__mito", "NADH_Dehydrogenase__mito"]
-    gs_gogat = ["Ferredoxin_NADP_Reductase__chlo", "R00021__chlo",
-                "R00253__chlo"]
-    mva = ["R00238__cyto", "R01978__cyto", "R02082__cyto", "R02245__cyto", "R03245__pero", "R01121__pero"]
-    mep = ["R05636__chlo", "R05688__chlo", "R05633__chlo", "R08689__chlo"]  # "R05634__chlo", "R05637__chlo",
-    for i in range(len(calvin_cycle)):
-        calvin_cycle[i] += "__chlo"
-    for i in range(1, 6):
-        pr = photorespiration_v2(model, i)
-        pfba = flux_analysis.pfba(pr)
-        temp = pfba.fluxes.loc[pfba.fluxes.index.isin(calvin_cycle)]
-        temp2 = pfba.fluxes.loc[pfba.fluxes.index.isin(photorespiration)]
-        temp3 = pfba.fluxes.loc[pfba.fluxes.index.isin(tca)]
-        temp4 = pfba.fluxes.loc[pfba.fluxes.index.isin(gs_gogat)]
-        temp5 = pfba.fluxes.loc[pfba.fluxes.index.isin(mep)]
-        res = pd.concat([res, temp], axis=1)
-        res2 = pd.concat([res2, temp2], axis=1)
-        res3 = pd.concat([res3, temp3], axis=1)
-        res4 = pd.concat([res4, temp4], axis=1)
-        res5 = pd.concat([res5, temp5], axis=1)
-        res.rename({"fluxes": str(i)}, inplace=True, axis=1)
-        res2.rename({"fluxes": str(i)}, inplace=True, axis=1)
-        res3.rename({"fluxes": str(i)}, inplace=True, axis=1)
-        res4.rename({"fluxes": str(i)}, inplace=True, axis=1)
-        res5.rename({"fluxes": str(i)}, inplace=True, axis=1)
-    final_res = change_name([res, res2, res3, res4, res5])
-    return final_res
-
-
-def get_inner_bark_model(model, conditions_file_name, conditions_sheet_name):
-    model.apply_env_conditions_from_excel(conditions_file_name, conditions_sheet_name)
-    biomass_reactions = ["e_Biomass_Leaf__cyto", "e_Carbohydrate__cyto", "e_CellWall_Leaf__cyto",
-                         "e_Cofactor_Leaf__cyto"]
-    model.model.objective = 'e_Biomass_Ibark__cyto'
-    try:
-        for reaction in biomass_reactions:
-            model.model.reactions.get_by_id(reaction).bounds = (0, 0)
-    except Exception as e:
-        print(e)
-
-
-def get_phellogen_model(model, conditions_file_name, conditions_sheet_name):
-    model.apply_env_conditions_from_excel(conditions_file_name, conditions_sheet_name)
-    biomass_reactions = ["e_Biomass_Leaf__cyto", "e_Carbohydrate_Leaf__cyto", "e_CellWall_Leaf__cyto",
-                         "e_Cofactor_Leaf__cyto",
-                         "e_Biomass_Ibark__cyto", "e_Carbohydrate_Ibark__cyto", "e_CellWall_Ibark__cyto",
-                         "e_Cofactor_Ibark__cyto", "e_Suberin_Ibark__cyto"]
-    model.model.objective = 'e_Biomass_Phellogen__cyto'
-    try:
-        for reaction in biomass_reactions:
-            model.model.reactions.get_by_id(reaction).bounds = (0, 0)
-    except Exception as e:
-        print(e)
-
-
-def change_name(dfs):
-    for df in dfs:
-        index = df.index.values
-        for i in index:
-            df.rename(index={
-                i: i.replace("ATP_Synthase", "ATPS").replace("Cytochrome_C_Reductase", "CCOR").replace(
-                    "Cytochrome_C_Oxidase", "COX").replace("NADH_Dehydrogenase", "NAD9").replace(
-                    "Ferredoxin_NADP_Reductase", "FNR").replace("__chlo", "").replace("__pero", "").replace(
-                    "__mito", "")},
-                inplace=True)
-    return dfs
-
-
-def build_heatmap(model):
-    res, res2, res3, res4, res5 = get_dataframe_2(model)
-    normalized1 = res.div(res["3"], axis=0)
-    normalized2 = res2.div(res2["3"], axis=0)
-    normalized3 = res3.div(res3["3"], axis=0)
-    normalized4 = res4.div(res4["3"], axis=0)
-    normalized5 = res5.div(res5["3"], axis=0)
-    vmin = 9999
-    vmax = -9999
-    res = [normalized1, normalized2, normalized3, normalized4, normalized5]
-    for df in res:
-        temp_min = df.min().min()
-        temp_max = df.max().max()
-        if temp_min < vmin:
-            vmin = temp_min
-        if temp_max > vmax:
-            vmax = temp_max
-    grid_kws = {"height_ratios": (5, 5, 5, 5, 1), "hspace": .3}
-    f, (ax, ax2, ax3, ax5, cbar_ax) = plt.subplots(5, gridspec_kw=grid_kws, figsize=(7, 18))
-    ax.tick_params(colors='k', grid_color='k')
-    f.tight_layout(pad=0.0001)
-    ax1 = seaborn.heatmap(normalized1, ax=ax, cmap="YlGnBu",
-                          cbar=False, vmin=vmin, vmax=vmax,
-                          cbar_kws={"orientation": "horizontal"})
-    ax1.set_ylabel("Calvin Cycle", rotation=0, fontsize=16, color="k")
-    ax1.yaxis.set_label_coords(-0.35, 0.4)
-    ax1.axes.xaxis.set_visible(False)
-    pos1 = ax1.get_position()
-    pos = [pos1.x0, pos1.y0, pos1.width, 0.15]
-    ax.set_position(pos)
-    ax2 = seaborn.heatmap(normalized2, ax=ax2, cmap="YlGnBu",
-                          cbar=False, vmin=vmin, vmax=vmax,
-                          cbar_kws={"orientation": "horizontal"})
-    pos2 = [pos1.x0, pos1.y0 - 0.14, pos1.width, 0.13]
-    ax2.set_position(pos2)
-    ax2.set_ylabel("Photorespiration", rotation=0, fontsize=16, color="k")
-    ax2.yaxis.set_label_coords(-0.35, 0.5)
-    ax2.axes.xaxis.set_visible(False)
-    ax3 = seaborn.heatmap(normalized3, ax=ax3, cmap="YlGnBu",
-                          cbar=False, vmin=vmin, vmax=vmax,
-                          cbar_kws={"orientation": "horizontal"})
-    ax3.set_ylabel("TCA and\nOxidative\nPhosphorylation", rotation=0, fontsize=16, color="k")
-    ax3.yaxis.set_label_coords(-0.35, 0.35)
-    ax3.axes.xaxis.set_visible(False)
-    pos2 = ax2.get_position()
-    pos3 = [pos2.x0, pos2.y0 - 0.09, pos2.width, 0.08]
-    ax3.set_position(pos3)
-
-    ax5 = seaborn.heatmap(normalized5, ax=ax5, cmap="YlGnBu", vmin=vmin, vmax=vmax, cbar_ax=cbar_ax,
-                          cbar_kws={"orientation": "horizontal"})
-    ax5.set_yticklabels(ax5.get_yticklabels(), rotation=0)
-    ax5.set_ylabel("MEP\nPathway", rotation=0, fontsize=16, color="k")
-    ax5.yaxis.set_label_coords(-0.35, 0.25)
-    pos4 = ax3.get_position()
-    pos5 = [pos4.x0, pos4.y0 - 0.06, pos4.width, 0.05]
-    ax5.set_xlabel("Vc/Vo", fontsize=20, color="k")
-    ax5.xaxis.set_label_coords(0.5, -0.3)
-    ax5.set_position(pos5)
-    pos5 = ax5.get_position()
-    cbar_ax.set_position([pos5.x0, pos5.y0 - 0.08, pos5.width, 0.01])
-    cbar_ax.title.set_text("Fold change in fluxes")
