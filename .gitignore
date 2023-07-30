@@ -9,9 +9,8 @@
 
 *.pyc
 
-
-/data/*
-data/
+./data/*
+!tests/data/*
 *.xml
 */*.xml
 *.fig
@@ -20,6 +19,8 @@ tINIT_test.lp
 
 *.iml
 .idea/*
+
+config/server_connection.json
 
 
 

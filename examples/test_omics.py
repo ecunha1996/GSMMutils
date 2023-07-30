@@ -6,7 +6,7 @@ from GSMMutils.model.COBRAmodel import MyModel
 from GSMMutils.io import read_csv
 from GSMMutils.omics.omics_integration import OmicsIntegration
 from GSMMutils.utils.utils import flux_change
-from test_all import read_model
+from examples.test_all import read_model
 import pandas as pd
 
 def omics_integration(model):
