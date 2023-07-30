@@ -60,7 +60,7 @@ def hist(dataset, columns, to_show=True, path=None, title=None, xlabel=None, yla
 def qqplot(model, to_show=True, path=None):
     import statsmodels.api as sm
     res = model.resid
-    fig = sm.qqplot(res, stats.t, fit=True, line="45")
+    sm.qqplot(res, stats.t, fit=True, line="45")
     if to_show:
         plt.show()
     else:
@@ -76,7 +76,7 @@ def heatmap(dataframe, to_show=True, path=None):
 
 
 def clustermap(dataframe, to_show=True, path=None, title="Title", **kwargs):
-    g = sns.clustermap(dataframe, cmap="Blues", z_score=0, center=0).fig.suptitle(title)
+    g = sns.clustermap(dataframe, cmap="Blues", z_score=0, center=0, **kwargs).fig.suptitle(title)
     if to_show:
         plt.show()
     else:
@@ -85,10 +85,11 @@ def clustermap(dataframe, to_show=True, path=None, title="Title", **kwargs):
 
 
 def plot_two_axis(df, secondary=None):
-    if type(df) == pd.Series: df = df.to_frame()
+    if type(df) == pd.Series:
+        df = df.to_frame()
     if secondary is None:
         secondary = []
-    fig, ax = plt.subplots(figsize=(20, 10))
+    _, ax = plt.subplots(figsize=(20, 10))
     colors = {'C00009__extr': 'red', 'C00244__extr': 'green', 'C02094__chlo': "black"}
     for column in df.columns:
         if column not in secondary:
@@ -99,8 +100,10 @@ def plot_two_axis(df, secondary=None):
     plt.show()
 
 
-def plot_concentrations(data: pd.DataFrame(), y: Union[str, list] = None, to_show: bool = False, experimental: Union[List[List], List[Tuple[List, Any]]] = None, filename=None
-                        , x_label=None, y_label=None, title=None, secondary_axis: Union[str, list] = None, secondary_y_label=None, experimental_label=None):
+def plot_concentrations(data: pd.DataFrame(), y: Union[str, list] = None, to_show: bool = False,
+                        experimental: Union[List[List], List[Tuple[List, Any]]] = None, filename=None,
+                        x_label=None, y_label=None, title=None, secondary_axis: Union[str, list] = None,
+                        secondary_y_label=None, experimental_label=None):
     if not x_label:
         x_label = 'time (d)'
     if not y_label:
@@ -111,7 +114,6 @@ def plot_concentrations(data: pd.DataFrame(), y: Union[str, list] = None, to_sho
         secondary_axis = [secondary_axis]
     plt.style.context('Solarize_Light2')
     fig = plt.figure()
-
     # plot all concentrations from the dataframe
     ax = plt.subplot(111)
     for i in y:
@@ -149,8 +151,6 @@ def plot_trajectories(data: pd.DataFrame(), y: str = None, to_show: bool = False
     ax = plt.subplot(111)
     ax.plot(data['time'], data[y])
 
-    # ax2 = plt.twinx(ax)
-    # ax2.plot(res['Day'], res['EX_C00009__dra'].abs(), color='r')
     ax2 = plt.twinx(ax)
     ax2.plot(data['time'], data['Flux'], color='r')
 

@@ -45,7 +45,7 @@ class Uniprot:
             yield response, total
             batch_url = get_next_link(response.headers)
 
-    def search_by_ec_number(self, ec_number: str, reviewed: bool = True) -> list:
+    def search_by_ec_number(self, ec_number: str, reviewed: bool = True) -> set:
         """
         Search for proteins by EC number
         Parameters
@@ -60,9 +60,21 @@ class Uniprot:
         list
             A list of proteins matching the EC number
         """
-        return self.search_by_ec_number_online(ec_number, reviewed)
+        return set(list(self.search_by_ec_number_online(ec_number, reviewed)))
 
     def search_by_ec_number_online(self, ec_number: str, reviewed: bool = True) -> list:
+        """
+        Search for proteins by EC number using the UniProt REST API
+        Parameters
+        ----------
+        ec_number
+        reviewed
+
+        Returns
+        -------
+        list:
+            A list of proteins matching the EC number
+        """
         retries = Retry(total=5, backoff_factor=0.25, status_forcelist=[500, 502, 503, 504])
         self.session = requests.Session()
         self.session.mount("https://", HTTPAdapter(max_retries=retries))

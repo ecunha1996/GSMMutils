@@ -3,11 +3,16 @@ from statsmodels.formula.api import ols
 from statsmodels.multivariate.manova import MANOVA
 
 
+def print_table(anova_table, title):
+    title = title.center(45)
+    print(f" {title} \n {anova_table} \n {'#' * 50}")
+
+
 class StatisticalAnalysis:
     def __init__(self, data):
         self.data = data
 
-    def get_correlation(self, columns: list = "all", method: str = "pearson"):
+    def get_correlation(self, columns: list | str = "all", method: str = "pearson"):
         if columns == "all":
             return self.data.corr(method=method)
         else:
@@ -16,16 +21,12 @@ class StatisticalAnalysis:
     def anova(self, formula, to_print=True):
         model = ols(formula, data=self.data).fit()
         anova_table = sm.stats.anova_lm(model, typ=2)
-        self.print_table(anova_table, formula)
+        if to_print:
+            print_table(anova_table, formula)
         return anova_table, model
 
     def manova(self, formula):
         fit = MANOVA.from_formula(formula, data=self.data)
         test = fit.mv_test()
-        self.print_table(test, formula)
+        print_table(test, formula)
         return test
-
-    # method to print anova table
-    def print_table(self, anova_table, title):
-        title = title.center(45)
-        print(f" {title} \n {anova_table} \n {'#' * 50}")

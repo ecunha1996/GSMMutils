@@ -14,6 +14,8 @@ from scipy.stats import linregress
 from GSMMutils.experimental.BiomassComponent import BiomassComponent
 
 CONFIG_PATH = abspath(join(dirname(__file__), '../../config'))
+
+
 def get_login_info(server="turing"):
     try:
         if os.path.exists(join(CONFIG_PATH, 'server_connection.json')):
@@ -30,6 +32,7 @@ def get_login_info(server="turing"):
     except Exception as e:
         print(e)
         sys.exit(1)
+
 
 def get_productivity(data, time=48):
     previous_dw = 0
@@ -80,7 +83,8 @@ def get_element_in_biomass(model, element, biomass_reaction):
     percentage_map = {}
     for key in res[1]:
         percentage_map[key] = round(res[1][key] * Metabolite(formula=key).formula_weight / 1000, 3)
-    if round(sum(percentage_map.values()), 3) != 1: print(f"Error! Sum of Elemental mass percentage is different from 1! ({round(sum(percentage_map.values()), 3)})")
+    if round(sum(percentage_map.values()), 3) != 1: print(
+        f"Error! Sum of Elemental mass percentage is different from 1! ({round(sum(percentage_map.values()), 3)})")
     return percentage_map[element]
 
 
@@ -118,8 +122,9 @@ def run(cmd):
 
 def get_precursors(macromolecule, temp_precursor, model):
     to_ignore = ["C00001__cytop"]
-    precedent_reaction = [reaction for reaction in temp_precursor.reactions if "Biomass" not in reaction.id and
-                          reaction.id.startswith("e_") and reaction.metabolites[temp_precursor] > 0]
+    precedent_reaction = [reaction for reaction in temp_precursor.reactions if
+                          "Biomass" not in reaction.id and reaction.id.startswith("e_") and reaction.metabolites[
+                              temp_precursor] > 0]
     if len(precedent_reaction) > 1:
         raise Exception(f"More than one reaction found for {temp_precursor.id}")
     if len(precedent_reaction) == 0:
@@ -132,9 +137,12 @@ def get_precursors(macromolecule, temp_precursor, model):
                     if temp_precursor.id in model.biomass_components:
                         parent_component = model.biomass_components[temp_precursor.id]
                     else:
-                        parent_component = BiomassComponent(temp_precursor, precedent_reaction[0].metabolites[model.metabolites.get_by_id(precursor)], model.biomass_components[macromolecule.id])
+                        parent_component = BiomassComponent(temp_precursor, precedent_reaction[0].metabolites[
+                            model.metabolites.get_by_id(precursor)], model.biomass_components[macromolecule.id])
                         model.biomass_components[temp_precursor.id] = parent_component
-                    BiomassComponent(model.metabolites.get_by_id(precursor), precedent_reaction[0].metabolites[model.metabolites.get_by_id(precursor)], parent_component)
+                    BiomassComponent(model.metabolites.get_by_id(precursor),
+                                     precedent_reaction[0].metabolites[model.metabolites.get_by_id(precursor)],
+                                     parent_component)
 
 
 def update_st(stoichiometries, new_value):
@@ -155,40 +163,38 @@ def get_biomass_mass(model, biomass_reaction=None):
             counter += abs(reaction.metabolites[reactant]) * copy.formula_weight * stoichiometry
             for key in elementar_counter.keys():
                 if key in reactant.elements:
-                    elementar_counter[key] += abs(reaction.metabolites[reactant]) * reactant.elements[key] * stoichiometry
+                    elementar_counter[key] += abs(reaction.metabolites[reactant]) * reactant.elements[
+                        key] * stoichiometry
         for product in reaction.products:
-            if product.id != "C00001__cytop":
+            if product.id != "C00001__cytop" or not ignore_water:
                 copy = product.copy()
                 copy.elements = {key: value for key, value in copy.elements.items() if key != "T"}
                 counter -= reaction.metabolites[product] * copy.formula_weight * stoichiometry
                 for key in elementar_counter.keys():
                     if key in product.elements:
-                        elementar_counter[key] -= abs(reaction.metabolites[product]) * product.elements[key] * stoichiometry
-            else:
-                if not ignore_water:
-                    copy = product.copy()
-                    copy.elements = {key: value for key, value in copy.elements.items() if key != "T"}
-                    counter -= reaction.metabolites[product] * copy.formula_weight * stoichiometry
-                    for key in elementar_counter.keys():
-                        if key in product.elements:
-                            elementar_counter[key] -= abs(reaction.metabolites[product]) * product.elements[key] * stoichiometry
+                        elementar_counter[key] -= abs(reaction.metabolites[product]) * product.elements[
+                            key] * stoichiometry
         return round(counter / 1000, 5), elementar_counter
 
-    def parse_lipids(biomass_reaction, element_counter):
-        counter = 0
-        lipid_stoichiometry = abs(biomass_reaction.metabolites[model.metabolites.e_Lipid__cytop])
+    def parse_lipids(current_biomass_reaction, current_element_counter):
+        current_counter = 0
+        lipid_stoichiometry = abs(current_biomass_reaction.metabolites[model.metabolites.e_Lipid__cytop])
         lipids_reaction = model.reactions.e_Lipid_no_tag__cytop
-        lipid_subreactions = [
-            # model.reactions.e_TAG__lip,
-            model.reactions.e_DAG__er, model.reactions.e_DGTS__er, model.reactions.e_PE__er, model.reactions.e_PC__er, model.reactions.e_PI__er, model.reactions.e_PG__chlo,
-            model.reactions.e_DGDG__chlo, model.reactions.e_SQDG__chlo, model.reactions.e_MGDG__chlo, model.reactions.e_CL__mito, model.reactions.e_FFA__cytop]
+        lipid_subreactions = [# model.reactions.e_TAG__lip,
+            model.reactions.e_DAG__er, model.reactions.e_DGTS__er, model.reactions.e_PE__er, model.reactions.e_PC__er,
+            model.reactions.e_PI__er, model.reactions.e_PG__chlo, model.reactions.e_DGDG__chlo,
+            model.reactions.e_SQDG__chlo, model.reactions.e_MGDG__chlo, model.reactions.e_CL__mito,
+            model.reactions.e_FFA__cytop]
         for reaction in lipid_subreactions:
             for reactant in reaction.reactants:
-                counter += abs(reaction.metabolites[reactant] * reactant.formula_weight * lipids_reaction.metabolites[reaction.products[0]] * lipid_stoichiometry)
-                for key in element_counter.keys():
+                current_counter += abs(reaction.metabolites[reactant] * reactant.formula_weight * lipids_reaction.metabolites[
+                    reaction.products[0]] * lipid_stoichiometry)
+                for key in current_element_counter.keys():
                     if key in reactant.elements:
-                        element_counter[key] += abs(reaction.metabolites[reactant] * reactant.elements[key] * lipids_reaction.metabolites[reaction.products[0]] * lipid_stoichiometry)
-        return counter, element_counter
+                        current_element_counter[key] += abs(
+                            reaction.metabolites[reactant] * reactant.elements[key] * lipids_reaction.metabolites[
+                                reaction.products[0]] * lipid_stoichiometry)
+        return current_counter, current_element_counter
 
     if not biomass_reaction:
         biomass_reaction = model.bio_reaction
@@ -217,7 +223,8 @@ def get_biomass_mass(model, biomass_reaction=None):
                             ignore_water = True
                         else:
                             ignore_water = False
-                        res = get_sum_of_reaction(reaction, abs(biomass_reaction.metabolites[reactant]), ignore_water, element_counter)
+                        res = get_sum_of_reaction(reaction, abs(biomass_reaction.metabolites[reactant]), ignore_water,
+                                                  element_counter)
                         c += res[0]
                         element_counter = res[1]
     return round(c, 3), element_counter
@@ -242,17 +249,17 @@ def get_micmen_kinetics(S, parameters):
     return res, 1000
 
 
-def get_caro_kinetics(biomass, S=None, parameters=None):
+def get_caro_kinetics(biomass, s=None, parameters=None):
     if parameters is None:
         parameters = {'wn': 0.03, 'n': 2}
-    E = get_light_kinetics(biomass, S)[1]
+    E = get_light_kinetics(biomass, s)[1]
     vcar_gen = car_gen(E, parameters['n'])
     a0 = 6.5e-2
     a1 = 7e-3 / 3600
     x = a1 * E + a0
     phi_val = phi(x - parameters['wn'])
     vcar = vcar_gen * phi_val
-    return (vcar, 1000)
+    return vcar, 1000
 
 
 def phi(x):

@@ -17,6 +17,13 @@ class StructuralAnnotation(GenomeAnnotation):
         super().__init__()
 
     def gene_prediction_evaluation(self):
+        """
+        This function evaluates the gene prediction.
+        Returns
+        -------
+
+        """
+        # TODO: Implement gene prediction evaluation
         pass
 
     def alignment_evaluation(self, filepath: str = None, k: int = 1):
@@ -87,7 +94,7 @@ class FunctionalAnnotation(GenomeAnnotation):
         chdir(self.blast_directory)
         # get records from Swiss-prot, with the ec_number
         uniprot_api = Uniprot()
-        result = uniprot_api.search_by_ec_number(ec_number)
+        result = list(uniprot_api.search_by_ec_number(ec_number))
         # write the records to a fasta file
         if len(result) > 0:
             with open('query.faa', 'w') as f:

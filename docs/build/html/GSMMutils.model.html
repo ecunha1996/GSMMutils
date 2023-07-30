@@ -96,7 +96,7 @@
 </dd>
 <dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">demands</span></code></dt><dd><p>Demand reactions in model.</p>
 </dd>
-<dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">exchanges</span></code></dt><dd><p>Exchange reactions in model.</p>
+<dt><a class="reference internal" href="#GSMMutils.model.COBRAmodel.MyModel.exchanges" title="GSMMutils.model.COBRAmodel.MyModel.exchanges"><code class="xref py py-obj docutils literal notranslate"><span class="pre">exchanges</span></code></a></dt><dd><p>Exchange reactions in model.</p>
 </dd>
 <dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">id</span></code></dt><dd><p>Get the Object id.</p>
 </dd>
@@ -592,6 +592,26 @@ in a faster fashion than deepcopy.</p>
 <span class="sig-name descname"><span class="pre">evaluate_precursor</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">current_precursor</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#GSMMutils.model.COBRAmodel.MyModel.evaluate_precursor" title="Permalink to this definition"></a></dt>
 <dd></dd></dl>
 
+<dl class="py property">
+<dt class="sig sig-object py" id="GSMMutils.model.COBRAmodel.MyModel.exchanges">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">exchanges</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Reaction</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#GSMMutils.model.COBRAmodel.MyModel.exchanges" title="Permalink to this definition"></a></dt>
+<dd><p>Exchange reactions in model.</p>
+<p>Reactions that exchange mass with the exterior. Uses annotations
+and heuristics to exclude non-exchanges such as sink reactions.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>A list of reactions that satisfy the conditions for exchange reactions.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>list</p>
+</dd>
+</dl>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p><code class="xref py py-obj docutils literal notranslate"><span class="pre">cobra.medium.find_boundary_types</span></code></p>
+</div>
+</dd></dl>
+
 <dl class="py method">
 <dt class="sig sig-object py" id="GSMMutils.model.COBRAmodel.MyModel.gene_essentially">
 <span class="sig-name descname"><span class="pre">gene_essentially</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">conditions_file_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">conditions_sheet_name</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#GSMMutils.model.COBRAmodel.MyModel.gene_essentially" title="Permalink to this definition"></a></dt>
@@ -933,16 +953,6 @@ Reactants in the biomass equation</p>
 <dd></dd></dl>
 
 <dl class="py function">
-<dt class="sig sig-object py" id="GSMMutils.model.COBRAmodel.build_heatmap">
-<span class="sig-prename descclassname"><span class="pre">GSMMutils.model.COBRAmodel.</span></span><span class="sig-name descname"><span class="pre">build_heatmap</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#GSMMutils.model.COBRAmodel.build_heatmap" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="GSMMutils.model.COBRAmodel.change_name">
-<span class="sig-prename descclassname"><span class="pre">GSMMutils.model.COBRAmodel.</span></span><span class="sig-name descname"><span class="pre">change_name</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dfs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#GSMMutils.model.COBRAmodel.change_name" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py function">
 <dt class="sig sig-object py" id="GSMMutils.model.COBRAmodel.check_balance">
 <span class="sig-prename descclassname"><span class="pre">GSMMutils.model.COBRAmodel.</span></span><span class="sig-name descname"><span class="pre">check_balance</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">show_biomass_reactions</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#GSMMutils.model.COBRAmodel.check_balance" title="Permalink to this definition"></a></dt>
 <dd></dd></dl>
@@ -983,58 +993,13 @@ Reactants in the biomass equation</p>
 <dd></dd></dl>
 
 <dl class="py function">
-<dt class="sig sig-object py" id="GSMMutils.model.COBRAmodel.get_biomass_co2_plot">
-<span class="sig-prename descclassname"><span class="pre">GSMMutils.model.COBRAmodel.</span></span><span class="sig-name descname"><span class="pre">get_biomass_co2_plot</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#GSMMutils.model.COBRAmodel.get_biomass_co2_plot" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="GSMMutils.model.COBRAmodel.get_dark_reactions">
-<span class="sig-prename descclassname"><span class="pre">GSMMutils.model.COBRAmodel.</span></span><span class="sig-name descname"><span class="pre">get_dark_reactions</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">reactions</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#GSMMutils.model.COBRAmodel.get_dark_reactions" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="GSMMutils.model.COBRAmodel.get_dataframe">
-<span class="sig-prename descclassname"><span class="pre">GSMMutils.model.COBRAmodel.</span></span><span class="sig-name descname"><span class="pre">get_dataframe</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#GSMMutils.model.COBRAmodel.get_dataframe" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="GSMMutils.model.COBRAmodel.get_dataframe_2">
-<span class="sig-prename descclassname"><span class="pre">GSMMutils.model.COBRAmodel.</span></span><span class="sig-name descname"><span class="pre">get_dataframe_2</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#GSMMutils.model.COBRAmodel.get_dataframe_2" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="GSMMutils.model.COBRAmodel.get_dataframe_3">
-<span class="sig-prename descclassname"><span class="pre">GSMMutils.model.COBRAmodel.</span></span><span class="sig-name descname"><span class="pre">get_dataframe_3</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#GSMMutils.model.COBRAmodel.get_dataframe_3" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="GSMMutils.model.COBRAmodel.get_dataframe_all">
-<span class="sig-prename descclassname"><span class="pre">GSMMutils.model.COBRAmodel.</span></span><span class="sig-name descname"><span class="pre">get_dataframe_all</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#GSMMutils.model.COBRAmodel.get_dataframe_all" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py function">
 <dt class="sig sig-object py" id="GSMMutils.model.COBRAmodel.get_essential">
 <span class="sig-prename descclassname"><span class="pre">GSMMutils.model.COBRAmodel.</span></span><span class="sig-name descname"><span class="pre">get_essential</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#GSMMutils.model.COBRAmodel.get_essential" title="Permalink to this definition"></a></dt>
 <dd></dd></dl>
 
 <dl class="py function">
-<dt class="sig sig-object py" id="GSMMutils.model.COBRAmodel.get_heatmap">
-<span class="sig-prename descclassname"><span class="pre">GSMMutils.model.COBRAmodel.</span></span><span class="sig-name descname"><span class="pre">get_heatmap</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#GSMMutils.model.COBRAmodel.get_heatmap" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="GSMMutils.model.COBRAmodel.get_inner_bark_model">
-<span class="sig-prename descclassname"><span class="pre">GSMMutils.model.COBRAmodel.</span></span><span class="sig-name descname"><span class="pre">get_inner_bark_model</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">conditions_file_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">conditions_sheet_name</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#GSMMutils.model.COBRAmodel.get_inner_bark_model" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py function">
 <dt class="sig sig-object py" id="GSMMutils.model.COBRAmodel.get_metabolite_compartment">
 <span class="sig-prename descclassname"><span class="pre">GSMMutils.model.COBRAmodel.</span></span><span class="sig-name descname"><span class="pre">get_metabolite_compartment</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#GSMMutils.model.COBRAmodel.get_metabolite_compartment" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="GSMMutils.model.COBRAmodel.get_phellogen_model">
-<span class="sig-prename descclassname"><span class="pre">GSMMutils.model.COBRAmodel.</span></span><span class="sig-name descname"><span class="pre">get_phellogen_model</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">conditions_file_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">conditions_sheet_name</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#GSMMutils.model.COBRAmodel.get_phellogen_model" title="Permalink to this definition"></a></dt>
 <dd></dd></dl>
 
 <dl class="py function">
@@ -1053,16 +1018,6 @@ Reactants in the biomass equation</p>
 <dd></dd></dl>
 
 <dl class="py function">
-<dt class="sig sig-object py" id="GSMMutils.model.COBRAmodel.photorespiration_dn">
-<span class="sig-prename descclassname"><span class="pre">GSMMutils.model.COBRAmodel.</span></span><span class="sig-name descname"><span class="pre">photorespiration_dn</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">q</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">3</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#GSMMutils.model.COBRAmodel.photorespiration_dn" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="GSMMutils.model.COBRAmodel.photorespiration_mt">
-<span class="sig-prename descclassname"><span class="pre">GSMMutils.model.COBRAmodel.</span></span><span class="sig-name descname"><span class="pre">photorespiration_mt</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">q</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#GSMMutils.model.COBRAmodel.photorespiration_mt" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py function">
 <dt class="sig sig-object py" id="GSMMutils.model.COBRAmodel.photorespiration_v1">
 <span class="sig-prename descclassname"><span class="pre">GSMMutils.model.COBRAmodel.</span></span><span class="sig-name descname"><span class="pre">photorespiration_v1</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">q</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">3</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#GSMMutils.model.COBRAmodel.photorespiration_v1" title="Permalink to this definition"></a></dt>
 <dd></dd></dl>
@@ -1073,11 +1028,6 @@ Reactants in the biomass equation</p>
 <dd></dd></dl>
 
 <dl class="py function">
-<dt class="sig sig-object py" id="GSMMutils.model.COBRAmodel.photorespiration_v3">
-<span class="sig-prename descclassname"><span class="pre">GSMMutils.model.COBRAmodel.</span></span><span class="sig-name descname"><span class="pre">photorespiration_v3</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">q</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">3</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#GSMMutils.model.COBRAmodel.photorespiration_v3" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py function">
 <dt class="sig sig-object py" id="GSMMutils.model.COBRAmodel.photosynthesis">
 <span class="sig-prename descclassname"><span class="pre">GSMMutils.model.COBRAmodel.</span></span><span class="sig-name descname"><span class="pre">photosynthesis</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#GSMMutils.model.COBRAmodel.photosynthesis" title="Permalink to this definition"></a></dt>
 <dd></dd></dl>
@@ -1085,11 +1035,6 @@ Reactants in the biomass equation</p>
 <dl class="py function">
 <dt class="sig sig-object py" id="GSMMutils.model.COBRAmodel.react_without_gene">
 <span class="sig-prename descclassname"><span class="pre">GSMMutils.model.COBRAmodel.</span></span><span class="sig-name descname"><span class="pre">react_without_gene</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#GSMMutils.model.COBRAmodel.react_without_gene" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="GSMMutils.model.COBRAmodel.respiration">
-<span class="sig-prename descclassname"><span class="pre">GSMMutils.model.COBRAmodel.</span></span><span class="sig-name descname"><span class="pre">respiration</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#GSMMutils.model.COBRAmodel.respiration" title="Permalink to this definition"></a></dt>
 <dd></dd></dl>
 
 <dl class="py function">
@@ -1179,7 +1124,7 @@ Reactants in the biomass equation</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="GSMMutils.model.model_validator.ModelValidator.check_unbounded_flux">
-<span class="sig-name descname"><span class="pre">check_unbounded_flux</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#GSMMutils.model.model_validator.ModelValidator.check_unbounded_flux" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">check_unbounded_flux</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">DataFrame</span></span></span><a class="headerlink" href="#GSMMutils.model.model_validator.ModelValidator.check_unbounded_flux" title="Permalink to this definition"></a></dt>
 <dd></dd></dl>
 
 <dl class="py method">

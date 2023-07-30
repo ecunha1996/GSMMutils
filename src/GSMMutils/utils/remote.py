@@ -21,15 +21,15 @@ class Remote:
         return self.client.connect(host, username=username, password=password)
 
     def run(self, docker_name, docker_cmd):
-        stdin, stdout, stderr = self.client.exec_command('podman ps -a --format json')
+        _, stdout, stderr = self.client.exec_command('podman ps -a --format json')
         containers = json.loads(stdout.read().decode('utf-8'))
         exists = any([container['Names'][0] == docker_name for container in containers])
         if exists:
             print("Container already exists, running...")
-            stdin, stdout, stderr = self.client.exec_command(f'podman start {docker_name}')
+            _, stdout, stderr = self.client.exec_command(f'podman start {docker_name}')
         else:
             print(docker_cmd)
-            stdin, stdout, stderr = self.client.exec_command(docker_cmd)
+            _, stdout, stderr = self.client.exec_command(docker_cmd)
 
         print(stdout.read().decode('utf-8'))
         print(stderr.read().decode('utf-8'))
