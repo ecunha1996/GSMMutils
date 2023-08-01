@@ -18,7 +18,8 @@ class Remote:
         self.client = paramiko.SSHClient()
         self.client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
         host, username, password = get_login_info()
-        return self.client.connect(host, username=username, password=password)
+        self.client.connect(host, username=username, password=password)
+        print(f"Connected to remote server {host}")
 
     def run(self, docker_name, docker_cmd):
         _, stdout, stderr = self.client.exec_command('podman ps -a --format json')

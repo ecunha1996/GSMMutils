@@ -13,7 +13,7 @@ from scipy.stats import linregress
 
 from GSMMutils.experimental.BiomassComponent import BiomassComponent
 
-CONFIG_PATH = abspath(join(dirname(__file__), '../../config'))
+CONFIG_PATH = abspath(join(dirname(__file__), '../../../config'))
 
 
 def get_login_info(server="turing"):

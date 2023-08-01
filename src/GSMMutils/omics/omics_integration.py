@@ -5,7 +5,7 @@ from pprint import pprint
 
 import numpy as np
 import pandas as pd
-from bioinfokit.analys import norm
+# from bioinfokit.analys import norm
 from cobra.flux_analysis import flux_variability_analysis as fva
 # from mewpy.omics import ExpressionSet, eFlux, GIMME, iMAT
 from mewpy.simulation import get_simulator

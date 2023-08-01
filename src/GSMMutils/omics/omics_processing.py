@@ -1,3 +1,5 @@
+from typing import Union
+
 import numpy as np
 import pandas
 import pandas as pd
@@ -65,7 +67,7 @@ def threshold_strategy(sample_series, gtu, gtl, lt, maxexp, thresholding_strateg
         raise ValueError('Thresholding strategy not recognized')
 
 
-def thresholding_filter(omics_dataframe: pandas.DataFrame, thresholding_strategy: int,
+def thresholding_filter(omics_dataframe: pandas.DataFrame, thresholding_strategy: Union[int, str],
                         global_threshold_upper: int, global_threshold_lower: int,
                         local_threshold: int) -> pandas.DataFrame:
     """

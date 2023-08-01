@@ -1,13 +1,20 @@
+import json
+from os.path import abspath, join, dirname
+
 import cobra
 import os
 
+import pandas as pd
 from cobra.flux_analysis import find_blocked_reactions
 from cobra.io import write_sbml_model
-from GSMMutils.utils.medium_variables import MEDIUM_CONDITIONS
-from GSMMutils.utils.config_variables import OBJECTIVE, MEDIUM_NAME
-from GSMMutils.utils.pipeline_paths import MODEL_RESULTS_PATH
 
+from GSMMutils import DATA_PATH
 
+CONFIG_PATH = abspath(join(dirname(__file__), '../../../config'))
+params = json.load(open(rf"{CONFIG_PATH}/troppo_nacl.json", "r"))
+media = pd.read_excel(rf"{DATA_PATH}/media.xlsx", index_col=0, sheet_name=None, engine='openpyxl')['media_with_starch'].to_dict(orient='index')
+MEDIUM_CONDITIONS = {'f2 medium': {key: (value['LB'], value['UB']) for key, value in media.items()}}
+MODEL_RESULTS_PATH = f"{DATA_PATH}/omics/{params['DATASET']}"
 def print_model_details(cobra_model):
     """
     Function to print the details of the currently loaded COBRA model.
@@ -59,11 +66,10 @@ def load_model(model_path: str, consistent_model_path: str) -> cobra.Model:
     for reaction_id, bound in MEDIUM_CONDITIONS.items():
         if reaction_id in model.reactions:
             model.reactions.get_by_id(reaction_id).bounds = bound
-
     return model
 
 
-def sbml_model_reconstruction(model_template: cobra.Model, sample: str, integration_result_dict: dict):
+def sbml_model_reconstruction(original_model: cobra.Model, sample: str, integration_result_dict: dict):
     """
     This function is used to reconstruct the model based on the integration results.
 
@@ -76,25 +82,28 @@ def sbml_model_reconstruction(model_template: cobra.Model, sample: str, integrat
     integration_result_dict: dict
         The integration results.
     """
+    #try:
+    print(f"Reconstructing model for {sample}...")
+    model_template = original_model.copy()
+    model_template.objective = params['OBJECTIVE']
+    reactions_to_deactivate = [reaction for reaction, value in
+                               integration_result_dict[sample].items() if value is False and model_template.reactions.get_by_id(reaction).genes]
+    print('Reactions to deactivate:', len(reactions_to_deactivate))
+    for reaction in reactions_to_deactivate:
+        model_template.remove_reactions([reaction], remove_orphans=True)
 
-    with model_template as temp_model:
-        temp_model.objective = OBJECTIVE
+    for reaction_id, bound in MEDIUM_CONDITIONS[params['MEDIUM_NAME']].items():
+        if reaction_id in model_template.reactions:
+            model_template.reactions.get_by_id(reaction_id).bounds = bound
+        else:
+            print(reaction_id, 'exchange not found in the model.')
 
-        reactions_to_deactivate = [reaction for reaction, value in
-                                   integration_result_dict[sample].items() if value is False and temp_model.reactions.get_by_id(reaction).genes]
-        print('Reactions to deactivate:', len(reactions_to_deactivate))
-        for reaction in reactions_to_deactivate:
-            temp_model.remove_reactions([reaction], remove_orphans=True)
+    model_name = sample.split('_')[1] + '/' + sample + '.xml'
+    print(model_template.optimize())
+    cobra.io.write_sbml_model(model_template, os.path.join(MODEL_RESULTS_PATH, model_name))
 
-        for reaction_id, bound in MEDIUM_CONDITIONS[MEDIUM_NAME].items():
-            if reaction_id in temp_model.reactions:
-                temp_model.reactions.get_by_id(reaction_id).bounds = bound
-            else:
-                print(reaction_id, 'exchange not found in the model.')
-
-        model_name = sample.split('_')[1] + '/' + sample + '.xml'
-        print(temp_model.optimize())
-        cobra.io.write_sbml_model(temp_model, os.path.join(MODEL_RESULTS_PATH, model_name))
-
-        print(f'Model reconstruction for {sample} finished.')
-        print_model_details(temp_model)
+    print(f'Model reconstruction for {sample} finished.')
+    print_model_details(model_template)
+    #except Exception as e:
+    #    print(e)
+    #    print(f'Model reconstruction for {sample} failed.')

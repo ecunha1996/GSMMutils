@@ -14,11 +14,8 @@ def blockPrint():
 def enablePrint():
     sys.stdout = sys.__stdout__
 
-
 blockPrint()
 
-from GSMMutils.utils.config_variables import PROTECTED
-from GSMMutils.utils.pipeline_paths import MODEL_TASKS_PATH, MODEL_TASKS_RESULTS_PATH
 from json import JSONEncoder
 from troppo.tasks.core import TaskEvaluator
 from troppo.tasks.task_io import JSONTaskIO

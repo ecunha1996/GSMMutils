@@ -10,8 +10,8 @@ class DFBA:
         self.remote = Remote(data_directory, src_directory)
 
     def run(self):
-        cmd = (f'podman run --name dfba -v {self.data_directory}:/home/data -v '
-               f'{self.src_directory}:/home/src/ davidtourigny/dfba sh -c "pip install -q matplotlib seaborn scipy '
-               f'joblib openpyxl psutil plotly kaleido timeout-decorator tqdm parallelbar && python3 '
-               f'/home/src/GSMMutils/dynamic/run_dfba.py > /home/data/output.txt"')  #
+        cmd = (f'podman run --name dfba -v {self.data_directory}:/home/data/:Z -v '
+               f'{self.src_directory}:/home/src/:Z davidtourigny/dfba sh -c "/usr/bin/python3 -m pip install --upgrade pip && pip install -q matplotlib seaborn scipy '
+               f'joblib openpyxl psutil plotly kaleido timeout-decorator tqdm parallelbar && '
+               f'python3 /home/src/GSMMutils/dynamic/run_dfba.py > /home/data/output.txt"')  #
         self.remote.run('dfba', cmd)

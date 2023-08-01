@@ -6,9 +6,8 @@ Created on Mon Jun 29 14:52:26 2020
 """
 import copy
 import os
-import re
 from os.path import join
-from typing import Union, List
+from typing import Union
 
 import cobra
 import numpy as np
@@ -16,7 +15,7 @@ import pandas as pd
 from cobra import flux_analysis, Model, Reaction, Metabolite
 from cobra.flux_analysis import find_essential_genes
 from cobra.io import write_sbml_model
-from cobra.manipulation import prune_unused_metabolites
+from cobra.manipulation.delete import prune_unused_metabolites
 from openpyxl import load_workbook
 from pandas import DataFrame
 from sympy import Add
@@ -99,10 +98,6 @@ class MyModel(Model):
             self._biomass_composition = biomass_composition
         else:
             raise TypeError("Biomass composition must be a string or a Biomass object")
-
-    @property
-    def exchanges(self) -> List[Reaction]:
-        return self.exchanges
 
     def load_model(self, directory, file_name):
         """
@@ -1240,45 +1235,6 @@ class MyModel(Model):
         return res
 
 
-def test_carbohydrate(model):
-    file = open("sugars_to_test.txt")
-    sugars = file.readlines()
-    file.close()
-    for r in model.model.exchanges:
-        glucose = model.get_metabolite_by_name("alpha-D-Glucose", "C00001")
-        if glucose in r.metabolites:
-            r.bounds = (0, 0)
-    for sugar in sugars:
-        sugar = sugar.replace("\n", "")
-        if model.get_metabolite_by_name(sugar, "C00001") is not None:
-            met = model.get_metabolite_by_name(sugar, "C00001")
-            biomass = 0
-            for r in model.model.exchanges:
-                if met in r.metabolites:
-                    c_number = int(re.search(r'C(\d*)(.*)', met.formula).group(1))
-                    uptake = 6 * 13 / c_number
-                    r.bounds = (-uptake, 0)
-                    biomass = round(model.model.optimize().objective_value, 2)
-                    r.bounds = (0, 0)
-            try:
-                check_biomass(sugar, biomass)
-            except Exception as e:
-                print(e)
-
-
-def amino_acid_requirements(model, amino_acids):
-    for aa in amino_acids:
-        if model.get_metabolite_by_name(aa, "C00001") is not None:
-            m_laa = model.get_metabolite_by_name(aa, "C00001")
-            for r in model.model.exchanges:
-                if m_laa in r.metabolites:
-                    original_l = r.bounds
-                    r.bounds = (0, 99999)
-                    biomass = round(model.model.optimize().objective_value, 2)
-                    check_biomass(aa, biomass)
-                    r.bounds = original_l
-
-
 def check_biomass(name, biomass):
     if biomass <= 0:
         print(name + "\t" * 3 + "No growth")
@@ -1380,39 +1336,6 @@ def aerobic_v2(model):
         if o in ex.metabolites:
             ex.bounds = (-99999, 99999)
     return model
-
-
-def growth_carbs(model, m_reaction):
-    sugars = ["C00984__extr", "C00243__extr"]
-    for r in model.model.exchanges:
-        glucose = model.get_metabolite("C00267__cytop")
-        if glucose in r.metabolites:
-            r.bounds = (0, 0)
-    for sugar in sugars:
-        for r in model.model.exchanges:
-            if sugar in r.metabolites:
-                if sugar == "C00984__extr":
-                    r.bounds = (-2.54, 0)
-                    print(atp_m(model, m_reaction, 0.1))
-                    r.bounds = (0, 0)
-                if sugar == "C00243__cytop":
-                    r.bounds = (-6.58, 0)
-                    print(atp_m(model, m_reaction, 0.1))
-
-
-# growth_carbs(la, atp)
-
-
-def get_essential(model):
-    res = []
-    for r in model.model.reactions:
-        original_l = r.bounds
-        r.bounds = (0, 0)
-        biomass = round(model.model.optimize().objective_value, 2)
-        r.bounds = original_l
-        if biomass <= 0:
-            res.append(r)
-    return res
 
 
 def compare_reacts(model1, model2):
@@ -1609,6 +1532,7 @@ def add_reaction_string_to_dataframe(dataframe, model):
         dataframe['Reaction'].loc[dataframe.index == reaction] = reaction_as_string
     return dataframe
 
+
 def count_reactions_by_compartment(model):
     compartments = {}
     for reaction in model.model.reactions:
@@ -1646,4 +1570,3 @@ def check_transport(reaction):
     else:
         membrane = d[str(compartments)]
         return membrane
-

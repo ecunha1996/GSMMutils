@@ -2,18 +2,14 @@ import json
 import math
 import numbers
 import os
-
 import numpy as np
 from joblib import Parallel, delayed
-
-from GSMMutils.experimental.ExpMatrix import ExpMatrix
-
 os.environ["OPENBLAS_NUM_THREADS"] = "1"
 import shutil
 import sys
 from matplotlib import pyplot as plt
-
 sys.path.insert(0, "/home/src/")
+from GSMMutils.experimental.ExpMatrix import ExpMatrix
 import pandas as pd
 from parallelbar import progress_imap, progress_map
 from timeout_decorator import timeout
@@ -33,6 +29,10 @@ from GSMMutils.graphics.plot import plot_concentrations
 from tqdm import tqdm
 from GSMMutils import DATA_PATH
 import random
+import logging
+logging.getLogger('pandas').setLevel(logging.CRITICAL)
+import warnings
+warnings.filterwarnings("ignore")
 
 os.chdir("/home/")
 
@@ -190,13 +190,13 @@ def generate_all_plots(condition, concentrations, experimental, trajectories):
                         y_label="Quota (g/gDW)", secondary_axis=["Carotene", "Chlorophyll"],
                         secondary_y_label="Quota (g/gDW)")
 
-    molecules = ["Protein", "Lipid", "Carbohydrate"]
-    if all(molecule in matrix.matrix[condition].columns for molecule in molecules):
-        experimental = [[matrix.matrix[condition][molecule].dropna().index.astype(float).tolist(),
-                         matrix.matrix[condition][molecule].dropna().tolist()] for molecule in molecules]
-        plot_concentrations(concentrations, y=molecules, experimental=experimental,
-                            filename=f"{DATA_PATH}/dfba/macros/macromolecules_{condition}.png",
-                            y_label="Macromolecule (g/gDW)", experimental_label=molecules)
+    # molecules = ["Protein", "Lipid", "Carbohydrate"]
+    # if all(molecule in matrix.matrix[condition].columns for molecule in molecules):
+    #     experimental = [[matrix.matrix[condition][molecule].dropna().index.astype(float).tolist(),
+    #                      matrix.matrix[condition][molecule].dropna().tolist()] for molecule in molecules]
+    #     plot_concentrations(concentrations, y=molecules, experimental=experimental,
+    #                         filename=f"{DATA_PATH}/dfba/macros/macromolecules_{condition}.png",
+    #                         y_label="Macromolecule (g/gDW)", experimental_label=molecules)
 
     concentrations.to_csv(f"{DATA_PATH}/dfba/concentrations/concentrations_{condition}.csv", index=False)
     trajectories.to_csv(f"{DATA_PATH}/dfba/trajectories/trajectories_{condition}.csv", index=False)
@@ -322,22 +322,22 @@ def create_dfba_model(condition, parameters, create_plots=False):
                                                         "DM_C00244__cytop", "EX_C00205__dra", "DM_C08601__chlo"])
 
     active_biomass_fraction = concentrations['ActiveBiomass'] / concentrations['Biomass']
-    concentrations['Protein'] = abs(fba_model.reactions.e_ActiveBiomass__cytop.metabolites[
+    concentrations.loc[:, 'Protein'] = abs(fba_model.reactions.e_ActiveBiomass__cytop.metabolites[
                                         fba_model.metabolites.e_Protein__cytop]) * active_biomass_fraction
     carbs = abs(fba_model.reactions.e_ActiveBiomass__cytop.metabolites[
                     fba_model.metabolites.e_Carbohydrate__cytop]) * active_biomass_fraction
-    concentrations['Carbohydrate'] = carbs + concentrations['Starch']
+    concentrations.loc[:, 'Carbohydrate'] = carbs + concentrations['Starch']
     polar_lipids = abs(fba_model.reactions.e_ActiveBiomass__cytop.metabolites[
                            fba_model.metabolites.e_Lipid__cytop]) * active_biomass_fraction
-    concentrations['Lipid'] = polar_lipids + concentrations['TAG']
+    concentrations.loc[:, 'Lipid'] = polar_lipids + concentrations['TAG']
 
     indexes = matrix.matrix[condition].index.astype(float)
     indexes = [e for e in indexes]
     experimental = [(indexes, matrix.matrix[condition]["DW"].tolist())]
 
-    concentrations['Carotene_concentration'] = concentrations['Carotene'] * concentrations['Biomass']
-    concentrations['Chlorophyll_concentration'] = concentrations['Chlorophyll'] * concentrations['Biomass']
-    concentrations['Lutein_concentration'] = concentrations['Lutein'] * concentrations['Biomass']
+    concentrations.loc[:, "Carotene_concentration"] = concentrations['Carotene'] * concentrations['Biomass']
+    concentrations.loc[:, "Chlorophyll_concentration"] = concentrations['Chlorophyll'] * concentrations['Biomass']
+    concentrations.loc[:, 'Lutein_concentration'] = concentrations['Lutein'] * concentrations['Biomass']
 
     if create_plots:
         generate_all_plots(condition, concentrations, experimental, trajectories)
@@ -669,6 +669,14 @@ def optimize_simple_parameters():
 
 
 def generate_trials_plots():
+    def calculate_mean(data):
+        return sum(data) / len(data)
+
+    def calculate_standard_deviation(data):
+        mean = calculate_mean(data)
+        squared_diff = [(x - mean) ** 2 for x in data]
+        variance = sum(squared_diff) / (len(data) - 1)
+        return variance ** 0.5
     st = {"1": "0.006112313", "2": "0.026350859", "3": "0.014449316", "4": "0.026350859", "5": "0.014449316",
           "6": "0.014789985", "7": "0.014449316", "8": "0.014789985", "9": "0.022663961", "10": "0.014789985",
           "11": "0.022663961", "12": "0.003563663", "13": "0.022663961", "14": "0.003563663", "15": "0.041744485",
@@ -711,8 +719,8 @@ def generate_trials_plots():
                     -1]
 
     ax = plt.subplot(111)
-    sns.barplot(x=list(experimental_data_carotene.keys()), y=list(experimental_data_carotene.values()), ci='sd')
-    plt.errorbar(x=list(experimental_data_carotene.keys()), y=list(experimental_data_carotene.values()), yerr=error,
+    sns.barplot(x=list(experimental_data_carotene.keys()), y=list(experimental_data_carotene.values()), errorbar='sd')
+    plt.errorbar(x=list(experimental_data_carotene.keys()), y=list(experimental_data_carotene.values()), yerr=calculate_standard_deviation(list(experimental_data_carotene.values())),
                  fmt='none', color='black', capsize=4)
     ax.scatter(x=list(data_carotene.keys()), y=list(data_carotene.values()), zorder=2)
     plt.ylabel(r"$\beta$-Carotene (g/gDW)")
@@ -722,7 +730,7 @@ def generate_trials_plots():
     plt.clf()
     ax = plt.subplot(111)
     sns.barplot(x=list(experimental_data_carotene_concentration.keys()),
-                y=list(experimental_data_carotene_concentration.values()), ci='sd')
+                y=list(experimental_data_carotene_concentration.values()), errorbar='sd')
     plt.errorbar(x=list(experimental_data_carotene_concentration.keys()),
                  y=list(experimental_data_carotene_concentration.values()), yerr=error, fmt='none', color='black',
                  capsize=4)
@@ -733,8 +741,8 @@ def generate_trials_plots():
 
     plt.clf()
     ax = plt.subplot(111)
-    sns.barplot(x=list(experimental_data_lutein.keys()), y=list(experimental_data_lutein.values()), ci='sd')
-    plt.errorbar(x=list(experimental_data_lutein.keys()), y=list(experimental_data_lutein.values()), yerr=error,
+    sns.barplot(x=list(experimental_data_lutein.keys()), y=list(experimental_data_lutein.values()), errorbar='sd')
+    plt.errorbar(x=list(experimental_data_lutein.keys()), y=list(experimental_data_lutein.values()), yerr=calculate_standard_deviation(list(experimental_data_lutein.values())),
                  fmt='none', color='black', capsize=4)
     ax.scatter(x=list(data_lutein.keys()), y=list(data_lutein.values()), zorder=2)
     plt.ylabel(r"Lutein (g/gDW)")
@@ -743,8 +751,8 @@ def generate_trials_plots():
 
     plt.clf()
     ax = plt.subplot(111)
-    sns.barplot(x=list(experimental_data_chl.keys()), y=list(experimental_data_chl.values()), ci='sd')
-    plt.errorbar(x=list(experimental_data_chl.keys()), y=list(experimental_data_chl.values()), yerr=error, fmt='none',
+    sns.barplot(x=list(experimental_data_chl.keys()), y=list(experimental_data_chl.values()), errorbar='sd')
+    plt.errorbar(x=list(experimental_data_chl.keys()), y=list(experimental_data_chl.values()), yerr=calculate_standard_deviation(list(experimental_data_chl.values())), fmt='none',
                  color='black', capsize=4)
     ax.scatter(x=list(data_chl.keys()), y=list(data_chl.values()), zorder=2)
     plt.ylabel(r"Chlorophyll (g/L)")
@@ -753,8 +761,8 @@ def generate_trials_plots():
 
     plt.clf()
     ax = plt.subplot(111)
-    sns.barplot(x=list(experimental_data_protein.keys()), y=list(experimental_data_protein.values()), ci='sd')
-    plt.errorbar(x=list(experimental_data_protein.keys()), y=list(experimental_data_protein.values()), yerr=error,
+    sns.barplot(x=list(experimental_data_protein.keys()), y=list(experimental_data_protein.values()), errorbar='sd')
+    plt.errorbar(x=list(experimental_data_protein.keys()), y=list(experimental_data_protein.values()), yerr=calculate_standard_deviation(list(experimental_data_protein.values())),
                  fmt='none', color='black', capsize=4)
     ax.scatter(x=list(data_protein.keys()), y=list(data_protein.values()), zorder=2)
     plt.ylabel(r"Protein (g/gDW)")
@@ -763,8 +771,8 @@ def generate_trials_plots():
 
     plt.clf()
     ax = plt.subplot(111)
-    sns.barplot(x=list(experimental_data_lipid.keys()), y=list(experimental_data_lipid.values()), ci='sd')
-    plt.errorbar(x=list(experimental_data_lipid.keys()), y=list(experimental_data_lipid.values()), yerr=error,
+    sns.barplot(x=list(experimental_data_lipid.keys()), y=list(experimental_data_lipid.values()), errorbar='sd')
+    plt.errorbar(x=list(experimental_data_lipid.keys()), y=list(experimental_data_lipid.values()), yerr=calculate_standard_deviation(list(experimental_data_lipid.values())),
                  fmt='none', color='black', capsize=4)
     ax.scatter(x=list(data_lipid.keys()), y=list(data_lipid.values()), zorder=2)
     plt.ylabel(r"Lipid (g/gDW)")
@@ -773,8 +781,8 @@ def generate_trials_plots():
 
     plt.clf()
     ax = plt.subplot(111)
-    sns.barplot(x=list(experimental_data_lipid.keys()), y=list(experimental_data_lipid.values()), ci='sd')
-    plt.errorbar(x=list(experimental_data_lipid.keys()), y=list(experimental_data_lipid.values()), yerr=error,
+    sns.barplot(x=list(experimental_data_lipid.keys()), y=list(experimental_data_lipid.values()), errorbar='sd')
+    plt.errorbar(x=list(experimental_data_lipid.keys()), y=list(experimental_data_lipid.values()), yerr=calculate_standard_deviation(list(experimental_data_lipid.values())),
                  fmt='none', color='black', capsize=4)
     ax.scatter(x=list(data_lipid_conc.keys()), y=list(data_lipid_conc.values()), zorder=2)
     plt.ylabel(r"Lipid (g/L)")
@@ -783,9 +791,9 @@ def generate_trials_plots():
 
     plt.clf()
     ax = plt.subplot(111)
-    sns.barplot(x=list(experimental_data_carbohydrate.keys()), y=list(experimental_data_carbohydrate.values()), ci='sd')
+    sns.barplot(x=list(experimental_data_carbohydrate.keys()), y=list(experimental_data_carbohydrate.values()), errorbar='sd')
     plt.errorbar(x=list(experimental_data_carbohydrate.keys()), y=list(experimental_data_carbohydrate.values()),
-                 yerr=error, fmt='none', color='black', capsize=4)
+                 yerr=calculate_standard_deviation(list(experimental_data_carbohydrate.values())), fmt='none', color='black', capsize=4)
     ax.scatter(x=list(data_carbohydrate.keys()), y=list(data_carbohydrate.values()), zorder=2)
     plt.ylabel(r"Carbohydrate (g/gDW)")
     plt.xlabel(r"Trial")
@@ -856,3 +864,4 @@ if __name__ == '__main__':
     # optimize_simple_parameters()
     # run_all()
     run_all_parallel()  ## create random sample of conditions
+

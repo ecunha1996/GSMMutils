@@ -20,8 +20,6 @@ tINIT_test.lp
 *.iml
 .idea/*
 
-config/server_connection.json
-
-
+/config/server_connection.json
 
 

@@ -37,10 +37,6 @@ def carotene(parameters):
 
     v_car_gen = parameters["v_car_max"] * (parameters["Ex"] ** parameters["l"]) / ((parameters["ExA"] ** parameters["l"]) + (parameters["Ex"] ** parameters["l"]))
     vcar = v_car_gen * phi(parameters["a1"] * parameters["Ex"] + parameters["a0"] - parameters["a2"] * parameters["nitrogen_mass_quota"] + parameters["a3"] * parameters["phosphate_mass_quota"] - parameters["a4"] * parameters["aeration"], parameters["smoothing_factor"])
-    # vcar = v_car_gen * phi(parameters["a1"] * parameters["Ex"]- parameters["nitrogen_mass_quota"], parameters["smoothing_factor"]) * phi(parameters["a3"] * parameters["phosphate_mass_quota"], parameters["smoothing_factor"]) * phi(parameters["a4"] * parameters["aeration"], parameters["smoothing_factor"])
-    # vcar = v_car_gen * phi(parameters["a1"] * parameters["Ex"] + parameters["a0"] - parameters["a2"] * parameters["nitrogen_mass_quota"] - parameters["a4"] * parameters["aeration"], parameters["smoothing_factor"]) * phi(parameters["a3"] * parameters["p_quota"], parameters["smoothing_factor_carotene"])
-    # phosphate_factor = ((parameters["p_quota"] - parameters["wPmin"]) / (parameters["wPopt"] - parameters["wPmin"])) + parameters["c0"]
-    # vcar = v_car_gen * phi(parameters["a1"] * parameters["Ex"] + parameters["a0"] - parameters["a2"] * parameters["nitrogen_mass_quota"], parameters["smoothing_factor"]) * phosphate_factor
     return sp.Max(0, sp.N(vcar))
 
 

@@ -1,0 +1,20 @@
+{
+  "MODEL": "Dsalina",
+  "DATASET": "light",
+  "OBJECTIVE": "e_Biomass__cytop",
+  "MEDIUM_NAME": "f2 medium",
+  "NOMENCLATURE": "NCBI",
+  "OMICS_TYPE": "transcriptomics",
+  "THRESHOLDING_STRATEGY": "Local2",
+  "GLOBAL_THRESHOLD_UPPER": 2,
+  "GLOBAL_THRESHOLD_LOWER": 4,
+  "LOCAL_THRESHOLD": 4,
+  "ALGORITHMS": [
+    "fastcore"
+  ],
+  "THREAD_NUMBER_FASTCORE": 4,
+  "THREAD_NUMBER_TINIT": 4,
+  "EVALUATE_TASKS": "False",
+  "GAP_FILLING": "False",
+  "RECONSTRUCT_MODELS": "True"
+}

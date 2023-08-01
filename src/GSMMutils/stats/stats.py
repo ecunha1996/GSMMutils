@@ -18,7 +18,21 @@ class StatisticalAnalysis:
         else:
             return self.data[columns].corr(method=method)
 
-    def anova(self, formula, to_print=True):
+    def anova(self, formula: str, to_print: bool = True) -> tuple:
+        """
+        Function to perform ANOVA test
+        Parameters
+        ----------
+        formula: str
+            formula for ANOVA
+        to_print: bool
+            print the table or not
+
+        Returns
+        -------
+        anova_table: DataFrame
+        model: OLS
+        """
         model = ols(formula, data=self.data).fit()
         anova_table = sm.stats.anova_lm(model, typ=2)
         if to_print:
@@ -26,6 +40,16 @@ class StatisticalAnalysis:
         return anova_table, model
 
     def manova(self, formula):
+        """
+        Parameters
+        ----------
+        formula: str
+            formula for MANOVA
+
+        Returns
+        -------
+        test: MANOVA
+        """
         fit = MANOVA.from_formula(formula, data=self.data)
         test = fit.mv_test()
         print_table(test, formula)

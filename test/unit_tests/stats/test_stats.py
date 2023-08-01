@@ -1,6 +1,7 @@
 import unittest
 
 import pandas as pd
+from statsmodels.multivariate.multivariate_ols import MultivariateTestResults
 
 from GSMMutils.stats.stats import StatisticalAnalysis
 
@@ -29,7 +30,7 @@ class TestStats(unittest.TestCase):
                          self.data["height"].corr(method="spearman"))
 
     def test_manova(self):
-        self.assertEqual(self.stats.manova('height + canopy_vol ~ plant_var'), None)
+        self.assertIsInstance(self.stats.manova('height + canopy_vol ~ plant_var'), MultivariateTestResults)
 
 
 if __name__ == "__main__":
