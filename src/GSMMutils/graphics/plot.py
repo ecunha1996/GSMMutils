@@ -38,10 +38,10 @@ def boxplot(dataframe, x_cols=None, y_cols=None, to_show=True, path=None, x_labe
         plt.savefig(path)
 
 
-def surface(dataframe, x, y, z):
+def surface(dataframe, x, y, z, **kwargs):
     fig = plt.figure()
     ax = fig.gca(projection='3d')
-    ax.plot_trisurf(dataframe[y], dataframe[x], dataframe[z], cmap=plt.cm.jet, linewidth=0.2)
+    ax.plot_trisurf(dataframe[y], dataframe[x], dataframe[z], linewidth=0.2, **kwargs)
     plt.show()
 
 
@@ -164,3 +164,35 @@ def plot_trajectories(data: pd.DataFrame(), y: str = None, to_show: bool = False
     else:
         fig.savefig('concentrations.png')
     return fig
+
+
+def generate_plot_for_data(filename: str, experimental_data: dict, simulation_data: dict, sd_data: dict, y_label: str):
+    """
+    Generates a plot for a given data
+    Parameters
+    ----------
+    filename: str
+        Filename for the plot
+    experimental_data: dict
+        Experimental data
+    simulation_data: dict
+        Simulation data
+    sd_data: dict
+        Standard deviation data
+    y_label: str
+        Label for the y axis
+
+    Returns
+    -------
+
+    """
+    plt.clf()
+    ax = plt.subplot(111)
+    sns.barplot(x=list(experimental_data.keys()), y=list(experimental_data.values()), errorbar='sd')
+    if sd_data:
+        plt.errorbar(x=list(experimental_data.keys()), y=list(experimental_data.values()), yerr=list(sd_data.values()),
+                     fmt='none', color='black', capsize=4)
+    ax.scatter(x=list(simulation_data.keys()), y=list(simulation_data.values()), zorder=2)
+    plt.ylabel(y_label)
+    plt.xlabel(r"Trial")
+    plt.savefig(filename)

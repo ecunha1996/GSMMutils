@@ -6,6 +6,7 @@ def get_initial_conditions(matrix, conditions):
         "Nitrate": matrix.conditions["[N] mmol"].loc[conditions],
         "Phosphate": matrix.conditions["[P] mmol"].loc[conditions],
         "Starch": 0.05,
+        "Starch_concentration": 0.05 * matrix.matrix[conditions]["DW"][0],
         "Nitrogen_quota": 5.15,
         "Phosphate_quota": 0.24,
         "Carotene": matrix.matrix["Resume"]["caro0"].loc[conditions],

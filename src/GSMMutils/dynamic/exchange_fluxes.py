@@ -1,5 +1,6 @@
 def get_exchange_fluxes():
-    exf = {"mu": "e_ActiveBiomass__cytop",
+    exf = {
+           "mu": "e_ActiveBiomass__cytop",
            "light_uptake": "EX_C00205__dra",
            "v_N": "EX_C00244__dra",
            "v_CO2": "EX_C00011__dra",
@@ -12,5 +13,6 @@ def get_exchange_fluxes():
            "v_glycerol": "DM_C00116__cytop",
            "v_intraP": "DM_C00404__vacu",
            "v_intraN": "DM_C00244__cytop",
-           "v_lutein": "DM_C08601__chlo"}
+           "v_lutein": "DM_C08601__chlo"
+           }
     return exf

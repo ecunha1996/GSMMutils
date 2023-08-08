@@ -732,13 +732,11 @@ class MyModel(Model):
         file = pd.read_excel(medium_file_name, medium_sheet_name, converters={"Model ID": str}, engine="openpyxl")
 
         for reaction in file["Reaction ID"]:
-
-            reaction = self.get_reaction(reaction)
-            if reaction:
-                reaction.lower_bound = float(file["LB"][file["Reaction ID"] == reaction].values[0])
-                reaction.upper_bound = float(file["UB"][file["Reaction ID"] == reaction].values[0])
-            else:
-                print(reaction, "not found")
+            try:
+                self.reactions.get_by_id(reaction).lower_bound = float(file["LB"][file["Reaction ID"] == reaction].values[0])
+                self.reactions.get_by_id(reaction).upper_bound = float(file["UB"][file["Reaction ID"] == reaction].values[0])
+            except Exception as e:
+                print(e)
 
     def write(self, filename):
         """

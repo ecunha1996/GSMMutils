@@ -1,5 +1,6 @@
 def get_dynamic_expressions(parameters):
-    drhs = {"ActiveBiomass": parameters["mu"] * parameters["X"],
+    drhs = {
+            "ActiveBiomass": parameters["mu"] * parameters["X"],
             "Biomass": parameters["total_growth_rate"] * parameters["X"],
             "Nitrogen_quota": -parameters["v_N"] - parameters["total_growth_rate"] * parameters["n_quota"],
             "Phosphate_quota": -parameters["v_P"] - parameters["total_growth_rate"] * parameters["p_quota"],

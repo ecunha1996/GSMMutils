@@ -2,6 +2,7 @@ import os
 import pickle
 from cobra.flux_analysis import find_blocked_reactions
 from GSMMutils import DATA_PATH
+from GSMMutils.experimental.ExpMatrix import ExpMatrix
 from GSMMutils.model.COBRAmodel import MyModel
 from GSMMutils.utils.utils import get_element_in_biomass, get_molecular_weight
 
@@ -105,7 +106,8 @@ def correct_co2_uptake(model):
     print(total)
     carbon_in_biomass = get_element_in_biomass(model, "C", f"e_ActiveBiomass__cytop")
     print(carbon_in_biomass)
-    exp_matrix = pickle.load(open("experimental/Matriz- DCCR Dunaliella salina_new.pkl", "rb"))
+    # exp_matrix = pickle.load(open("experimental/Matriz- DCCR Dunaliella salina_new.pkl", "rb"))
+    exp_matrix = ExpMatrix("experimental/Matriz- DCCR Dunaliella salina_new.xlsx")
     r = round(exp_matrix.get_substrate_uptake_for_trial("C", "23", exp_matrix.matrix["23"], get_molecular_weight("CO2"), get_molecular_weight("C"), carbon_in_biomass) * 24, 3)
     print(r)
     model.exchanges.EX_C00011__dra.bounds = (-r, 10000)
@@ -125,12 +127,19 @@ def normalize_active_biomass(model):
 
 
 def main():
+    import cobra
+    cobra_config = cobra.Configuration()
+    cobra_config.bounds = (-10000, 10000)
     model = MyModel("models/model_with_trials.xml", "e_Biomass__cytop")
     model.add_medium("media.xlsx", "base_medium")
     model.setup_condition("default")
+    for reaction in model.reactions:
+        if reaction.lower_bound <= -500:
+            reaction.lower_bound = -10000
+        if reaction.upper_bound >= 500:
+            reaction.upper_bound = 10000
     blocked = find_blocked_reactions(model)
-    blocked = list(set(blocked) - {model.reactions.get_by_id("PRISM_red_LED_674nm__extr"),
-                                   model.reactions.get_by_id("PRISM_red_LED_array_653nm__extr")})
+    blocked = list(set(blocked) - {"PRISM_red_LED_674nm__extr", "PRISM_red_LED_array_653nm__extr"})
     model.remove_reactions(blocked)
     print(model.optimize().objective_value)
     with model:
@@ -142,7 +151,6 @@ def main():
         model = normalize_active_biomass(model)
         # model = correct_co2_uptake(model)
         model.write("models/model_dfba.xml")
-
 
 
 if __name__ == "__main__":

@@ -18,6 +18,6 @@ class TroppoDocker:
 
     def run(self):
         cmd = (f'podman run --name omics -v {self.data_directory}:/home/data:Z -v {self.src_directory}:/home/src/:Z -v {self.examples_directory}:/home/examples/:Z -v {self.config_directory}:/home/config/:Z '
-               f'omics sh -c "python3 /home/examples/omics_integration/run_troppo_nacl.py && python3 /home/examples/sampling.py"'
+               f'omics sh -c "python3 /home/examples/omics_integration/run_troppo_th.py && python3 /home/examples/sampling.py"'
                )  # > /home/data/output.txt
         self.remote.run('omics', cmd)

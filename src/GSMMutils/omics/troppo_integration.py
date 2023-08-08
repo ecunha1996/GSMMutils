@@ -1,70 +1,22 @@
-import json
-import sys
-import os
-import warnings
 import traceback
+import warnings
 from os.path import abspath, dirname, join
 
-import pandas
-import pandas as pd
-from numpy import linspace
+from pandas import DataFrame
 
-from GSMMutils import DATA_PATH
-
-# Warnings and prints are blocked to avoid massive outputs that appear after running COBAMP.
+from GSMMutils.utils.utils import block_print, enable_print
 warnings.simplefilter("ignore")
-
 CONFIG_PATH = abspath(join(dirname(__file__), '../../../config'))
-# Disable
-def block_print():
-    sys.stdout = open(os.devnull, 'w')
-
-
-# Restore
-def enable_print():
-    sys.stdout = sys.__stdout__
-
-
 block_print()
-
 import cobra
 import re
-
 from troppo.omics.readers.generic import TabularReader
 from troppo.methods_wrappers import ReconstructionWrapper
 from cobamp.utilities.parallel import batch_run
-
 enable_print()
-#
-# import time
-# while True:
-#     time.sleep(10)
 
-params = json.load(open(rf"{CONFIG_PATH}/troppo_nacl.json", "r"))
-media = pd.read_excel(rf"{DATA_PATH}/media.xlsx", index_col=0, sheet_name=None, engine='openpyxl')['media_with_starch'].to_dict(orient='index')
-MEDIUM_CONDITIONS = {'f2 medium': {key: (value['LB'], value['UB']) for key, value in media.items()}}
 
-UPTAKE_DRAINS= {'f2 medium': {"EX_C00014__dra", "EX_C00059__dra", "EX_C01330__dra", "EX_C00011__dra", "EX_C14818__dra", "EX_C00080__dra", "EX_C00001__dra", "EX_C00305__dra", "EX_C01327__dra", "EX_C00244__dra", "EX_C00009__dra",
-                               "EX_C00007__dra", "EX_C00205__dra", "EX_C00378__dra", "EX_C00120__dra", "EX_C02823__dra", 'DM_C00369__chlo'
-                               }}
 
-MEDIUM_METABOLITES = {'f2 medium': [e.split("__")[0].replace("EX_", "") for e in MEDIUM_CONDITIONS['f2 medium']]}
-
-#THRESHOLDS = linspace(0, 9, 10)  # List of ints or floats.
-THRESHOLDS = [2.8, 3.7]
-INTEGRATION_THRESHOLDS = list(THRESHOLDS)
-
-AND_OR_FUNCS = (min, sum)
-
-PROTECTED = ["e_Biomass__cytop",] + list(UPTAKE_DRAINS['f2 medium'])
-
-MODEL_PATH = rf"{DATA_PATH}/models/model_with_trials.xml"
-CONSISTENT_MODEL_PATH = rf"{DATA_PATH}/models/consistent_model.xml"
-OMICS_DATA_PATH = rf"{DATA_PATH}/omics/raw_counts.txt"
-TROPPO_RESULTS_PATH = f"{DATA_PATH}/omics/{params['DATASET']}"
-MODEL_RESULTS_PATH = f"{DATA_PATH}/omics/{params['DATASET']}"
-MODEL_TASKS_PATH = f"{DATA_PATH}/omics"
-MODEL_TASKS_RESULTS_PATH = f"{DATA_PATH}/omics/{params['DATASET']}"
 
 def reconstruction_function(omics_container, parameters: dict):
     """
@@ -84,10 +36,10 @@ def reconstruction_function(omics_container, parameters: dict):
     block_print()
 
     def integration_fx(data_map):
-        return [[k for k, v in data_map.get_scores().items() if (v is not None and v > threshold) or k in PROTECTED]]
+        return [[k for k, v in data_map.get_scores().items() if (v is not None and v > threshold) or k in parameters['protected']]]
 
     def score_apply(data_map):
-        dm = {k: 0 if v is None else (min(v, 10) - threshold) if k not in PROTECTED else 20
+        dm = {k: 0 if v is None else (min(v, 10) - threshold) if k not in parameters['protected'] else 20
               for k, v in data_map.items()}
         return dm
 
@@ -97,11 +49,11 @@ def reconstruction_function(omics_container, parameters: dict):
     # noinspection PyBroadException
     try:
         if method == 'fastcore':
-            return rec_wrapper.run_from_omics(omics_data=omics_container, algorithm=method, and_or_funcs=AND_OR_FUNCS,
+            return rec_wrapper.run_from_omics(omics_data=omics_container, algorithm=method, and_or_funcs=parameters['and_or_funcs'],
                                               integration_strategy=('custom', [integration_fx]), solver='CPLEX')
 
         elif method == 'tinit':
-            return rec_wrapper.run_from_omics(omics_data=omics_container, algorithm=method, and_or_funcs=AND_OR_FUNCS,
+            return rec_wrapper.run_from_omics(omics_data=omics_container, algorithm=method, and_or_funcs=parameters['and_or_funcs'],
                                               integration_strategy=('continuous', score_apply), solver='CPLEX')
 
     except Exception as e:
@@ -110,12 +62,14 @@ def reconstruction_function(omics_container, parameters: dict):
 
 
 def troppo_omics_integration(model: cobra.Model, algorithm: str, threshold: float, thread_number: int,
-                             omics_dataset: pandas.DataFrame, thresholds_map=None):
+                             omics_dataset: DataFrame, thresholds_map=None, params=None):
     """
     This function is used to run the Troppo's integration algorithms.
 
     Parameters
     ----------
+    params
+    thresholds_map
     omics_dataset: pandas.DataFrame
         A dataframe containing the omics dataset to integrate
     model: cobra.Model
@@ -157,8 +111,10 @@ def troppo_omics_integration(model: cobra.Model, algorithm: str, threshold: floa
     enable_print()
     print('Reconstruction Wrapper Finished.')
     # block_print()
-
-    parameters = {'threshold': threshold, 'reconstruction_wrapper': reconstruction_wrapper, 'algorithm': algorithm}
+    protected = ["e_Biomass__cytop", ] + list(params['uptake_drains']['f2 medium'])
+    parameters = {'threshold': threshold, 'reconstruction_wrapper': reconstruction_wrapper, 'algorithm': algorithm,
+                  'protected': protected, 'and_or_funcs': (min, sum)
+                  }
 
     batch_fastcore_res = batch_run(reconstruction_function, omics_data, parameters, threads=thread_number)
 

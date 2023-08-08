@@ -15,9 +15,7 @@ sys.path.insert(0, "/home/src/")
 from GSMMutils.io import read_csv
 from GSMMutils.omics.omics_integration import OmicsIntegration
 from GSMMutils.omics.model_handle import load_model, sbml_model_reconstruction
-
 CONFIG_PATH = abspath(join(dirname(__file__), '../../config'))
-
 params = json.load(open(rf"{CONFIG_PATH}/troppo_nacl.json", "r"))
 MODEL_PATH = rf"{DATA_PATH}/models/model_with_trials.xml"
 CONSISTENT_MODEL_PATH = rf"{DATA_PATH}/models/consistent_model.xml"

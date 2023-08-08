@@ -14,9 +14,9 @@ class StatisticalAnalysis:
 
     def get_correlation(self, columns: list | str = "all", method: str = "pearson"):
         if columns == "all":
-            return self.data.corr(method=method)
+            return self.data.corr(method=method).round(2)
         else:
-            return self.data[columns].corr(method=method)
+            return self.data[columns].corr(method=method).round(2)
 
     def anova(self, formula: str, to_print: bool = True) -> tuple:
         """
