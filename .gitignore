@@ -9,8 +9,8 @@
 
 *.pyc
 
-/data/*
-!tests/data/*
+#/data/*
+#!/tests/data/*
 *.xml
 */*.xml
 *.fig
