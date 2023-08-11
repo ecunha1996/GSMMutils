@@ -4,6 +4,8 @@ import re
 import shutil
 from os import makedirs
 from os.path import join, exists
+from typing import List
+
 import wget
 import requests
 from requests.adapters import HTTPAdapter, Retry
@@ -45,7 +47,7 @@ class Uniprot:
             yield response, total
             batch_url = get_next_link(response.headers)
 
-    def search_by_ec_number(self, ec_number: str, reviewed: bool = True) -> set:
+    def search_by_ec_number(self, ec_number: str, reviewed: bool = True) -> List[dict]:
         """
         Search for proteins by EC number
         Parameters
@@ -57,10 +59,10 @@ class Uniprot:
 
         Returns
         -------
-        list
+        List[dict]
             A list of proteins matching the EC number
         """
-        return set(list(self.search_by_ec_number_online(ec_number, reviewed)))
+        return self.search_by_ec_number_online(ec_number, reviewed)
 
     def search_by_ec_number_online(self, ec_number: str, reviewed: bool = True) -> list:
         """
