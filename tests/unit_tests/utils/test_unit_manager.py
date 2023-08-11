@@ -12,21 +12,21 @@ class TestUnitManager(unittest.TestCase):
         self.assertIsNotNone(self.unit_manager)
 
     def test_create_unit(self):
-        unit = Unit("test_unit", "test", "description")
+        unit = Unit("test_unit", "tests", "description")
         self.assertIsNotNone(unit)
 
     def test_add_unit(self):
-        unit = Unit("test_unit", "test", "description")
+        unit = Unit("test_unit", "tests", "description")
         self.unit_manager.add_unit(unit)
         self.assertEqual(self.unit_manager.get_unit("test_unit"), unit)
 
     def test_get_unit(self):
-        unit = Unit("test_unit", "test", "description")
+        unit = Unit("test_unit", "tests", "description")
         self.unit_manager.add_unit(unit)
         self.assertEqual(self.unit_manager.get_unit("test_unit"), unit)
 
     def test_get_unit_list(self):
-        unit = Unit("test_unit", "test", "description")
+        unit = Unit("test_unit", "tests", "description")
         self.unit_manager.add_unit(unit)
         self.assertEqual(self.unit_manager.get_units(), [unit])
 
