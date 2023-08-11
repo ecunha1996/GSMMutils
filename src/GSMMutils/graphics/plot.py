@@ -19,10 +19,12 @@ def barplot(dataframe, to_show=True, path=None):
         plt.savefig(path)
 
 
-def lineplot(x, y, **kwargs):
-    sns.lineplot(x=x, y=y).set(**kwargs)
-    plt.show()
-
+def lineplot(x, y, to_show=True, **kwargs):
+    graph = (sns.lineplot(x=x, y=y))
+    graph.set(**kwargs)
+    if to_show:
+        plt.show()
+    return graph
 
 def boxplot(dataframe, x_cols=None, y_cols=None, to_show=True, path=None, x_labels=None, y_labels=None):
     for y in y_cols:

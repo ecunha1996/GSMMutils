@@ -728,10 +728,6 @@ def run_condition():
 
     """
     initial_parameters = json.load(open(f"{DATA_PATH}/dfba/inputs/initial_parameters.json", "r"))
-    # initial_parameters = json.load(open(f"{DATA_PATH}/dfba/optimized_parameters.json", "r"))
-    # model = read_model()
-    # matrix = ExpMatrix(f"{DATA_PATH}/experimental/Matriz- DCCR Dunaliella salina_dfba.xlsx")
-    # matrix.conditions = "Resume"
     create_dfba_model("7", initial_parameters, create_plots=True)
 
 

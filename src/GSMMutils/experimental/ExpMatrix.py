@@ -10,7 +10,7 @@ from GSMMutils.utils.utils import get_molecular_weight, get_element_in_biomass, 
 
 
 class ExpMatrix:
-    def __init__(self, experimental_filename, model=None):
+    def __init__(self, experimental_filename, model=None, conditions: str = None):
         self._conditions = None
         self._substrate_uptake_hours, self._substrate_uptake_days = {}, {}
         self.experimental_filename = experimental_filename
@@ -18,6 +18,8 @@ class ExpMatrix:
         self.model = model
         self.exponential_phases = {}
         self.load()
+        if conditions:
+            self.conditions = conditions
 
     @property
     def substrate_uptake_days(self):

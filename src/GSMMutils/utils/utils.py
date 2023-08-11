@@ -347,3 +347,8 @@ def differential_reaction_capacity(rc_1, rc_2):
 
 def mp(function: callable, iterable, processes: int = 1, **kwargs):
     return Parallel(n_jobs=processes, **kwargs)(delayed(function)(iterable[0]))
+
+
+def get_parameter_range(start, end, number_of_steps):
+    linsp = np.linspace(round(start * 100, 0), round(end * 100, 0), int(round(number_of_steps * 100, 0)))
+    return [e / 100 for e in linsp]

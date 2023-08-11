@@ -19,8 +19,9 @@ def polyphosphate(parameters):
 def light(parameters):
     Ke = 11.5 * parameters['X'] * parameters['chlorophyll']
     Ex0 = parameters['Eo'] / (parameters['Lr'] * Ke) * (1 - sp.exp(-parameters['Lr'] * Ke)) * parameters['light_conversion_factor']
-    ro = parameters['ro1'] * parameters['chlorophyll'] + parameters['ro0']
-    Ex = ro / (parameters['X'] * parameters['Lr']) * Ex0 * parameters['light_conversion_factor']
+    ro = (parameters['ro1'] * parameters['chlorophyll'] + parameters['ro0'])
+    pa = (parameters['X'] * parameters['Lr'])
+    Ex = ro / pa * Ex0
     return Ex, Ex0
 
 
@@ -60,14 +61,14 @@ def lutein(parameters):
 
 def chlorophyll(parameters):
     phosphate_factor = (parameters["p_quota"] - parameters["wPmin"]) / (parameters["wPopt"] - parameters["wPmin"])
-
     def gamma(light_intensity):
         if light_intensity > parameters["Esat"]:
             light_intensity = parameters["Esat"]
         return parameters["ymax"] * (parameters["KEchl"] / (light_intensity + parameters["KEchl"]))
 
     def sum_chl(yE):
-        return (yE - parameters["chlorophyll"] / parameters["nitrogen_mass_quota"]) * phosphate_factor * aeration()
+        aeration_val = aeration()
+        return ((yE - parameters["chlorophyll"] / parameters["nitrogen_mass_quota"]) + phosphate_factor) * aeration_val
 
     def aeration():
         return parameters["aeration"] ** parameters["aeration_exponent"] / (parameters["aeration"] ** parameters["aeration_exponent"] + parameters["Kaeration"] ** parameters["aeration_exponent"])
