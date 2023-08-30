@@ -64,15 +64,19 @@ def chlorophyll(parameters):
     def gamma(light_intensity):
         if light_intensity > parameters["Esat"]:
             light_intensity = parameters["Esat"]
-        return parameters["ymax"] * (parameters["KEchl"] / (light_intensity + parameters["KEchl"]))
+        aeration_val = aeration()
+        return parameters["ymax"] * (parameters["KEchl"] / (light_intensity + parameters["KEchl"])) * aeration_val
 
     def sum_chl(yE):
-        aeration_val = aeration()
-        return ((yE - parameters["chlorophyll"] / parameters["nitrogen_mass_quota"]) + phosphate_factor) * aeration_val
+        ratio = parameters["chlorophyll"] / parameters["nitrogen_mass_quota"]
+        return yE - ratio
 
     def aeration():
-        return parameters["aeration"] ** parameters["aeration_exponent"] / (parameters["aeration"] ** parameters["aeration_exponent"] + parameters["Kaeration"] ** parameters["aeration_exponent"])
-    return sum_chl(gamma(parameters["Ex0"]))
+        return parameters["Kaeration"] / (parameters["aeration"] + parameters["Kaeration"])
+
+    gamma_val = gamma(parameters["Ex0"])
+    sum_chl_val = sum_chl(gamma_val)
+    return sum_chl_val * phosphate_factor
 
 
 def tag(parameters):
@@ -80,7 +84,7 @@ def tag(parameters):
 
 
 def glycerol(parameters):
-    max_production = (1e-5 * parameters["nacl"] ** 2 + 0.002 * parameters["nacl"] + 0.112) / parameters["X"] * (1 - parameters["glycerol"] / parameters["wgly_max"])
+    max_production = (-parameters["a"] * parameters["nacl"] ** 2 + parameters["b"] * parameters["nacl"] + parameters["c"]) / parameters["X"] * (1 - parameters["glycerol"] / parameters["wgly_max"]) * (1 - parameters["p_quota"]/parameters["wPopt"])
     return sp.Max(0, sp.N(max_production))
 
 
