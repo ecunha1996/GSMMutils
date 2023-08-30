@@ -27,7 +27,7 @@ class TestModelValidator(TestModel, unittest.TestCase):
 
     def test_check_blocked_reactions(self):
         blocked_reactions = self.validator.check_blocked_reactions()
-        self.assertIsInstance(blocked_reactions, list)
+        self.assertIsInstance(blocked_reactions, tuple)
         self.assertIsInstance(blocked_reactions[0], list)
         self.assertIsInstance(blocked_reactions[1], list)
 

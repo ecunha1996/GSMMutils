@@ -12,11 +12,17 @@ class StatisticalAnalysis:
     def __init__(self, data):
         self.data = data
 
-    def get_correlation(self, columns: list | str = "all", method: str = "pearson"):
-        if columns == "all":
+    def get_correlation(self, cols: list | str = "all", method: str = "pearson"):
+        if cols == "all":
+            if any(self.data.dtypes == "object"):
+                raise ValueError("Cannot calculate correlation for non-numeric columns")
             return self.data.corr(method=method).round(2)
         else:
-            return self.data[columns].corr(method=method).round(2)
+            if isinstance(cols, str):
+                cols = [cols]
+            if any(e == "object" for e in cols):
+                raise ValueError("Cannot calculate correlation for non-numeric columns")
+            return self.data[cols].corr(method=method).round(2)
 
     def anova(self, formula: str, to_print: bool = True) -> tuple:
         """

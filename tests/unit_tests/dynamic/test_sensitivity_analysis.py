@@ -10,9 +10,9 @@ from GSMMutils.graphics.plot import lineplot
 
 class TestSensitivityAnalysis(unittest.TestCase):
     def setUp(self):
-        self.matrix = ExpMatrix(f"../../data/Matriz- DCCR Dunaliella salina_dfba.xlsx", conditions="Resume")
+        self.matrix = ExpMatrix(f"data/Matriz- DCCR Dunaliella salina_dfba.xlsx", conditions="Resume")
         self.analysis = SensitivityAnalysis(self.matrix)
-        self.analysis.load_parameters(f"../../data/initial_parameters.json")
+        self.analysis.load_parameters(f"data/initial_parameters.json")
 
     def test_evaluate_dynamic_expression(self):
         res = self.analysis.evaluate_dynamic_expression("starch_production", "Nitrogen_quota")
