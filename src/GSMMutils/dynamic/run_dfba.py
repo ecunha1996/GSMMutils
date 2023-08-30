@@ -425,13 +425,12 @@ def fitness(conditions_names, parameters_names, parameters_under_optimization=No
     """
     if not parameters_under_optimization:
         parameters = {}
-
         for i, parameter_name in enumerate(parameters_names):
             parameters[parameter_name] = 2 ** initial_parameters[i]
     else:
         parameters = json.load(open(f"{DATA_PATH}/dfba/inputs/initial_parameters.json", "r"))
-        for index in range(len(initial_parameters)):
-            parameters[parameters_under_optimization[index]] = 2 ** initial_parameters[index]
+        for i, parameter_name in enumerate(parameters_under_optimization):
+            parameters[parameter_name] = 2 ** initial_parameters[i]
     try:
         total_error = sum(Parallel(n_jobs=len(conditions_names), timeout=30, backend="multiprocessing")(
             delayed(evaluate_trial)(parameters, condition=condition) for condition in
@@ -552,7 +551,7 @@ def callback_f(pbar, x):
     pbar.update(1)
 
 
-def parameter_optimization():
+def parameter_optimization(custom_parameters: list =None):
     """
     Runs the parameter optimization.
     Returns
@@ -563,20 +562,7 @@ def parameter_optimization():
 
     initial_parameters = json.load(open(f"{DATA_PATH}/dfba/inputs/initial_parameters.json", "r"))
 
-    # Define optimization method ('Nelder-Mead', 'BFGS', 'CG', 'L-BFGS-B', etc.)
-    # Refer to scipy.optimize documentation for more options
     method = 'Nelder-Mead'
-
-    # bounds = [(0, 100), (0, 0.1), (0, 0.5), (0, 0.5), (0, 100), (0, 100), (0, 1), (0, 500), (0, 10), (0, 100), (0, 2),
-    #           (0, 0.15), (0, 7), (0, 3), (1, 4), (0, 1), (0, 1), (0, 0.5), (0, 20), (0, 1), (0, 0.5),
-    #           (0, 0.1), (0, 100), (0, 10), (0, 0.1), (0, 0.5), (0, 1), (100, 1500), (0, 150), (10, 150), (0, 2000),
-    #           (0, 10), (0, 10), (0, 0.5), (0, 1), (0, 1), (0, 100), (0, 1), (0, 10), (0, 0.1)]  # , (0, 10)
-
-    # bounds_dict_keys = ('ro1', 'ro0', 'a0', 'a1', 'a2', 'a3', 'a4', 'ExA', 'l', 'smoothing_factor', 'wPopt', 'wPmin', 'wNmax',
-    #                     'wNmin', 'c0', 't_max', 'K_nitrogen_quota', 'VPmax', 'KPm', 'VNmax', 'KNm', 'wgly_max',
-    #                     'maximum_starch_production', 'maximum_tag_production', 'v_nitrate_max', 'v_polyphosphate_max', "v_car_max",
-    #                     "ymax", "Esat", "KEchl", "vco2max", "Kstl", "hill_coeff_starch", "light_conversion_factor", "v_lut_max",
-    #                     "a0_lut", "a1_lut", "a3_lut", "a4_lut", "smoothing_factor_lut", "nacl_lipid")
 
     bounds_ordered_dict = OrderedDict(json.load(open(f"{DATA_PATH}/dfba/inputs/parameters_bounds.json", "r")))
 
@@ -594,11 +580,16 @@ def parameter_optimization():
             f.write(f"{e}\n")
         f.write(f"Initial error was: {initial_error}")
     shutil.make_archive(f'{DATA_PATH}/dfba', 'zip', f'{DATA_PATH}/dfba')
-    max_iterations = 250
+    max_iterations = 10000
+
+    if custom_parameters:
+        initial_parameters = {key: initial_parameters[key] for key in custom_parameters}
+        bounds_ordered_dict = OrderedDict({key: bounds_ordered_dict[key] for key in custom_parameters})
+
     initial_parameters_log = [math.log2(e) for e in initial_parameters.values()]
     bounds_log = [(math.log2(e[0] + 1e-10), math.log2(e[1] + 1e-10)) for e in bounds_ordered_dict.values()]
     with tqdm(total=max_iterations, desc=f"Running optimization for {len(conditions_names)}") as pbar:
-        result = minimize(partial(fitness, conditions_names, list(bounds_ordered_dict.keys()), None), np.array(initial_parameters_log), method=method,
+        result = minimize(partial(fitness, conditions_names, list(bounds_ordered_dict.keys()), custom_parameters), np.array(initial_parameters_log), method=method,
                           bounds=bounds_log, callback=partial(callback_f, pbar), options={"maxiter": max_iterations})
 
     optimal_params = [2 ** e for e in result.x]
@@ -717,6 +708,17 @@ def generate_trials_plots():
     plt.ylabel("Phosphate quota")
     plt.savefig(f"{DATA_PATH}/dfba/phosphate_quotas.png", dpi=300)
 
+    plt.clf()
+    plt.figure(figsize=(10, 10))
+    for condition in matrix.conditions.index:
+        if not condition.startswith("fachet") and not condition.startswith("Xi") and not condition.startswith("Yimei"):
+            trajectory = pd.read_csv(f"{DATA_PATH}/dfba/concentrations/concentrations_{condition}.csv")
+            plt.plot(trajectory['Chlorophyll'], label=condition)
+    plt.legend()
+    plt.xlabel("Time (h)")
+    plt.ylabel("Chlorophyll (g/gDW)")
+    plt.savefig(f"{DATA_PATH}/dfba/Chlorophyll_over_time.png", dpi=300)
+
 
 def run_all_parallel(initial_parameters=None):
     """
@@ -775,6 +777,6 @@ def run_all():
 
 if __name__ == '__main__':
     parameter_optimization()
-    # optimize_simple_parameters()
+    # parameter_optimization(["a", "b", "c"])
     # run_all()
     # run_all_parallel()

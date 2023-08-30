@@ -34,7 +34,7 @@ class TestModelValidator(TestModel, unittest.TestCase):
     def test_check_unbounded_flux(self):
         unbounded_flux = self.validator.check_unbounded_flux()
         self.assertIsInstance(unbounded_flux, DataFrame)
-        assert(unbounded_flux.isEmpty())
+        assert unbounded_flux.empty
 
     def test_check_sbc(self):
         sbc = self.validator.check_sbc()
