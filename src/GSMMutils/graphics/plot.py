@@ -106,45 +106,48 @@ def plot_concentrations(data: pd.DataFrame(), y: Union[str, list] = None, to_sho
                         experimental: Union[List[List], List[Tuple[List, Any]]] = None, filename=None,
                         x_label=None, y_label=None, title=None, secondary_axis: Union[str, list] = None,
                         secondary_y_label=None, experimental_label=None):
-    if not x_label:
-        x_label = 'time (d)'
-    if not y_label:
-        y_label = 'concentration (g/L)'
-    if type(y) == str:
-        y = [y]
-    if type(secondary_axis) == str:
-        secondary_axis = [secondary_axis]
-    plt.style.context('Solarize_Light2')
-    fig = plt.figure()
-    # plot all concentrations from the dataframe
-    ax = plt.subplot(111)
-    for i in y:
-        ax.plot(data['time'], data[i])
-    ax.set_xlabel(x_label)
-    ax.set_ylabel(y_label)
-    ax.set_title(title)
-    legend = y
-    if experimental:
-        for index, exp in enumerate(experimental):
-            ax.scatter(exp[0], exp[1])
-            if not experimental_label:
-                legend += ["Experimental"]
-            else:
-                legend += [experimental_label[index]]
-    if secondary_axis:
-        ax2 = ax.twinx()
-        for i in secondary_axis:
-            ax2.plot(data['time'], data[i], color='r')
-        ax2.set_ylabel(secondary_y_label)
-        legend += secondary_axis
-        fig.add_subplot(ax2)
-    fig.add_subplot(ax)
-    fig.legend(legend, loc='upper right', bbox_to_anchor=(1.0, 1.0), bbox_transform=ax.transAxes)
-    if to_show:
-        fig.show()
-    else:
-        fig.savefig(filename)
-    return fig
+    try:
+        if not x_label:
+            x_label = 'time (d)'
+        if not y_label:
+            y_label = 'concentration (g/L)'
+        if type(y) == str:
+            y = [y]
+        if type(secondary_axis) == str:
+            secondary_axis = [secondary_axis]
+        plt.style.context('Solarize_Light2')
+        fig = plt.figure()
+        # plot all concentrations from the dataframe
+        ax = plt.subplot(111)
+        for i in y:
+            ax.plot(data['time'], data[i])
+        ax.set_xlabel(x_label)
+        ax.set_ylabel(y_label)
+        ax.set_title(title)
+        legend = y
+        if experimental:
+            for index, exp in enumerate(experimental):
+                ax.scatter(exp[0], exp[1])
+                if not experimental_label:
+                    legend += ["Experimental"]
+                else:
+                    legend += [experimental_label[index]]
+        if secondary_axis:
+            ax2 = ax.twinx()
+            for i in secondary_axis:
+                ax2.plot(data['time'], data[i], color='r')
+            ax2.set_ylabel(secondary_y_label)
+            legend += secondary_axis
+            fig.add_subplot(ax2)
+        fig.add_subplot(ax)
+        fig.legend(legend, loc='upper right', bbox_to_anchor=(1.0, 1.0), bbox_transform=ax.transAxes)
+        if to_show:
+            fig.show()
+        else:
+            fig.savefig(filename)
+        return fig
+    except Exception as e:
+        print(e)
 
 
 def plot_trajectories(data: pd.DataFrame(), y: str = None, to_show: bool = False):

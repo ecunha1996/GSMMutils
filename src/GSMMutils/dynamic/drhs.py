@@ -7,12 +7,12 @@ def get_dynamic_expressions(parameters):
             "Light": 0,
             "Nitrate": parameters["v_N"] * parameters["X"],
             "Phosphate": parameters["v_P"] * parameters["X"],
-            "Starch": parameters["starch_production"] - parameters["total_growth_rate"] * parameters["starch"],
-            "Starch_concentration": parameters["starch_production"] * parameters["X"],
-            "TAG": parameters["tag_production"] - parameters["total_growth_rate"] * parameters["tag"],
-            "Glycerol": parameters["glycerol_production"] - parameters["total_growth_rate"] * parameters["glycerol"],
+            # "Starch": parameters["starch_production"] - parameters["total_growth_rate"] * parameters["starch"],
+            # "Starch_concentration": parameters["starch_production"] * parameters["X"],
+            # "TAG": parameters["tag_production"] - parameters["total_growth_rate"] * parameters["tag"],
+            # "Glycerol": parameters["glycerol_production"] - parameters["total_growth_rate"] * parameters["glycerol"],
             "Carotene": parameters["caro_production"] - parameters["total_growth_rate"] * parameters["carotene"],
             "Lutein": parameters["lutein_production"] - parameters["total_growth_rate"] * parameters["lutein"],
-            "Chlorophyll": parameters["chl_production"] - parameters["total_growth_rate"] * parameters["chlorophyll"]
+            # "Chlorophyll": parameters["chl_production"] - parameters["total_growth_rate"] * parameters["chlorophyll"]
             }
     return drhs

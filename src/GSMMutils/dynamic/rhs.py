@@ -18,10 +18,10 @@ def polyphosphate(parameters):
 
 def light(parameters):
     Ke = 11.5 * parameters['X'] * parameters['chlorophyll']
-    Ex0 = parameters['Eo'] / (parameters['Lr'] * Ke) * (1 - sp.exp(-parameters['Lr'] * Ke)) * parameters['light_conversion_factor']
+    Ex0 = parameters['Eo'] / (parameters['Lr'] * Ke) * (1 - sp.exp(-parameters['Lr'] * Ke))
     ro = (parameters['ro1'] * parameters['chlorophyll'] + parameters['ro0'])
     pa = (parameters['X'] * parameters['Lr'])
-    Ex = ro / pa * Ex0
+    Ex = ro / pa * Ex0 * parameters['light_conversion_factor']
     return Ex, Ex0
 
 
@@ -60,7 +60,7 @@ def lutein(parameters):
 
 
 def chlorophyll(parameters):
-    phosphate_factor = (parameters["p_quota"] - parameters["wPmin"]) / (parameters["wPopt"] - parameters["wPmin"])
+    phosphate_factor = (parameters["p_quota"]**2 - parameters["wPmin"]**2) / (parameters["wPopt"]**2 - parameters["wPmin"]**2)
     def gamma(light_intensity):
         if light_intensity > parameters["Esat"]:
             light_intensity = parameters["Esat"]

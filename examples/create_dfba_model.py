@@ -80,20 +80,37 @@ def remove_pigments(model):
     pigments_copy.id = 'e_Pigments_no_car_chl__cytop'
     model.add_reactions([pigments_copy])
     model.reactions.e_Pigment__chlo.bounds = (0, 0)
-    model.set_stoichiometry("e_Pigments_no_car_chl__cytop", "C05306__chlo", 0)
-    model.set_stoichiometry("e_Pigments_no_car_chl__cytop", "C05307__chlo", 0)
+    # model.set_stoichiometry("e_Pigments_no_car_chl__cytop", "C05306__chlo", 0)
+    # model.set_stoichiometry("e_Pigments_no_car_chl__cytop", "C05307__chlo", 0)
+    # model.set_stoichiometry("e_Pigments_no_car_chl__cytop", "C02094__chlo", 0)
+    # model.set_stoichiometry("e_Pigments_no_car_chl__cytop", "C08601__chlo", 0)
+    #
+    # model.set_stoichiometry("e_Pigments_no_car_chl__cytop", "C08614__chlo", -1.0633)
+    # model.set_stoichiometry("e_Pigments_no_car_chl__cytop", "C05433__chlo", -0.0256)
+    # model.set_stoichiometry("e_Pigments_no_car_chl__cytop", "C06098__chlo", -0.0164)
+    # model.set_stoichiometry("e_Pigments_no_car_chl__cytop", "C08591__chlo", -0.1660)
+    #
+    # model.set_stoichiometry("e_Pigments_no_car_chl__cytop", "C08606__chlo", -0.0032)
+    # model.set_stoichiometry("e_Pigments_no_car_chl__cytop", "C05432__chlo", -0.0008)
+    # model.set_stoichiometry("e_Pigments_no_car_chl__cytop", "C08579__chlo", -0.0014)
+    # model.set_stoichiometry("e_Pigments_no_car_chl__cytop", "C20484__chlo", -0.4527)
+    #
+    # model.set_stoichiometry("e_ActiveBiomass__cytop", "e_Pigment__chlo", -0.0163)
+
+    model.set_stoichiometry("e_Pigments_no_car_chl__cytop", "C05306__chlo", -0.0323)
+    model.set_stoichiometry("e_Pigments_no_car_chl__cytop", "C05307__chlo", -0.0109)
     model.set_stoichiometry("e_Pigments_no_car_chl__cytop", "C02094__chlo", 0)
     model.set_stoichiometry("e_Pigments_no_car_chl__cytop", "C08601__chlo", 0)
 
-    model.set_stoichiometry("e_Pigments_no_car_chl__cytop", "C08614__chlo", -1.0633)
-    model.set_stoichiometry("e_Pigments_no_car_chl__cytop", "C05433__chlo", -0.0256)
-    model.set_stoichiometry("e_Pigments_no_car_chl__cytop", "C06098__chlo", -0.0164)
-    model.set_stoichiometry("e_Pigments_no_car_chl__cytop", "C08591__chlo", -0.1660)
+    model.set_stoichiometry("e_Pigments_no_car_chl__cytop", "C08614__chlo", -1.0221)
+    model.set_stoichiometry("e_Pigments_no_car_chl__cytop", "C05433__chlo", -0.0246)
+    model.set_stoichiometry("e_Pigments_no_car_chl__cytop", "C06098__chlo", -0.0158)
+    model.set_stoichiometry("e_Pigments_no_car_chl__cytop", "C08591__chlo", -0.1595)
 
-    model.set_stoichiometry("e_Pigments_no_car_chl__cytop", "C08606__chlo", -0.0032)
+    model.set_stoichiometry("e_Pigments_no_car_chl__cytop", "C08606__chlo", -0.0031)
     model.set_stoichiometry("e_Pigments_no_car_chl__cytop", "C05432__chlo", -0.0008)
     model.set_stoichiometry("e_Pigments_no_car_chl__cytop", "C08579__chlo", -0.0014)
-    model.set_stoichiometry("e_Pigments_no_car_chl__cytop", "C20484__chlo", -0.4527)
+    model.set_stoichiometry("e_Pigments_no_car_chl__cytop", "C20484__chlo", -0.4351)
 
     model.set_stoichiometry("e_ActiveBiomass__cytop", "e_Pigment__chlo", -0.0163)
 
@@ -144,13 +161,13 @@ def main():
     print(model.optimize().objective_value)
     with model:
         model = create_active_biomass(model)
-        model = remove_starch(model)
-        model = remove_tag(model)
-        model = remove_glycerol(model)
+        # model = remove_starch(model)
+        # model = remove_tag(model)
+        # model = remove_glycerol(model)
         model = remove_pigments(model)
         model = normalize_active_biomass(model)
         # model = correct_co2_uptake(model)
-        model.write("models/model_dfba.xml")
+        model.write("models/model_dfba_no_caro.xml")
 
 
 if __name__ == "__main__":

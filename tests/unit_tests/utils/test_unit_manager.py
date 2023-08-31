@@ -28,7 +28,7 @@ class TestUnitManager(unittest.TestCase):
     def test_get_unit_list(self):
         unit = Unit("test_unit", "tests", "description")
         self.unit_manager.add_unit(unit)
-        self.assertEqual(self.unit_manager.get_units(), [unit])
+        self.assertEqual(self.unit_manager.get_units(), {unit})
 
     def test_set_default_units(self):
         self.unit_manager.set_default_units()

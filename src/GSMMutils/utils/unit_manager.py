@@ -30,7 +30,8 @@ class UnitManager:
         default_unit_descriptions = {"gDW": "gram dry weight", "gMM": "gram mass of a macromolecule",
                                      "gM": "gram mass of a precursor of a macromolecule",
                                      "mol": "mole of a precursor of a macromolecule",
-                                     "molMM": "mole of a macromolecule"}
+                                     "molMM": "mole of a macromolecule",
+                                     "molM": "mole of a precursor of a macromolecule"}
 
         for unit, unit_type in default_unit_types.items():
             self.add_unit(Unit(unit, unit_type, default_unit_descriptions[unit]))

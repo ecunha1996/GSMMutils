@@ -79,17 +79,17 @@ def read_model() -> MyModel:
     -------
 
     """
-    stoichiometric_model = MyModel(join(DATA_PATH, "models/model_dfba.xml"), "e_ActiveBiomass__cytop")
+    stoichiometric_model = MyModel(join(DATA_PATH, "models/model_dfba_no_caro.xml"), "e_ActiveBiomass__cytop")
     stoichiometric_model.exchanges.EX_C00011__dra.bounds = (-10000, 10000)
     stoichiometric_model.solver = "glpk"
     [setattr(x, 'objective_coefficient', 0) for x in stoichiometric_model.reactions if x.objective_coefficient != 0]
 
     objectives = {
         "e_ActiveBiomass__cytop": 1,
-        "DM_C00369__chlo": 1,
-        "DM_C05306__chlo": 1, "DM_C05307__chlo": 1,
+        # "DM_C00369__chlo": 1,
+        # "DM_C05306__chlo": 1, "DM_C05307__chlo": 1,
         "DM_C08601__chlo": 1, "DM_C02094__chlo": 1,
-        "DM_C00116__cytop": 1, "DM_C00422__lip": 1,
+        # "DM_C00116__cytop": 1, "DM_C00422__lip": 1,
         "EX_C00244__dra": -1, "EX_C00009__dra": -1
     }
     for reaction_id, value in objectives.items():
@@ -114,19 +114,20 @@ def get_kinetic_variables() -> dict:
     n_quota = KineticVariable("Nitrogen_quota")
     phosphorus = KineticVariable("Phosphate")
     p_quota = KineticVariable("Phosphate_quota")
-    starch = KineticVariable("Starch")
-    starch_concentration = KineticVariable("Starch_concentration")
-    tag = KineticVariable("TAG")
-    glycerol = KineticVariable("Glycerol")
+    # starch = KineticVariable("Starch")
+    # starch_concentration = KineticVariable("Starch_concentration")
+    # tag = KineticVariable("TAG")
+    # glycerol = KineticVariable("Glycerol")
     carotene = KineticVariable("Carotene")
     lutein = KineticVariable("Lutein")
-    chlorophyll = KineticVariable("Chlorophyll")
+    # chlorophyll = KineticVariable("Chlorophyll")
     return {"X": X, "F": F, "nitrate": nitrate, "phosphorus": phosphorus,
-            "starch": starch,
-            "starch_concentration": starch_concentration,
-            "chlorophyll": chlorophyll, "carotene": carotene,
+            # "starch": starch,
+            # "starch_concentration": starch_concentration,
+            # "chlorophyll": chlorophyll,
+            "carotene": carotene,
             "n_quota": n_quota, "p_quota": p_quota,
-            "tag": tag, "glycerol": glycerol,
+            # "tag": tag, "glycerol": glycerol,
             "light": light, "lutein": lutein}
 
 
@@ -200,7 +201,9 @@ def generate_all_plots(condition: str, concentrations: DataFrame, experimental: 
                         filename=f"{DATA_PATH}/dfba/concentrations/external_concentrations_{condition}.png",
                         y_label="Phosphate (mmol/L)", secondary_y_label="Nitrate (mmol/L)")
 
-    plot_concentrations(concentrations, y=["Glycerol", "Starch", "TAG"],
+    if ("Glycerol" in matrix.matrix[condition].columns and "Starch" in matrix.matrix[condition].columns and "TAG" in
+            matrix.matrix[condition].columns):
+        plot_concentrations(concentrations, y=["Glycerol", "Starch", "TAG"],
                         filename=f"{DATA_PATH}/dfba/quotas/intracellular_quotas_{condition}.png",
                         y_label="Quota (g/gDW)", secondary_axis=["Carotene", "Chlorophyll"],
                         secondary_y_label="Quota (g/gDW)")
@@ -218,8 +221,156 @@ def generate_all_plots(condition: str, concentrations: DataFrame, experimental: 
     trajectories.to_csv(f"{DATA_PATH}/dfba/trajectories/trajectories_{condition}.csv", index=False)
 
 
-@timeout(40)
 def create_dfba_model(condition, parameters, create_plots=False):
+    if 'Time (d)' not in matrix.matrix[condition].columns:
+        matrix.matrix[condition]['Time (d)'] = matrix.matrix[condition].index
+    fba_model = read_model()
+    dfba_model = DfbaModel(fba_model)
+    dfba_model.solver_data.set_display("none")
+    dfba_model.solver_data.set_algorithm("direct")
+    #     dfba_model.solver_data.set_rel_tolerance(1e-3)
+    #     dfba_model.solver_data.set_ode_method("ADAMS")
+
+    kinetic_vars = get_kinetic_variables()
+    parameters.update(kinetic_vars)
+    dfba_model.add_kinetic_variables(list(kinetic_vars.values()))
+
+    exchange_fluxes = {}
+    for key, value in get_exchange_fluxes().items():
+        exchange_fluxes[key] = ExchangeFlux(value)
+
+    dfba_model.add_exchange_fluxes(list(exchange_fluxes.values()))
+    parameters.update(exchange_fluxes)
+    parameters['caro_production'] = parameters['v_C'] * 536.87 / 1000
+    parameters['lutein_production'] = parameters['v_lutein'] * 568.87 / 1000
+    parameters['total_growth_rate'] = (parameters['mu'] +
+                                       parameters['caro_production'] +
+                                       parameters['lutein_production'])
+
+    for key, value in get_dynamic_expressions(parameters).items():
+        dfba_model.add_rhs_expression(key, value)
+
+    """
+    Experiment-dependent
+    """
+    parameters["Eo"] = matrix.conditions["Light (umol/m^2.s)"].loc[condition]
+    parameters["nacl"] = matrix.conditions["Salinity g/L"].loc[condition]
+    parameters["Lr"] = matrix.conditions["Lr"].loc[condition]
+    parameters["aeration"] = matrix.conditions["Aeration rate"].loc[condition]
+
+    light_sources = matrix.conditions["Light sources"].loc[condition].split(",")
+    for light_source in light_sources:
+        fba_model.reactions.get_by_id(light_source).bounds = (0, 10000)
+
+    """
+    General parameters
+    """
+    parameters['chlorophyll'] = 0.0063
+    parameters["q"] = parameters["n_quota"] / parameters["wNmax"]
+    parameters["n"] = 1 - (parameters["q"] / (parameters["q"] + parameters["K_nitrogen_quota"]))
+    parameters["nitrogen_mass_quota"] = parameters["n_quota"] * 14.01 / 1000
+    parameters["phosphate_mass_quota"] = parameters["p_quota"] * 30.97 / 1000
+
+    """
+    Light
+    """
+    parameters["Ex"], parameters["Ex0"] = get_bounds("light", parameters)
+    dfba_model.add_exchange_flux_lb("EX_C00205__dra", sp.Max(sp.N(parameters["Ex"]), 0), parameters["light"])
+
+    """
+    NO3
+    """
+    dfba_model.add_exchange_flux_lb("EX_C00244__dra", get_bounds("nitrate", parameters), parameters["nitrate"])  # 4.07
+    #     nitrate_quota = sp.Max(0, 1 - (4.8697 * F / X) / n_quota)
+    dfba_model.add_exchange_flux_lb("DM_C00244__cytop", sp.Max(0, parameters["v_nitrate_max"] * (
+            1 - parameters['wNmin'] / parameters["n_quota"])), parameters["nitrate"])
+
+    """
+    HPO4
+    """
+    dfba_model.add_exchange_flux_lb("EX_C00009__dra", get_bounds("phosphate", parameters), parameters["phosphorus"])
+    #     polyP_quota = sp.Max(0, 1 - (0.295 * F / X) / p_quota)
+    dfba_model.add_exchange_flux_lb("DM_C00404__vacu", get_bounds("polyphosphate", parameters))
+
+    """
+    Starch
+    """
+    # dfba_model.add_exchange_flux_lb("DM_C00369__chlo", get_bounds("starch_consumption", parameters))
+    #     dfba_model.add_exchange_flux_ub("DM_C00369__chlo", get_bounds("starch_production", parameters), parameters["starch"])
+
+    """
+    Carotene
+    """
+    dfba_model.add_exchange_flux_ub("DM_C02094__chlo", get_bounds("carotene", parameters), parameters["carotene"])
+
+    """
+    Lutein
+    """
+    dfba_model.add_exchange_flux_ub("DM_C08601__chlo", get_bounds("lutein", parameters), parameters["lutein"])
+
+    """
+    Chlorophyll
+    """
+    #     sum_chl = get_bounds("chlorophyll", parameters)
+    #     dfba_model.add_exchange_flux_lb("DM_C05306__chlo", Abs(Min(sum_chl, 0)) * 1.73 / 2.73, parameters["chlorophyll"])
+    #     dfba_model.add_exchange_flux_lb("DM_C05307__chlo", Abs(Min(sum_chl, 0)) / 2.73, parameters["chlorophyll"])
+    #     dfba_model.add_exchange_flux_ub("DM_C05306__chlo", Max(sum_chl, 0) * 1.73 / 2.73, parameters["chlorophyll"])
+    #     dfba_model.add_exchange_flux_ub("DM_C05307__chlo", Max(sum_chl, 0) / 2.73, parameters["chlorophyll"])
+
+    """
+    Glycerol
+    """
+    # wgly_max = 0.17  # https://doi.org/10.1016/j.biortech.2008.02.042
+    #     dfba_model.add_exchange_flux_ub("DM_C00116__cytop", get_bounds("glycerol", parameters), parameters["glycerol"])
+
+    """
+    TAG
+    """
+    #     dfba_model.add_exchange_flux_ub("DM_C00422__lip", get_bounds("tag", parameters), parameters["tag"])
+
+    """
+    CO2
+    """
+    #     dfba_model.add_exchange_flux_lb("EX_C00011__dra", get_bounds("co2", parameters))
+
+    """
+    Simulate
+    """
+    dfba_model.add_initial_conditions(get_initial_conditions(matrix, condition))
+    max_time = max(matrix.matrix[condition]['Time (d)'].astype(float).tolist()) + 1
+    time_step = 1 / 48
+    concentrations, trajectories = dfba_model.simulate(0.0, max_time, time_step,
+                                                       ["e_ActiveBiomass__cytop", 'EX_C00009__dra',
+                                                        "DM_C02094__chlo", "EX_C00244__dra",
+                                                        "EX_C00011__dra",
+                                                        "DM_C00404__vacu",
+                                                        "DM_C00244__cytop", "EX_C00205__dra", "DM_C08601__chlo",
+                                                        ])
+
+    active_biomass_fraction = concentrations['ActiveBiomass'] / concentrations['Biomass']
+    concentrations.loc[:, 'Protein'] = abs(fba_model.reactions.e_ActiveBiomass__cytop.metabolites[
+                                               fba_model.metabolites.e_Protein__cytop]) * active_biomass_fraction
+    carbs = abs(fba_model.reactions.e_ActiveBiomass__cytop.metabolites[
+                    fba_model.metabolites.e_Carbohydrate__cytop]) * active_biomass_fraction
+    concentrations.loc[:, 'Carbohydrate'] = carbs
+    polar_lipids = abs(fba_model.reactions.e_ActiveBiomass__cytop.metabolites[
+                           fba_model.metabolites.e_Lipid__cytop]) * active_biomass_fraction
+    concentrations.loc[:, 'Lipid'] = polar_lipids
+
+    indexes = matrix.matrix[condition].index.astype(float)
+    indexes = [e for e in indexes]
+    experimental = [(indexes, matrix.matrix[condition]["DW"].tolist())]
+
+    concentrations.loc[:, "Carotene_concentration"] = concentrations['Carotene'] * concentrations['Biomass']
+    concentrations.loc[:, 'Lutein_concentration'] = concentrations['Lutein'] * concentrations['Biomass']
+
+    if create_plots:
+        generate_all_plots(condition, concentrations, experimental, trajectories)
+
+    return concentrations, trajectories
+
+@timeout(40)
+def create_dfba_model_old(condition, parameters, create_plots=False):
     """
     Creates the dfba model for a given condition and parameters.
     Parameters
@@ -468,11 +619,11 @@ def evaluate_trial(parameters, create_plots=False, condition=None):
         #           }  #
         to_fit = {
             "Biomass": "DW",
-            'Lipid': 'Lipid', 'Protein': 'Protein', 'Carbohydrate': 'Carbohydrate',
+            # 'Lipid': 'Lipid', 'Protein': 'Protein', 'Carbohydrate': 'Carbohydrate',
             "Carotene": "Caro",
-            "Chlorophyll": "Chl",
+            # "Chlorophyll": "Chl",
             "Lutein": "Lutein",
-            "Chlorophyll_concentration": "Chlorophyll_concentration", "Carotene_concentration": "Caro_concentration", "Lutein_concentration": "Lutein_concentration"
+            # "Chlorophyll_concentration": "Chlorophyll_concentration", "Carotene_concentration": "Caro_concentration", "Lutein_concentration": "Lutein_concentration"
         }
         experimental_time = np.array(mat["Time (d)"])
         closest = get_closest(experimental_time, concentrations.time)
@@ -580,7 +731,7 @@ def parameter_optimization(custom_parameters: list =None):
             f.write(f"{e}\n")
         f.write(f"Initial error was: {initial_error}")
     shutil.make_archive(f'{DATA_PATH}/dfba', 'zip', f'{DATA_PATH}/dfba')
-    max_iterations = 10000
+    max_iterations = 1000
 
     if custom_parameters:
         initial_parameters = {key: initial_parameters[key] for key in custom_parameters}
@@ -777,6 +928,6 @@ def run_all():
 
 if __name__ == '__main__':
     parameter_optimization()
-    # parameter_optimization(["a", "b", "c"])
+    # parameter_optimization(["ymax", "Esat", "KEchl", "Kaeration", "light_conversion_factor"])
     # run_all()
     # run_all_parallel()
