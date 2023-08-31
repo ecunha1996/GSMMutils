@@ -1,5 +1,6 @@
 import unittest
-from os.path import join
+from os import chdir
+from os.path import join, dirname
 from GSMMutils.dynamic.sensitivity_analysis import SensitivityAnalysis
 from GSMMutils.experimental.ExpMatrix import ExpMatrix
 from GSMMutils.graphics.plot import lineplot
@@ -7,10 +8,12 @@ from GSMMutils.graphics.plot import lineplot
 
 class TestSensitivityAnalysis(unittest.TestCase):
     def setUp(self):
-        path = "tests/data/Matriz- DCCR Dunaliella salina_dfba.xlsx"
+        data_path = join(dirname(__file__), '../../data')
+        chdir(data_path)
+        path = "Matriz- DCCR Dunaliella salina_dfba.xlsx"
         self.matrix = ExpMatrix(path, conditions="Resume")
         self.analysis = SensitivityAnalysis(self.matrix)
-        self.analysis.load_parameters(f"data/initial_parameters.json")
+        self.analysis.load_parameters(f"initial_parameters.json")
 
     def test_evaluate_dynamic_expression(self):
         # res = self.analysis.evaluate_dynamic_expression("starch_production", "Nitrogen_quota")
