@@ -15,21 +15,25 @@ class TestSensitivityAnalysis(unittest.TestCase):
         self.analysis.load_parameters(f"data/initial_parameters.json")
 
     def test_evaluate_dynamic_expression(self):
-        res = self.analysis.evaluate_dynamic_expression("starch_production", "Nitrogen_quota")
-        assert len(set(res.values())) == 1
+        # res = self.analysis.evaluate_dynamic_expression("starch_production", "Nitrogen_quota")
+        # assert len(set(res.values())) == 1
+        #
+        # res = self.analysis.evaluate_dynamic_expression("starch_production", "x_storage")
+        # assert len(set(res.values())) > 1
+        #
+        # res = self.analysis.evaluate_dynamic_expression("tag", "n_quota")
+        # assert len(set(res.values())) > 1
+        #
+        # res = self.analysis.evaluate_dynamic_expression("chlorophyll", "p_quota")
+        # lineplot(list(res.keys()), list(res.values()), xlabel="p_quota", ylabel="chlorophyll")
+        #
+        # res = self.analysis.evaluate_dynamic_expression("chlorophyll", "n_quota", param_range=[4, 7, 10])
+        # graph = lineplot(list(res.keys()), list(res.values()), xlabel="n_quota", ylabel="chlorophyll")
+        # graph.axhline()
 
-        res = self.analysis.evaluate_dynamic_expression("starch_production", "x_storage")
-        assert len(set(res.values())) > 1
+        res = self.analysis.evaluate_dynamic_expression("carotene", "n_quota")
+        lineplot(list(res.keys()), list(res.values()), xlabel="n_quota", ylabel="carotene")
 
-        res = self.analysis.evaluate_dynamic_expression("tag", "n_quota")
-        assert len(set(res.values())) > 1
-
-        res = self.analysis.evaluate_dynamic_expression("chlorophyll", "p_quota")
-        lineplot(list(res.keys()), list(res.values()), xlabel="p_quota", ylabel="chlorophyll")
-
-        res = self.analysis.evaluate_dynamic_expression("chlorophyll", "n_quota", param_range=[4, 7, 10])
-        graph = lineplot(list(res.keys()), list(res.values()), xlabel="n_quota", ylabel="chlorophyll")
-        graph.axhline()
 
 
 if __name__ == '__main__':

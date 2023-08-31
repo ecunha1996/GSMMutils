@@ -23,6 +23,7 @@ class SensitivityAnalysis:
         self.parameters["nacl"] = self.matrix.conditions["Salinity g/L"].loc["1"]
         self.parameters["Lr"] = self.matrix.conditions["Lr"].loc["1"]
         self.parameters["aeration"] = self.matrix.conditions["Aeration rate"].loc["1"]
+        self.parameters["chlorophyll"] = 0.0063
         self.parameters = {key: Parameter(key, value, self.parameters) for key, value in self.parameters.items()}
         self.update_aliases()
         self.update_parameters()
@@ -32,10 +33,10 @@ class SensitivityAnalysis:
             "n_quota": "Nitrogen_quota",
             "p_quota": "Phosphate_quota",
             "carotene": "Carotene",
-            "glycerol": "Glycerol",
-            "tag": "TAG",
-            "starch": "Starch",
-            "chlorophyll": "Chlorophyll",
+            # "glycerol": "Glycerol",
+            # "tag": "TAG",
+            # "starch": "Starch",
+            # "chlorophyll": "Chlorophyll",
             "X": "Biomass",
             "F": "ActiveBiomass"
         })
@@ -49,11 +50,11 @@ class SensitivityAnalysis:
         self.parameters["n_quota"].add_dependent(self.parameters["q"], 'self.parameters["n_quota"].value / self.parameters["wNmax"].value')
         self.parameters["n"] = Parameter("n", 1 - (self.parameters["q"].value / (self.parameters["q"].value + self.parameters["K_nitrogen_quota"].value)), self.parameters)
         self.parameters["q"].add_dependent(self.parameters["n"], '1 - (self.parameters["q"].value / (self.parameters["q"].value + self.parameters["K_nitrogen_quota"].value))')
-        self.parameters["x_storage"] = Parameter("x_storage", self.parameters["carotene"].value + self.parameters["glycerol"].value + self.parameters["tag"].value + self.parameters["starch"].value, self.parameters)
-        self.parameters["cell_size_increase"] = Parameter("cell_size_increase", 1 / (1 - self.parameters["x_storage"].value), self.parameters)
-        self.parameters["x_storage"].add_dependent(self.parameters["cell_size_increase"], '1 / (1 - self.parameters["x_storage"].value)')
-        self.parameters["z"] = Parameter("z", (self.parameters["cell_size_increase"].value - 1) / (self.parameters["t_max"].value - 1), self.parameters)
-        self.parameters["cell_size_increase"].add_dependent(self.parameters["z"], '(self.parameters["cell_size_increase"].value - 1) / (self.parameters["t_max"].value - 1)')
+        # self.parameters["x_storage"] = Parameter("x_storage", self.parameters["carotene"].value + self.parameters["glycerol"].value + self.parameters["tag"].value + self.parameters["starch"].value, self.parameters)
+        # self.parameters["cell_size_increase"] = Parameter("cell_size_increase", 1 / (1 - self.parameters["x_storage"].value), self.parameters)
+        # self.parameters["x_storage"].add_dependent(self.parameters["cell_size_increase"], '1 / (1 - self.parameters["x_storage"].value)')
+        # self.parameters["z"] = Parameter("z", (self.parameters["cell_size_increase"].value - 1) / (self.parameters["t_max"].value - 1), self.parameters)
+        # self.parameters["cell_size_increase"].add_dependent(self.parameters["z"], '(self.parameters["cell_size_increase"].value - 1) / (self.parameters["t_max"].value - 1)')
         self.parameters["nitrogen_mass_quota"] = Parameter("nitrogen_mass_quota", self.parameters["n_quota"].value * 14.01 / 1000, self.parameters)
         self.parameters["phosphate_mass_quota"] = Parameter("phosphate_mass_quota", self.parameters["p_quota"].value * 30.97 / 1000, self.parameters)
         self.parameters['p_quota'].add_dependent(self.parameters['phosphate_mass_quota'], 'self.parameters["p_quota"].value * 30.97 / 1000')
