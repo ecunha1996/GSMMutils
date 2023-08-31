@@ -1,8 +1,5 @@
-import os
 import unittest
-from os.path import dirname, join
-
-from GSMMutils import MyModel
+from os.path import join
 from GSMMutils.dynamic.sensitivity_analysis import SensitivityAnalysis
 from GSMMutils.experimental.ExpMatrix import ExpMatrix
 from GSMMutils.graphics.plot import lineplot
@@ -10,7 +7,7 @@ from GSMMutils.graphics.plot import lineplot
 
 class TestSensitivityAnalysis(unittest.TestCase):
     def setUp(self):
-        path = join("${{ github.workspace}}", "GSMMutils/tests/data/Matriz- DCCR Dunaliella salina_dfba.xlsx")
+        path = "tests/data/Matriz- DCCR Dunaliella salina_dfba.xlsx"
         self.matrix = ExpMatrix(path, conditions="Resume")
         self.analysis = SensitivityAnalysis(self.matrix)
         self.analysis.load_parameters(f"data/initial_parameters.json")
@@ -34,7 +31,6 @@ class TestSensitivityAnalysis(unittest.TestCase):
 
         res = self.analysis.evaluate_dynamic_expression("carotene", "n_quota")
         lineplot(list(res.keys()), list(res.values()), xlabel="n_quota", ylabel="carotene")
-
 
 
 if __name__ == '__main__':
