@@ -10,7 +10,8 @@ from GSMMutils.graphics.plot import lineplot
 
 class TestSensitivityAnalysis(unittest.TestCase):
     def setUp(self):
-        self.matrix = ExpMatrix(f"data/Matriz- DCCR Dunaliella salina_dfba.xlsx", conditions="Resume")
+        path = join("${{ github.workspace}}", "GSMMutils/tests/data/Matriz- DCCR Dunaliella salina_dfba.xlsx")
+        self.matrix = ExpMatrix(path, conditions="Resume")
         self.analysis = SensitivityAnalysis(self.matrix)
         self.analysis.load_parameters(f"data/initial_parameters.json")
 

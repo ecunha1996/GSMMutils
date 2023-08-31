@@ -3,6 +3,7 @@ import unittest
 import pandas as pd
 import pandas.testing as pd_testing
 from statsmodels.multivariate.multivariate_ols import MultivariateTestResults
+from statsmodels.regression.linear_model import RegressionResultsWrapper
 
 from GSMMutils.stats.stats import StatisticalAnalysis
 
@@ -21,7 +22,7 @@ class TestStats(unittest.TestCase):
     def test_anova(self):
         anova_table, model = self.stats.anova('height ~ plant_var')
         self.assertEqual(anova_table.shape, (2, 4))
-        self.assertIsInstance(model, MultivariateTestResults)
+        self.assertIsInstance(model, RegressionResultsWrapper)
 
     def test_get_correlation(self):
         self.assertRaises(ValueError, self.stats.get_correlation)
