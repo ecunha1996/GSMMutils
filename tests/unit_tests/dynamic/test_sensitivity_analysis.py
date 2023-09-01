@@ -10,7 +10,7 @@ class TestSensitivityAnalysis(unittest.TestCase):
     def setUp(self):
         data_path = join(dirname(__file__), '../../data')
         chdir(data_path)
-        path = "Matriz- DCCR Dunaliella salina_dfba.xlsx"
+        path = "Matrix_test.xlsx"
         self.matrix = ExpMatrix(path, conditions="Resume")
         self.analysis = SensitivityAnalysis(self.matrix)
         self.analysis.load_parameters(f"initial_parameters.json")

@@ -1,7 +1,5 @@
-
 import sys
 sys.path.append('../../src')
-
 from GSMMutils.dynamic.dfba_docker import DFBA
 
 
@@ -10,13 +8,5 @@ def main():
     dfba.run()
 
 
-
 if __name__ == '__main__':
     main()
-
-
-
-
-
-
-

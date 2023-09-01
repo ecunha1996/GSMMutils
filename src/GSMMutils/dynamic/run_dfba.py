@@ -54,18 +54,12 @@ def select_random_conditions(conditions, num_to_select, mandatory_strings):
     Returns:
         list: List of selected strings.
     """
-    # Check if the number of mandatory strings exceeds the number to select
     if len(mandatory_strings) > num_to_select:
         raise ValueError("Number of mandatory strings cannot exceed number of strings to select.")
     to_ignore = ["fachet", "Xi", "Yimei"]
     conditions = [e for e in conditions if not any(e.startswith(ignore) for ignore in to_ignore)]
-    # Shuffle the input list of strings randomly
     random.shuffle(conditions)
-
-    # Select the mandatory strings
     selected = mandatory_strings[:]
-
-    # Select the remaining strings randomly
     remaining = num_to_select - len(mandatory_strings)
     selected.extend(random.sample(conditions, remaining))
     return selected
@@ -204,10 +198,9 @@ def generate_all_plots(condition: str, concentrations: DataFrame, experimental: 
     if ("Glycerol" in matrix.matrix[condition].columns and "Starch" in matrix.matrix[condition].columns and "TAG" in
             matrix.matrix[condition].columns):
         plot_concentrations(concentrations, y=["Glycerol", "Starch", "TAG"],
-                        filename=f"{DATA_PATH}/dfba/quotas/intracellular_quotas_{condition}.png",
-                        y_label="Quota (g/gDW)", secondary_axis=["Carotene", "Chlorophyll"],
-                        secondary_y_label="Quota (g/gDW)")
-
+                            filename=f"{DATA_PATH}/dfba/quotas/intracellular_quotas_{condition}.png",
+                            y_label="Quota (g/gDW)", secondary_axis=["Carotene", "Chlorophyll"],
+                            secondary_y_label="Quota (g/gDW)")
 
     # molecules = ["Protein", "Lipid", "Carbohydrate"]
     # if all(molecule in matrix.matrix[condition].columns for molecule in molecules):
@@ -224,7 +217,6 @@ def generate_all_plots(condition: str, concentrations: DataFrame, experimental: 
 def create_dfba_model(condition, parameters, create_plots=False):
     if 'Time (d)' not in matrix.matrix[condition].columns:
         matrix.matrix[condition]['Time (d)'] = matrix.matrix[condition].index
-    fba_model = read_model()
     dfba_model = DfbaModel(fba_model)
     dfba_model.solver_data.set_display("none")
     dfba_model.solver_data.set_algorithm("direct")
@@ -368,6 +360,7 @@ def create_dfba_model(condition, parameters, create_plots=False):
         generate_all_plots(condition, concentrations, experimental, trajectories)
 
     return concentrations, trajectories
+
 
 @timeout(40)
 def create_dfba_model_old(condition, parameters, create_plots=False):
@@ -702,7 +695,7 @@ def callback_f(pbar, x):
     pbar.update(1)
 
 
-def parameter_optimization(custom_parameters: list =None):
+def parameter_optimization(custom_parameters: list = None):
     """
     Runs the parameter optimization.
     Returns
@@ -790,7 +783,7 @@ def generate_trials_plots():
     (experimental_data_carotene, experimental_data_carotene_concentration, experimental_data_chl,
      experimental_data_protein, experimental_data_lipid, experimental_data_carbohydrate, experimental_data_lutein, experimental_data_protein_concentration, experimental_data_carbohydrate_concentration,
      experimental_data_lipid_concentration, sd_carotene, sd_lutein, sd_chl, sd_carotene_concentration, sd_lutein_concentration, sd_chl_concentration,
-     experimental_data_lutein_concentration, data_lutein_conc, data_chl_conc, experimental_data_chl_concentration) = {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {} ,{}
+     experimental_data_lutein_concentration, data_lutein_conc, data_chl_conc, experimental_data_chl_concentration) = {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}
     for condition in matrix.conditions.index:
         if 'Caro' in matrix.matrix[condition].columns and not condition.startswith(
                 "fachet") and not condition.startswith("Xi") and not condition.startswith("Yimei"):
@@ -798,10 +791,10 @@ def generate_trials_plots():
             dry_weight = matrix.matrix[condition]['DW'].dropna().tolist()[-1]
             data_carotene[condition] = temp.iloc[-1]['Carotene']
             data_carotene_conc[condition] = temp.iloc[-1]['Carotene'] * temp.iloc[-1]['Biomass']
-            data_chl_conc[condition] = temp.iloc[-1]['Chlorophyll'] * temp.iloc[-1]['Biomass']
+            # data_chl_conc[condition] = temp.iloc[-1]['Chlorophyll'] * temp.iloc[-1]['Biomass']
             data_lutein_conc[condition] = temp.iloc[-1]['Lutein'] * temp.iloc[-1]['Biomass']
             data_lutein[condition] = temp.iloc[-1]['Lutein']
-            data_chl[condition] = temp.iloc[-1]['Chlorophyll']
+            # data_chl[condition] = temp.iloc[-1]['Chlorophyll']
             data_protein[condition] = temp.iloc[-1]['Protein']
             data_protein_conc[condition] = temp.iloc[-1]['Protein'] * temp.iloc[-1]['Biomass']
             data_lipid[condition] = temp.iloc[-1]['Lipid']
@@ -811,15 +804,15 @@ def generate_trials_plots():
             experimental_data_carotene[condition] = matrix.matrix[condition]['Caro'].dropna().tolist()[-1]
             experimental_data_lutein[condition] = matrix.matrix[condition]['Lutein'].dropna().tolist()[-1]
             experimental_data_carotene_concentration[condition] = matrix.matrix[condition]['Caro'].dropna().tolist()[-1] * dry_weight
-            experimental_data_chl[condition] = matrix.matrix[condition]['Chl'].dropna().tolist()[-1]
-            experimental_data_chl_concentration[condition] = matrix.matrix[condition]['Chl'].dropna().tolist()[-1] * dry_weight
+            # experimental_data_chl[condition] = matrix.matrix[condition]['Chl'].dropna().tolist()[-1]
+            # experimental_data_chl_concentration[condition] = matrix.matrix[condition]['Chl'].dropna().tolist()[-1] * dry_weight
             experimental_data_lutein_concentration[condition] = matrix.matrix[condition]['Lutein'].dropna().tolist()[-1] * dry_weight
             sd_carotene_concentration[condition] = matrix.matrix[condition]['Caro_c_sd'].dropna().tolist()[-1]
             sd_lutein_concentration[condition] = matrix.matrix[condition]['Lutein_c_sd'].dropna().tolist()[-1]
-            sd_chl_concentration[condition] = matrix.matrix[condition]['Chl_c_sd'].dropna().tolist()[-1]
+            # sd_chl_concentration[condition] = matrix.matrix[condition]['Chl_c_sd'].dropna().tolist()[-1]
             sd_carotene[condition] = matrix.matrix[condition]['Caro_sd'].dropna().tolist()[-1]
             sd_lutein[condition] = matrix.matrix[condition]['Lutein_sd'].dropna().tolist()[-1]
-            sd_chl[condition] = matrix.matrix[condition]['Chl_sd'].dropna().tolist()[-1]
+            # sd_chl[condition] = matrix.matrix[condition]['Chl_sd'].dropna().tolist()[-1]
 
             data_protein[condition] = temp.iloc[-1]['Protein']
             data_lipid[condition] = temp.iloc[-1]['Lipid']
@@ -839,8 +832,8 @@ def generate_trials_plots():
     generate_plot_for_data(f"{DATA_PATH}/dfba/pigments/carotene_concentration_in_house.png", experimental_data_carotene_concentration, data_carotene_conc, sd_carotene_concentration, r"$\beta$-Carotene (g/L)")
     generate_plot_for_data(f"{DATA_PATH}/dfba/pigments/lutein_in_house.png", experimental_data_lutein, data_lutein, sd_lutein, r"Lutein (g/gDW)")
     generate_plot_for_data(f"{DATA_PATH}/dfba/pigments/lutein_concentration_in_house.png", experimental_data_lutein_concentration, data_lutein_conc, sd_lutein_concentration, r"Lutein (g/L)")
-    generate_plot_for_data(f"{DATA_PATH}/dfba/pigments/chl_in_house.png", experimental_data_chl, data_chl, sd_chl, r"Chlorophyll (g/gDW)")
-    generate_plot_for_data(f"{DATA_PATH}/dfba/pigments/chl_concentration_in_house.png", experimental_data_chl_concentration, data_chl_conc, sd_chl_concentration, r"Chlorophyll (g/L)")
+    # generate_plot_for_data(f"{DATA_PATH}/dfba/pigments/chl_in_house.png", experimental_data_chl, data_chl, sd_chl, r"Chlorophyll (g/gDW)")
+    # generate_plot_for_data(f"{DATA_PATH}/dfba/pigments/chl_concentration_in_house.png", experimental_data_chl_concentration, data_chl_conc, sd_chl_concentration, r"Chlorophyll (g/L)")
 
     generate_plot_for_data(f"{DATA_PATH}/dfba/macros/protein_in_house.png", experimental_data_protein, data_protein, {}, r"Protein (g/gDW)")
     generate_plot_for_data(f"{DATA_PATH}/dfba/macros/protein_concentration_in_house.png", experimental_data_protein_concentration, data_protein_conc, {}, r"Protein (g/L)")
@@ -859,16 +852,16 @@ def generate_trials_plots():
     plt.ylabel("Phosphate quota")
     plt.savefig(f"{DATA_PATH}/dfba/phosphate_quotas.png", dpi=300)
 
-    plt.clf()
-    plt.figure(figsize=(10, 10))
-    for condition in matrix.conditions.index:
-        if not condition.startswith("fachet") and not condition.startswith("Xi") and not condition.startswith("Yimei"):
-            trajectory = pd.read_csv(f"{DATA_PATH}/dfba/concentrations/concentrations_{condition}.csv")
-            plt.plot(trajectory['Chlorophyll'], label=condition)
-    plt.legend()
-    plt.xlabel("Time (h)")
-    plt.ylabel("Chlorophyll (g/gDW)")
-    plt.savefig(f"{DATA_PATH}/dfba/Chlorophyll_over_time.png", dpi=300)
+    # plt.clf()
+    # plt.figure(figsize=(10, 10))
+    # for condition in matrix.conditions.index:
+    #     if not condition.startswith("fachet") and not condition.startswith("Xi") and not condition.startswith("Yimei"):
+    #         trajectory = pd.read_csv(f"{DATA_PATH}/dfba/concentrations/concentrations_{condition}.csv")
+    #         plt.plot(trajectory['Chlorophyll'], label=condition)
+    # plt.legend()
+    # plt.xlabel("Time (h)")
+    # plt.ylabel("Chlorophyll (g/gDW)")
+    # plt.savefig(f"{DATA_PATH}/dfba/Chlorophyll_over_time.png", dpi=300)
 
 
 def run_all_parallel(initial_parameters=None):
@@ -927,7 +920,35 @@ def run_all():
 
 
 if __name__ == '__main__':
-    parameter_optimization()
-    # parameter_optimization(["ymax", "Esat", "KEchl", "Kaeration", "light_conversion_factor"])
+    # parameter_optimization()
+    parameter_optimization(['ExA',
+                            'KNm',
+                            'KPm',
+                            'K_nitrogen_quota',
+                            'VNmax',
+                            'VPmax',
+                            'a0',
+                            'a0_lut',
+                            'a1',
+                            'a1_lut',
+                            'a2',
+                            'a3',
+                            'a3_lut',
+                            'a4',
+                            'a4_lut',
+                            'l',
+                            'light_conversion_factor',
+                            'ro0',
+                            'ro1',
+                            'smoothing_factor',
+                            'smoothing_factor_lut',
+                            'v_car_max',
+                            'v_lut_max',
+                            'v_nitrate_max',
+                            'v_polyphosphate_max',
+                            'wNmax',
+                            'wNmin',
+                            'wPmin',
+                            'wPopt'])
     # run_all()
     # run_all_parallel()
