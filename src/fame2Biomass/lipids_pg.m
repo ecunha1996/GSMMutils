@@ -1,4 +1,4 @@
-function return_val = lipids_pg(lipidClass)
+function return_val = lipids_pg(lipidClass, b)
 
 
 metmat = double(load('pg_metmat.mat').metmat);
@@ -22,7 +22,7 @@ metmat = double(load('pg_metmat.mat').metmat);
 % 1,0,0,1,0,0,0,1,0,1,1,0,0,0,1,0,1,1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,2,0,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1,0,0,0,0,0,1;
 %     ];
 
-b = 2*[0.5, 0.0501, 0.2317, 0.2825, 0.0745, 0.0305, 0.0805, 0.1091, 0.0281, 0.1129]';
+%b = 2*[0.5, 0.0501, 0.2317, 0.2825, 0.0745, 0.0305, 0.0805, 0.1091, 0.0281, 0.1129]';
 
 [nExp, nMets] = size(metmat);
 

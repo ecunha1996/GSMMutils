@@ -512,6 +512,8 @@ class MyModel(Model):
         -------
 
         """
+        if reaction.startswith("R_"):
+            reaction = reaction.replace("R_", "")
 
         old_objective = self.objective
         precursors = self.get_reactants(reaction)

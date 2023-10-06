@@ -611,7 +611,7 @@ def evaluate_trial(parameters, create_plots=False, condition=None):
         #           "Chlorophyll_concentration": "Chlorophyll_concentration", "Carotene_concentration": "Caro_concentration"
         #           }  #
         to_fit = {
-            "Biomass": "DW",
+            # "Biomass": "DW",
             # 'Lipid': 'Lipid', 'Protein': 'Protein', 'Carbohydrate': 'Carbohydrate',
             "Carotene": "Caro",
             # "Chlorophyll": "Chl",
@@ -709,7 +709,7 @@ def parameter_optimization(custom_parameters: list = None):
     method = 'Nelder-Mead'
 
     bounds_ordered_dict = OrderedDict(json.load(open(f"{DATA_PATH}/dfba/inputs/parameters_bounds.json", "r")))
-
+    bounds_ordered_dict = OrderedDict({key: bounds_ordered_dict[key] for key in initial_parameters.keys()})
     conditions_names = set(matrix.matrix.keys()) - {"Resume"}
     validation = select_random_conditions(list(conditions_names), 5, ['fachet_HLND', "Yimei_HL"])
     conditions_names = tuple(conditions_names - set(validation) - {e for e in conditions_names if
@@ -724,7 +724,7 @@ def parameter_optimization(custom_parameters: list = None):
             f.write(f"{e}\n")
         f.write(f"Initial error was: {initial_error}")
     shutil.make_archive(f'{DATA_PATH}/dfba', 'zip', f'{DATA_PATH}/dfba')
-    max_iterations = 1000
+    max_iterations = 100
 
     if custom_parameters:
         initial_parameters = {key: initial_parameters[key] for key in custom_parameters}
@@ -949,6 +949,7 @@ if __name__ == '__main__':
                             'wNmax',
                             'wNmin',
                             'wPmin',
-                            'wPopt'])
+                            'wPopt',
+                            'Kaeration'])
     # run_all()
     # run_all_parallel()
