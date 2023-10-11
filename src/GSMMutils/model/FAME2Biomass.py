@@ -34,8 +34,8 @@ def load_results():
     model_compound_total = {}
     counter = 0
     for row in results.itertuples():
-        chain_1 = chains_map[row.lipid.split('__')[1]].replace(':','').split("(")[0]
-        chain_2 = chains_map[row.lipid.split('__')[2]].replace(':','').split("(")[0]
+        chain_1 = chains_map[row.lipid.split('__')[1]].replace(':', '').split("(")[0]
+        chain_2 = chains_map[row.lipid.split('__')[2]].replace(':', '').split("(")[0]
         model_compound = {}
         model_compound["external_identifier"] = f"dghs{chain_1}{chain_2}"
         model_compound["name"] = f"Diacylglycerolhomoserine ({chains_map[row.lipid.split('__')[1]]}:{chains_map[row.lipid.split('__')[2]]})"
@@ -253,11 +253,11 @@ def parse_2fa_lipid(lipid_abb, model, compartment_id="C_00003", parent_reaction=
         met_mat, faas = get_metmat_tag(final_map, set_of_names, chains_map)
     else:
         met_mat, faas, as_df = get_metmat(final_map, set_of_names, chains_map)
-    if lipid_abb == "DAG":
-        set_of_names = list(set_of_names) + ['DAG__18_3__18_1__chlo', 'DAG__18_3v2__16_0__chlo',
-                                             'DAG__18_3__16_0__chlo', 'DAG__18_2__18_1__chlo',
-                                             'DAG__18_2__16_0__chlo', 'DAG__18_1__18_1__chlo',
-                                             'DAG__18_1__16_0__chlo']
+    # if lipid_abb == "DAG":
+    #     set_of_names = list(set_of_names) + ['DAG__18_3__18_1__chlo', 'DAG__18_3v2__16_0__chlo',
+    #                                          'DAG__18_3__16_0__chlo', 'DAG__18_2__18_1__chlo',
+    #                                          'DAG__18_2__16_0__chlo', 'DAG__18_1__18_1__chlo',
+    #                                          'DAG__18_1__16_0__chlo']
     # print(f'lipidClass = {set_of_names};')
     i = 0
     chlo_matrix = [[1, 1, 1, 1, 1, 1, 1], [0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0],
@@ -276,10 +276,10 @@ def parse_2fa_lipid(lipid_abb, model, compartment_id="C_00003", parent_reaction=
 
     for row in met_mat:
         if not all(e == 0 for e in row):
-            if lipid_abb == "DAG":
-                temp_row = row + chlo_matrix[i]
-            else:
-                temp_row = row
+            # if lipid_abb == "DAG":
+            #     temp_row = row + chlo_matrix[i]
+            # else:
+            temp_row = row
             final_met_mat.append(temp_row)
             # print(','.join (str(e) for e in temp_row) + ";")
             i += 1
@@ -322,7 +322,7 @@ class FAME2Biomass:
         lipid_results = normalize_to_one(lipid_results)
         lipid_results.to_csv(f"{lipid}_normalized.tsv", sep="\t")
         as_dict = lipid_results.to_dict(orient='index')
-        compartment = 14 if lipid.upper() != "TAG" else 57
+        compartment = 46 if lipid.upper() != "TAG" else 57
         if lipid.upper() in ("PG", "MGDG", "DGDG", "SQDG"):
             compartment = 13
         for key, value in as_dict.items():
@@ -363,17 +363,14 @@ class FAME2Biomass:
         # function_name(list(lipid_class), b_vector)
         eng.fame2model(list(lipid_class), lipid_abb.lower(), b_vector)
         os.chdir(self.data_directory)
-        reactions_ids_map = {"PG": 53014, "PE": 36207, "PI": 35940, "PC": 47440, "MGDG": 35956, "DGDG": 35957,
-                             "SQDG": 35962, "DGTS": 35955, "DAG": 36091, "TAG": 52720}
+        reactions_ids_map = {"PG": 53014, "PE": 53273, "PI": 53292, "PC": 47440, "MGDG": 35956, "DGDG": 35957,
+                             "SQDG": 35962, "DGTS": 35955, "DAG": 53297, "TAG": 52720}
         lipid_results = pd.read_csv(rf"{DATA_PATH}\fame2biomass\{self.model.id}\{lipid_abb.lower()}_opt_results.tsv", sep="\t", index_col=0, header=None).astype(float)
         print(lipid_results.head())
         lipid_results.columns = ["value"]
         lipid_results = normalize_to_one(lipid_results)
         lipid_results.to_csv(rf"{DATA_PATH}\fame2biomass\{self.model.id}\{lipid_abb.lower()}_normalized.tsv", sep="\t", header=None)
-        # self.parse_results_to_merlin(final_map_rev, reactions_ids_map[lipid_abb], lipid=lipid_abb.lower())
-
-
-
+        self.parse_results_to_merlin(final_map_rev, reactions_ids_map[lipid_abb], lipid=lipid_abb.lower())
 
     def batch_run(self, lipid_compartments_map, abb_compartment_id_map):
         for lipid, compartment in lipid_compartments_map.items():

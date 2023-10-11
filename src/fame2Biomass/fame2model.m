@@ -29,8 +29,7 @@ const = "C:\Users\Bisbii\PythonProjects\GSMMutils\data\fame2biomass\model_ngadit
 jsonStr = fileread(const);
 data = jsondecode(jsonStr);
 fieldNames = fieldnames(data);
-disp(mdl2);
-disp(fieldNames);
+
 for i = 1:numel(fieldNames)
     fieldName = fieldNames{i};
     fieldValue = data.(fieldName);
@@ -49,14 +48,14 @@ end
 q = [1./b; 1./b];
 mdl2.obj = [zeros(nMets,1); q];
 
-error = 0.1;
+error = 0.2;
 mdl2.sense = '=';
 % Constrain the errors based on known experimental error/noise
 % x must sum to 1
 mdl2.lb( [nMets+1, nMets+nExp+1]) = 0;
 mdl2.ub( [nMets+1, nMets+nExp+1]) = 0;
 %
-relErrStoich = 0.05; %allow 5% deviation from sum of x
+relErrStoich = 0.1; %allow 5% deviation from sum of x
 relErrFA = b(2:end);
 relErrFA = (relErrFA.*error);% adds the error from the error argument
 relErr = [relErrStoich;relErrFA];
