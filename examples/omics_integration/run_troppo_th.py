@@ -18,7 +18,7 @@ UPTAKE_DRAINS = {'f2 medium': {"EX_C00014__dra", "EX_C00059__dra", "EX_C01330__d
                                }}
 params['uptake_drains'] = UPTAKE_DRAINS
 MODEL_PATH = rf"{DATA_PATH}/models/model_with_trials.xml"
-CONSISTENT_MODEL_PATH = rf"{DATA_PATH}/models/consistent_model.xml"
+CONSISTENT_MODEL_PATH = rf"{DATA_PATH}/models/consistent_model_v2.xml"
 OMICS_DATA_PATH = rf"{DATA_PATH}/omics/raw_data_light.txt"
 TROPPO_RESULTS_PATH = f"{DATA_PATH}/omics/{params['DATASET']}"
 MODEL_RESULTS_PATH = f"{DATA_PATH}/omics/{params['DATASET']}"

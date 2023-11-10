@@ -24,13 +24,13 @@ class ModelValidator:
         mass_balance = {}
         for reaction in self.model.reactions:
             balance = reaction.check_mass_balance()
-            if (reaction.check_mass_balance() and "EX_" not in reaction.id and not
-                any([round(value, 5) != 0 for value in balance.values()])
+            if (reaction.check_mass_balance() and "EX_" not in reaction.id and any([round(value, 5) != 0 for value in balance.values()])
                     and "DM_" not in reaction.id):
                 if show_biomass_reactions and str(reaction.id).startswith("e_"):
                     mass_balance[str(reaction.id)] = reaction.check_mass_balance()
                 else:
-                    mass_balance[str(reaction.id)] = reaction.check_mass_balance()
+                    if not str(reaction.id).startswith("e_"):
+                        mass_balance[str(reaction.id)] = reaction.check_mass_balance()
         if mass_balance:
             print("Mass balance: NOT OK")
             for key in mass_balance:
@@ -151,13 +151,17 @@ class ModelValidator:
                         if (reaction.reactants == second_reaction.reactants
                                 and reaction.products == second_reaction.products):
                             string_message = f"Reactions {reaction.id} and {second_reaction.id} are equal!"
-                            if string_message not in already_printed:
+                            sorted_string_message = " ".join(sorted(string_message.split()))
+                            if sorted_string_message not in already_printed:
+                                already_printed.append(sorted_string_message)
                                 print(string_message)
                             inconsistency = True
                         if (reaction.reactants == second_reaction.products and
                                 reaction.products == second_reaction.reactants):
                             string_message = f"Reactions {reaction.id} and {second_reaction.id} are equal!"
-                            if string_message not in already_printed:
+                            sorted_string_message = " ".join(sorted(string_message.split()))
+                            if sorted_string_message not in already_printed:
+                                already_printed.append(sorted_string_message)
                                 print(string_message)
                             inconsistency = True
         if not inconsistency:

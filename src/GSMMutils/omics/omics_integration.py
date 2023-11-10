@@ -7,9 +7,12 @@ import numpy as np
 import pandas as pd
 # from bioinfokit.analys import norm
 from cobra.flux_analysis import flux_variability_analysis as fva
-# from mewpy.omics import ExpressionSet, eFlux, GIMME, iMAT
+from cobra.io import write_sbml_model
+from mewpy.omics import ExpressionSet
+from mewpy.omics import ExpressionSet, eFlux, GIMME, iMAT
 from mewpy.simulation import get_simulator
 
+from GSMMutils import DATA_PATH
 from GSMMutils.bio.genes import Genes
 from GSMMutils.graphics.plot import clustermap
 from GSMMutils.io import read_csv
@@ -134,7 +137,7 @@ class OmicsIntegration:
     def sum_tech_reps(self):
         for group in self.groups:
             idx = self.counts.columns.str.startswith(group)
-            self.counts[group] = self.counts.iloc[:, idx].sum(axis=1)
+            self.counts.loc[:, group] = self.counts.iloc[:, idx].sum(axis=1).values
         to_remove = [col for col in self.counts.columns if col not in self.groups]
         self.counts.drop(to_remove, axis=1, inplace=True)
 
@@ -153,7 +156,11 @@ class OmicsIntegration:
                 set_expression = ExpressionSet(self.genes.genes_ids, [sample], expression)
                 method_callable = self.get_method(method)
                 try:
-                    result = method_callable(self.model, expr=set_expression, condition=sample, **kwargs)
+                    if 'build_model' in kwargs and kwargs['build_model']:
+                        res_sim, result = method_callable(self.model, expr=set_expression, condition=sample, **kwargs)
+                        write_sbml_model(result.model, join(kwargs['data_path'], f"{sample}/Dsalina_{sample}_{method.lower()}.xml"))
+                    else:
+                        result = method_callable(self.model, expr=set_expression, condition=sample, **kwargs)
                     self.specific_models[method][sample] = result
                     if method == "eFlux":
                         constraints = {}

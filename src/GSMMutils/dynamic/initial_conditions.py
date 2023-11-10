@@ -8,7 +8,7 @@ def get_initial_conditions(matrix, conditions):
         # "Starch": 0.05,
         # "Starch_concentration": 0.05 * matrix.matrix[conditions]["DW"][0],
         "Nitrogen_quota": 5.15,
-        "Phosphate_quota": 0.24,
+        "Phosphate_quota": 0.28,
         "Carotene": matrix.matrix["Resume"]["caro0"].loc[conditions],
         "Lutein": matrix.matrix["Resume"]["lut0"].loc[conditions],
         # "Chlorophyll": 0.002, #matrix.matrix["Resume"]["chl0"].loc[conditions],

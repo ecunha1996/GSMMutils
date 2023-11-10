@@ -23,7 +23,7 @@ def paint_KEGG_pathway(reaction_ids, pathway_name, model):
     pathway_id = search_pathway_map_id(pathway_name)
     # url = f"https://www.kegg.jp/pathway/{pathway_id}"
     if pathway_id:
-        url = f"https://www.kegg.jp/kegg-bin/show_pathway?{pathway_id}/"
+        url = f"https://www.kegg.jp/kegg-bin/show_pathway?map={pathway_id}&multi_query="
         for reaction, info in reaction_ids.iterrows():
             reaction_id = None
             if not reaction.startswith("R"):
@@ -31,9 +31,9 @@ def paint_KEGG_pathway(reaction_ids, pathway_name, model):
                     reaction_id = model.reactions.get_by_id(reaction).annotation["ec-code"]
                     if type(reaction_id) == list:
                         if info['FC'] > 0:
-                            reaction_id = color_from_fc(info['FC'], '%09,green/'.join(reaction_id))
+                            reaction_id = color_from_fc(info['FC'], '%20green%0A'.join(reaction_id))
                         else:
-                            reaction_id = color_from_fc(info['FC'], '%09,red/"'.join(reaction_id))
+                            reaction_id = color_from_fc(info['FC'], '%20red%0A"'.join(reaction_id))
                     else:
                         reaction_id = color_from_fc(info['FC'], reaction_id)
                 else:
@@ -47,9 +47,9 @@ def paint_KEGG_pathway(reaction_ids, pathway_name, model):
 
 def color_from_fc(fc, reaction_id):
     if fc > 0:
-        return reaction_id + "%09,green/"
+        return reaction_id + "%20green%0A"
     else:
-        return reaction_id + "%09,red/"
+        return reaction_id + "%20red%0A"
 
 
 def get_reactions_pathway_map():
@@ -70,13 +70,14 @@ if __name__ == '__main__':
     data = load_data([
         r"C:\Users\Bisbii\PythonProjects\GSMMutils\data\omics\nacl_fastcore_results.csv",
         r"C:\Users\Bisbii\PythonProjects\GSMMutils\data\omics\nacl_gimme_results.csv",
-        r"C:\Users\Bisbii\PythonProjects\GSMMutils\data\omics\h2o2_fastcore_results.csv",
-        r"C:\Users\Bisbii\PythonProjects\GSMMutils\data\omics\h2o2_gimme_results.csv",
-        r"C:\Users\Bisbii\PythonProjects\GSMMutils\data\omics\ml_ll_results.csv",
-        r"C:\Users\Bisbii\PythonProjects\GSMMutils\data\omics\hl_ml_results.csv",
-        r"C:\Users\Bisbii\PythonProjects\GSMMutils\data\omics\hl_ll_results.csv"
+        #r"C:\Users\Bisbii\PythonProjects\GSMMutils\data\omics\h2o2_fastcore_results.csv",
+        #r"C:\Users\Bisbii\PythonProjects\GSMMutils\data\omics\h2o2_gimme_results.csv",
+        # r"C:\Users\Bisbii\PythonProjects\GSMMutils\data\omics\ml_ll_results.csv",
+        # r"C:\Users\Bisbii\PythonProjects\GSMMutils\data\omics\hl_ml_results.csv",
+        # r"C:\Users\Bisbii\PythonProjects\GSMMutils\data\omics\hl_ll_results.csv"
     ])
     reactions_pathways_map, pathways_reactions_map, model = get_reactions_pathway_map()
     for key in data.keys():
         for pathway in data[key][1].Pathways.tolist():
-            get_der_by_pathway(pathway, pathways_reactions_map, data[key][0], model)
+            if pathway != "Fatty acid metabolism":
+                get_der_by_pathway(pathway, pathways_reactions_map, data[key][0], model)

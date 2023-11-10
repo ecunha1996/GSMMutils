@@ -179,12 +179,12 @@ def get_biomass_mass(model, biomass_reaction=None):
     def parse_lipids(current_biomass_reaction, current_element_counter):
         current_counter = 0
         lipid_stoichiometry = abs(current_biomass_reaction.metabolites[model.metabolites.e_Lipid__cytop])
-        lipids_reaction = model.reactions.e_Lipid_no_tag__cytop
-        lipid_subreactions = [# model.reactions.e_TAG__lip,
-            model.reactions.e_DAG__er, model.reactions.e_DGTS__er, model.reactions.e_PE__er, model.reactions.e_PC__er,
-            model.reactions.e_PI__er, model.reactions.e_PG__chlo, model.reactions.e_DGDG__chlo,
-            model.reactions.e_SQDG__chlo, model.reactions.e_MGDG__chlo, model.reactions.e_CL__mito,
-            model.reactions.e_FFA__cytop]
+        lipids_reaction = model.reactions.e_Lipid__cytop
+        lipid_subreactions = [model.reactions.e_TAG__lip,
+                              model.reactions.e_DAG__er, model.reactions.e_DGTS__er, model.reactions.e_PE__cytop, model.reactions.e_PC__cytop,
+                              model.reactions.e_PI__er, model.reactions.e_PG__chlo, model.reactions.e_DGDG__chlo,
+                              model.reactions.e_SQDG__chlo, model.reactions.e_MGDG__chlo, model.reactions.e_CL__mito,
+                              model.reactions.e_FFA__cytop]
         for reaction in lipid_subreactions:
             for reactant in reaction.reactants:
                 current_counter += abs(reaction.metabolites[reactant] * reactant.formula_weight * lipids_reaction.metabolites[

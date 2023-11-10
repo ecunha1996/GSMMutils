@@ -39,7 +39,7 @@ warnings.filterwarnings("ignore")
 
 os.chdir("/home/")
 
-matrix = ExpMatrix(f"{DATA_PATH}/experimental/Matriz- DCCR Dunaliella salina_dfba.xlsx", conditions="Resume")
+matrix = ExpMatrix(f"{DATA_PATH}/experimental/Matriz- DCCR Dunaliella salina_dfba_old.xlsx", conditions="Resume")
 
 
 def select_random_conditions(conditions, num_to_select, mandatory_strings):
@@ -84,7 +84,8 @@ def read_model() -> MyModel:
         # "DM_C05306__chlo": 1, "DM_C05307__chlo": 1,
         "DM_C08601__chlo": 1, "DM_C02094__chlo": 1,
         # "DM_C00116__cytop": 1, "DM_C00422__lip": 1,
-        "EX_C00244__dra": -1, "EX_C00009__dra": -1
+        "EX_C00244__dra": -1, "EX_C00009__dra": -1,
+        # "DM_C00244__cytop": -1
     }
     for reaction_id, value in objectives.items():
         stoichiometric_model.reactions.get_by_id(reaction_id).objective_coefficient = value
@@ -274,8 +275,7 @@ def create_dfba_model(condition, parameters, create_plots=False):
     """
     dfba_model.add_exchange_flux_lb("EX_C00244__dra", get_bounds("nitrate", parameters), parameters["nitrate"])  # 4.07
     #     nitrate_quota = sp.Max(0, 1 - (4.8697 * F / X) / n_quota)
-    dfba_model.add_exchange_flux_lb("DM_C00244__cytop", sp.Max(0, parameters["v_nitrate_max"] * (
-            1 - parameters['wNmin'] / parameters["n_quota"])), parameters["nitrate"])
+    dfba_model.add_exchange_flux_lb("DM_C00244__cytop", get_bounds("internal_nitrate", parameters))
 
     """
     HPO4
@@ -724,7 +724,7 @@ def parameter_optimization(custom_parameters: list = None):
             f.write(f"{e}\n")
         f.write(f"Initial error was: {initial_error}")
     shutil.make_archive(f'{DATA_PATH}/dfba', 'zip', f'{DATA_PATH}/dfba')
-    max_iterations = 100
+    max_iterations = 1000
 
     if custom_parameters:
         initial_parameters = {key: initial_parameters[key] for key in custom_parameters}
@@ -852,6 +852,16 @@ def generate_trials_plots():
     plt.ylabel("Phosphate quota")
     plt.savefig(f"{DATA_PATH}/dfba/phosphate_quotas.png", dpi=300)
 
+    plt.figure(figsize=(10, 10))
+    for condition in matrix.conditions.index:
+        if not condition.startswith("fachet") and not condition.startswith("Xi") and not condition.startswith("Yimei"):
+            trajectory = pd.read_csv(f"{DATA_PATH}/dfba/concentrations/concentrations_{condition}.csv")
+            plt.plot(trajectory['Nitrogen_quota'], label=condition)
+    plt.legend()
+    plt.xlabel("Time (h)")
+    plt.ylabel("Nitrogen quota")
+    plt.savefig(f"{DATA_PATH}/dfba/nitrogen_quotas.png", dpi=300)
+
     # plt.clf()
     # plt.figure(figsize=(10, 10))
     # for condition in matrix.conditions.index:
@@ -906,10 +916,6 @@ def run_all():
     """
     initial_parameters = json.load(open(f"{DATA_PATH}/dfba/inputs/initial_parameters.json", "r"))
 
-    # model = read_model()
-    # matrix = ExpMatrix(f"{DATA_PATH}/experimental/Matriz- DCCR Dunaliella salina_dfba.xlsx")
-    # matrix.conditions = "Resume"
-
     conditions_names = tuple(set(matrix.matrix.keys()) - {"Resume"})
 
     with tqdm(total=len(conditions_names), desc="Running initial conditions") as pbar:
@@ -921,35 +927,34 @@ def run_all():
 
 if __name__ == '__main__':
     # parameter_optimization()
-    parameter_optimization(['ExA',
-                            'KNm',
-                            'KPm',
-                            'K_nitrogen_quota',
-                            'VNmax',
-                            'VPmax',
-                            'a0',
-                            'a0_lut',
-                            'a1',
-                            'a1_lut',
-                            'a2',
-                            'a3',
-                            'a3_lut',
-                            'a4',
-                            'a4_lut',
-                            'l',
-                            'light_conversion_factor',
-                            'ro0',
-                            'ro1',
-                            'smoothing_factor',
-                            'smoothing_factor_lut',
-                            'v_car_max',
-                            'v_lut_max',
-                            'v_nitrate_max',
-                            'v_polyphosphate_max',
-                            'wNmax',
-                            'wNmin',
-                            'wPmin',
-                            'wPopt',
-                            'Kaeration'])
+    # parameter_optimization(['ExA',
+    #                         'KNm',
+    #                         'KPm',
+    #                         'K_nitrogen_quota',
+    #                         'VNmax',
+    #                         'VPmax',
+    #                         'a0',
+    #                         'a0_lut',
+    #                         'a1',
+    #                         'a1_lut',
+    #                         'a3',
+    #                         'a3_lut',
+    #                         'l',
+    #                         'light_conversion_factor',
+    #                         'ro0',
+    #                         'ro1',
+    #                         'smoothing_factor',
+    #                         'smoothing_factor_lut',
+    #                         'v_car_max',
+    #                         'v_lut_max',
+    #                         'v_nitrate_max',
+    #                         'v_polyphosphate_max',
+    #                         'wNmax',
+    #                         'wNmin',
+    #                         'wPmin',
+    #                         'wPopt',
+    #                         'Kaeration',
+    #                         'lutein_aeration_exponent',
+    #                         'carotene_aeration_exponent'])
     # run_all()
-    # run_all_parallel()
+    run_all_parallel()

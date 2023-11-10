@@ -12,7 +12,6 @@ from GSMMutils.graphics.plot import boxplot, qqplot
 from GSMMutils.stats.stats import StatisticalAnalysis
 
 def stats(matrix):
-    matrix.conditions = "Resume"
     matrix.conditions = matrix.conditions.rename({"[N] mmol": "N", "[P] mmol": "P", "Salinity g/L": "salinity", "Aeration rate": "aeration", 'growth_rate': 'umax', 'Productivity (g/L.h)': 'Pmax', 'Biomass (gDW/L)': 'biomass'}, axis=1)
     boxplot(matrix.conditions, x_cols=['P', 'N', 'salinity', 'aeration'], y_cols=['Pmax'], to_show=True, x_labels={'P': 'P (mM)', 'N': 'N (mM)', 'salinity': 'NaCl $(g \cdot L^{-1})$', 'aeration': 'aeration rate'}
                             , y_labels={'Pmax': 'Pmax $(g \cdot L^{-1} \cdot d^{-1})$'})
@@ -30,9 +29,10 @@ def stats(matrix):
 
 if __name__ == '__main__':
     biomass = Biomass("e_Biomass__cytop", f"{DATA_PATH}/experimental/Biomass_exp_composition.xlsx")
-    matrix = ExpMatrix(f"{DATA_PATH}/experimental/Matriz- DCCR Dunaliella salina_new.xlsx")
+    matrix = ExpMatrix(f"{DATA_PATH}/experimental/Matriz- DCCR Dunaliella salina_dfba_new.xlsx")
     matrix.conditions = "Resume"
     matrix.conditions = matrix.conditions.rename({"[N] mmol": "N", "[P] mmol": "P", "Salinity g/L": "salinity", "Aeration rate": "aeration", 'growth_rate': 'umax', 'Productivity (g/L.h)': 'Pmax', 'Biomass (gDW/L)': 'biomass'}, axis=1)
+    matrix.conditions = matrix.conditions.loc[~matrix.conditions.index.str.startswith('Xi') & ~matrix.conditions.index.str.startswith('fachet') & ~matrix.conditions.index.str.startswith('Yimei')]
     stats(matrix)
     m = pd.concat([biomass.biomass_matrix['macromolecules'], matrix.conditions[["N", "P", "salinity", "aeration"]]], axis=1)
     m = m.dropna()

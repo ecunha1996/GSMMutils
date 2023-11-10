@@ -11,6 +11,7 @@ from statsmodels.stats import multitest
 from GSMMutils.model.COBRAmodel import MyModel
 from GSMMutils import DATA_PATH
 import logging
+
 logging.getLogger('cobra.io').setLevel(logging.CRITICAL)
 
 
@@ -141,9 +142,6 @@ def kstest(samples_control: pd.DataFrame, samples_condition: pd.DataFrame, datas
             if data_1_mean < 0 and data_2_mean < 0:
                 foldc = -foldc
 
-            # if (data_1_mean < 0 < data_2_mean) or (data_1_mean > 0 > data_2_mean):
-            #     print()
-
             pvals.append(pval)
             rxnid.append(rxn)
             fc.append(foldc)
@@ -156,7 +154,11 @@ def kstest(samples_control: pd.DataFrame, samples_condition: pd.DataFrame, datas
     data_mwu['Padj'] = padj
     data_mwu['Reject'] = reject
     data_mwu['FC'] = fc
-    data_sig_fc = data_mwu.loc[(abs(data_mwu['FC']) > 0.33) & (data_mwu['Padj'] < 0.05), :]
+
+    data_mwu.to_csv(f"{dataset_name}_all_results.tsv", sep="\t")
+
+    data_sig_fc = data_mwu.loc[(abs(data_mwu['FC']) >= 0.33) & (data_mwu['Padj'] <= 0.05), :]
+    data_sig_fc.to_csv(f"{dataset_name}_temp_results.tsv", sep="\t")
 
     rxns1 = set(samples_condition.columns)
     rxns2 = set(samples_control.columns)
@@ -164,9 +166,9 @@ def kstest(samples_control: pd.DataFrame, samples_condition: pd.DataFrame, datas
     rxn_in1 = rxns1.difference(rxns2)
     rxn_in2 = rxns2.difference(rxns1)
 
-    sigs = Parallel(n_jobs=8)(delayed(bootstrap_ci)(samples_condition[rx]) for rx in rxn_in1)
+    sigs = Parallel(n_jobs=os.cpu_count() - 2)(delayed(bootstrap_ci)(samples_condition[rx]) for rx in rxn_in1)
     act = [sigs[i][0] for i in range(len(sigs)) if sigs[i][1] == 1]
-    sigs2 = Parallel(n_jobs=8)(delayed(bootstrap_ci)(samples_control[rx]) for rx in rxn_in2)
+    sigs2 = Parallel(n_jobs=os.cpu_count() - 2)(delayed(bootstrap_ci)(samples_control[rx]) for rx in rxn_in2)
     rep = [sigs2[i][0] for i in range(len(sigs2)) if sigs2[i][1] == 1]
 
     df_abs = pd.DataFrame({'Reaction': act + rep, 'Padj_bootstrap': np.zeros(len(act + rep))})
@@ -297,6 +299,28 @@ def remove_exchanges(dataframe: pd.DataFrame) -> pd.DataFrame:
     return dataframe.drop([col for col in dataframe.columns if col.startswith("EX_") or col.startswith("e_")], axis=1)
 
 
+def remove_reverse_reactions(df: pd.DataFrame) -> pd.DataFrame:
+    """
+    Receives a dataframe with the reaction names in the columns. Removes the reactions that end with 'reverse', and sums its value to the respective reaction ID column
+    Parameters
+    ----------
+    df
+
+    Returns
+    -------
+
+    """
+    for col in df.columns:
+        if col.endswith("reverse"):
+            if df[col].mean() < df[col.replace("_reverse", "")].mean():
+                df[col.replace("_reverse", "")] -= df[col]
+            else:
+                df[col.replace("_reverse", "")] = df[col] - df[col.replace("_reverse", "")]
+            df.drop(columns=[col], inplace=True)
+            df[col.replace("_reverse", "")] = df[col.replace("_reverse", "")].round(6)
+    return df
+
+
 if __name__ == '__main__':
     os.chdir(f"{DATA_PATH}/omics/")
     if not os.path.exists("pathways_map.csv"):
@@ -304,42 +328,82 @@ if __name__ == '__main__':
         model.get_pathway_reactions_map()
         results_dataframe = pd.DataFrame.from_dict(data=model.pathway_reactions_map, orient='index').T
         results_dataframe.to_csv("pathways_map.csv", index=False)
-    filenames = [r"light/HL/Dsalina_HL_Local2_2_4_4_fastcore_t2.xml", r"light/ML/Dsalina_ML_Local2_2_4_4_fastcore_t2.xml", r"light/LL/Dsalina_LL_Local2_2_4_4_fastcore_t2.xml"]
-    Parallel(n_jobs=3)(delayed(achr_sample)(filename, "e_Biomass__cytop") for filename in filenames)
-    hl_samples = pd.read_csv(r"light/HL/Dsalina_HL_Local2_2_4_4_fastcore_t2_ACHR_samples.csv", index_col=0)
-    ml_samples = pd.read_csv(r"light/ML/Dsalina_ML_Local2_2_4_4_fastcore_t2_ACHR_samples.csv", index_col=0)
-    ll_samples = pd.read_csv(r"light/LL/Dsalina_LL_Local2_2_4_4_fastcore_t2_ACHR_samples.csv", index_col=0)
-    hl_samples.drop([col for col in hl_samples.columns if col.startswith("EX_") or col.startswith("e_")], axis=1, inplace=True)
-    ml_samples.drop([col for col in ml_samples.columns if col.startswith("EX_") or col.startswith("e_")], axis=1, inplace=True)
-    ll_samples.drop([col for col in ll_samples.columns if col.startswith("EX_") or col.startswith("e_")], axis=1, inplace=True)
-    hl_ml_results = kstest(hl_samples, ml_samples, "hl_ml")
-    ml_ll_results = kstest(ml_samples, ll_samples, "ml_ll")
-    hl_ll_results = kstest(hl_samples, ll_samples, "hl_ll")
-    pathway_enrichment(hl_ml_results, "hl_ml")
-    pathway_enrichment(ml_ll_results, "ml_ll")
-    pathway_enrichment(hl_ll_results, "hl_ll")
+    filenames = [r"light/HL/Dsalina_HL_Local2_2_4_4_fastcore_t2.xml",
+                 r"light/ML/Dsalina_ML_Local2_2_4_4_fastcore_t2.xml",
+                 r"light/LL/Dsalina_LL_Local2_2_4_4_fastcore_t2.xml",
+                 r"light/HL/Dsalina_hl_gimme.xml",
+                 r"light/ML/Dsalina_ml_gimme.xml",
+                 r"light/LL/Dsalina_ll_gimme.xml",
+                 r"nacl_h2o2_sorb/control/Dsalina_control_gimme.xml",
+                 r"nacl_h2o2_sorb/nacl/Dsalina_nacl_gimme.xml",
+                 r"nacl_h2o2_sorb/h2o2/Dsalina_h2o2_gimme.xml",
+                 r"nacl_h2o2_sorb/sorb/Dsalina_sorb_gimme.xml",
+                 r"nacl_h2o2_sorb/control/Dsalina_control_Local2_2_4_4_fastcore_t3_7.xml",
+                 r"nacl_h2o2_sorb/nacl/Dsalina_nacl_Local2_2_4_4_fastcore_t2_8.xml",
+                 r"nacl_h2o2_sorb/h2o2/Dsalina_h2o2_Local2_2_4_4_fastcore_t3_7.xml",
+                 r"nacl_h2o2_sorb/sorb/Dsalina_sorb_Local2_2_4_4_fastcore_t2_8.xml"
+                 ]
+    # Parallel(n_jobs=14)(delayed(achr_sample)(filename, "e_Biomass__cytop") for filename in filenames)
+    #
+    # print("Loading results...")
+    # hl_samples_gimme = pd.read_csv(r"light/HL/Dsalina_hl_gimme_ACHR_samples.csv").round(6)
+    # ml_samples_gimme = pd.read_csv(r"light/ML/Dsalina_ml_gimme_ACHR_samples.csv").round(6)
+    # ll_samples_gimme = pd.read_csv(r"light/LL/Dsalina_ll_gimme_ACHR_samples.csv").round(6)
+    # hl_samples_gimme.drop([col for col in hl_samples_gimme.columns if col.startswith("EX_") or col.startswith("e_")], axis=1, inplace=True)
+    # ml_samples_gimme.drop([col for col in ml_samples_gimme.columns if col.startswith("EX_") or col.startswith("e_")], axis=1, inplace=True)
+    # ll_samples_gimme.drop([col for col in ll_samples_gimme.columns if col.startswith("EX_") or col.startswith("e_")], axis=1, inplace=True)
+    # hl_samples_gimme = remove_reverse_reactions(hl_samples_gimme)
+    # ml_samples_gimme = remove_reverse_reactions(ml_samples_gimme)
+    # ll_samples_gimme = remove_reverse_reactions(ll_samples_gimme)
+    # hl_ml_results_gimme = kstest(hl_samples_gimme, ml_samples_gimme, "hl_ml")
+    # ml_ll_results_gimme = kstest(ml_samples_gimme, ll_samples_gimme, "ml_ll")
+    # hl_ll_results_gimme = kstest(hl_samples_gimme, ll_samples_gimme, "hl_ll")
+    # pathway_enrichment(hl_ml_results_gimme, "hl_ml")
+    # pathway_enrichment(ml_ll_results_gimme, "ml_ll")
+    # pathway_enrichment(hl_ll_results_gimme, "hl_ll")
+    #
+    # hl_samples = pd.read_csv(r"light/HL/Dsalina_HL_Local2_2_4_4_fastcore_t2_ACHR_samples.csv").round(6)
+    # ml_samples = pd.read_csv(r"light/ML/Dsalina_ML_Local2_2_4_4_fastcore_t2_ACHR_samples.csv").round(6)
+    # ll_samples = pd.read_csv(r"light/LL/Dsalina_LL_Local2_2_4_4_fastcore_t2_ACHR_samples.csv").round(6)
+    # hl_samples.drop([col for col in hl_samples.columns if col.startswith("EX_") or col.startswith("e_")], axis=1, inplace=True)
+    # ml_samples.drop([col for col in ml_samples.columns if col.startswith("EX_") or col.startswith("e_")], axis=1, inplace=True)
+    # ll_samples.drop([col for col in ll_samples.columns if col.startswith("EX_") or col.startswith("e_")], axis=1, inplace=True)
+    # hl_samples = remove_reverse_reactions(hl_samples)
+    # ml_samples = remove_reverse_reactions(ml_samples)
+    # ll_samples = remove_reverse_reactions(ll_samples)
+    # hl_ml_results = kstest(hl_samples, ml_samples, "hl_ml")
+    # ml_ll_results = kstest(ml_samples, ll_samples, "ml_ll")
+    # hl_ll_results = kstest(hl_samples, ll_samples, "hl_ll")
+    # pathway_enrichment(hl_ml_results, "hl_ml")
+    # pathway_enrichment(ml_ll_results, "ml_ll")
+    # pathway_enrichment(hl_ll_results, "hl_ll")
 
-    filenames = [
-        r"nacl_h2o2_sorb/control/Dsalina_control_gimme.xml",
-        r"nacl_h2o2_sorb/nacl/Dsalina_nacl_gimme.xml",
-        r"nacl_h2o2_sorb/h2o2/Dsalina_h2o2_gimme.xml",
-        r"nacl_h2o2_sorb/sorb/Dsalina_sorb_gimme.xml",
-        r"nacl_h2o2_sorb/control/Dsalina_control_Local2_2_4_4_fastcore_t3_7.xml",  # nacl_h2o2_sorb/control/Dsalina_control_Local2_2_4_4_fastcore_t3_7.xml
-        r"nacl_h2o2_sorb/nacl/Dsalina_nacl_Local2_2_4_4_fastcore_t2_8.xml",
-        r"nacl_h2o2_sorb/h2o2/Dsalina_h2o2_Local2_2_4_4_fastcore_t3_7.xml",
-        r"nacl_h2o2_sorb/sorb/Dsalina_sorb_Local2_2_4_4_fastcore_t2_8.xml"
-    ]
-    Parallel(n_jobs=8)(delayed(achr_sample)(filename, "e_Biomass__cytop") for filename in filenames)
+    # filenames = [
+    #     r"nacl_h2o2_sorb/control/Dsalina_control_gimme.xml",
+    #     r"nacl_h2o2_sorb/nacl/Dsalina_nacl_gimme.xml",
+    #     r"nacl_h2o2_sorb/h2o2/Dsalina_h2o2_gimme.xml",
+    #     r"nacl_h2o2_sorb/sorb/Dsalina_sorb_gimme.xml",
+    #     r"nacl_h2o2_sorb/control/Dsalina_control_Local2_2_4_4_fastcore_t3_7.xml",
+    #     r"nacl_h2o2_sorb/nacl/Dsalina_nacl_Local2_2_4_4_fastcore_t2_8.xml",
+    #     r"nacl_h2o2_sorb/h2o2/Dsalina_h2o2_Local2_2_4_4_fastcore_t3_7.xml",
+    #     r"nacl_h2o2_sorb/sorb/Dsalina_sorb_Local2_2_4_4_fastcore_t2_8.xml"
+    # ]
+    # Parallel(n_jobs=8)(delayed(achr_sample)(filename, "e_Biomass__cytop") for filename in filenames)
 
     control_samples_gimme = pd.read_csv(r"nacl_h2o2_sorb/control/Dsalina_control_gimme_ACHR_samples.csv")
     nacl_samples_gimme = pd.read_csv(r"nacl_h2o2_sorb/nacl/Dsalina_nacl_gimme_ACHR_samples.csv")
     sorb_samples_gimme = pd.read_csv(r"nacl_h2o2_sorb/h2o2/Dsalina_h2o2_gimme_ACHR_samples.csv")
     h2o2_samples_gimme = pd.read_csv(r"nacl_h2o2_sorb/sorb/Dsalina_sorb_gimme_ACHR_samples.csv")
 
-    control_samples_gimme = remove_exchanges(control_samples_gimme)
-    nacl_samples_gimme = remove_exchanges(nacl_samples_gimme)
-    sorb_samples_gimme = remove_exchanges(sorb_samples_gimme)
-    h2o2_samples_gimme = remove_exchanges(h2o2_samples_gimme)
+    control_samples_gimme = remove_exchanges(control_samples_gimme).round(6)
+    nacl_samples_gimme = remove_exchanges(nacl_samples_gimme).round(6)
+    sorb_samples_gimme = remove_exchanges(sorb_samples_gimme).round(6)
+    h2o2_samples_gimme = remove_exchanges(h2o2_samples_gimme).round(6)
+
+    control_samples_gimme = remove_reverse_reactions(control_samples_gimme)
+    nacl_samples_gimme = remove_reverse_reactions(nacl_samples_gimme)
+    sorb_samples_gimme = remove_reverse_reactions(sorb_samples_gimme)
+    h2o2_samples_gimme = remove_reverse_reactions(h2o2_samples_gimme)
 
     nacl_results_gimme = kstest(control_samples_gimme, nacl_samples_gimme, "nacl_gimme")
     sorb_results_gimme = kstest(control_samples_gimme, sorb_samples_gimme, "sorb_gimme")
@@ -348,14 +412,20 @@ if __name__ == '__main__':
     pathway_enrichment(sorb_results_gimme, "sorb_gimme")
     pathway_enrichment(h2o2_results_gimme, "h2o2_gimme")
     #
-    control_samples_fastcore = pd.read_csv(r"nacl_h2o2_sorb/control/Dsalina_control_Local2_2_4_4_fastcore_t3_7_ACHR_samples.csv", index_col=0)
-    nacl_samples_fastcore = pd.read_csv(r"nacl_h2o2_sorb/nacl/Dsalina_nacl_Local2_2_4_4_fastcore_t2_8_ACHR_samples.csv", index_col=0)
-    sorb_samples_fastcore = pd.read_csv(r"nacl_h2o2_sorb/h2o2/Dsalina_h2o2_Local2_2_4_4_fastcore_t3_7_ACHR_samples.csv", index_col=0)
-    h2o2_samples_fastcore = pd.read_csv(r"nacl_h2o2_sorb/sorb/Dsalina_sorb_Local2_2_4_4_fastcore_t2_8_ACHR_samples.csv", index_col=0)
+    control_samples_fastcore = pd.read_csv(r"nacl_h2o2_sorb/control/Dsalina_control_Local2_2_4_4_fastcore_t3_7_ACHR_samples.csv")
+    nacl_samples_fastcore = pd.read_csv(r"nacl_h2o2_sorb/nacl/Dsalina_nacl_Local2_2_4_4_fastcore_t2_8_ACHR_samples.csv")
+    sorb_samples_fastcore = pd.read_csv(r"nacl_h2o2_sorb/h2o2/Dsalina_h2o2_Local2_2_4_4_fastcore_t3_7_ACHR_samples.csv")
+    h2o2_samples_fastcore = pd.read_csv(r"nacl_h2o2_sorb/sorb/Dsalina_sorb_Local2_2_4_4_fastcore_t2_8_ACHR_samples.csv")
+
     control_samples_fastcore = remove_exchanges(control_samples_fastcore)
     nacl_samples_fastcore = remove_exchanges(nacl_samples_fastcore)
     sorb_samples_fastcore = remove_exchanges(sorb_samples_fastcore)
     h2o2_samples_fastcore = remove_exchanges(h2o2_samples_fastcore)
+
+    control_samples_fastcore = remove_reverse_reactions(control_samples_fastcore)
+    nacl_samples_fastcore = remove_reverse_reactions(nacl_samples_fastcore)
+    sorb_samples_fastcore = remove_reverse_reactions(sorb_samples_fastcore)
+    h2o2_samples_fastcore = remove_reverse_reactions(h2o2_samples_fastcore)
     #
     nacl_results_fastcore = kstest(control_samples_fastcore, nacl_samples_fastcore, "nacl_fastcore")
     sorb_results_fastcore = kstest(control_samples_fastcore, sorb_samples_fastcore, "sorb_fastcore")
@@ -363,5 +433,4 @@ if __name__ == '__main__':
     pathway_enrichment(nacl_results_fastcore, "nacl_fastcore")
     pathway_enrichment(sorb_results_fastcore, "sorb_fastcore")
     pathway_enrichment(h2o2_results_fastcore, "h2o2_fastcore")
-
     print("done")

@@ -20,8 +20,8 @@ def read_model(data_directory=DATA_PATH, filename="model.xml"):
         pass
     model.set_prism_reaction("PRISM_white_LED__extr")
     model.reactions.ATPm__cytop.bounds = (2.85, 2.85)
-    #blocked = flux_analysis.find_blocked_reactions(model, open_exchanges=True)
-    #model.remove_reactions(blocked)
+    # blocked = flux_analysis.find_blocked_reactions(model, open_exchanges=True)
+    # model.remove_reactions(blocked)
     # model.write(join(data_directory, "models/model_with_no_blocked.xml"))
     return model
 
@@ -31,9 +31,9 @@ def experimental_data_processing(data_directory, filename, model):
     matrix.conditions = "Resume"
     matrix.remove_trials(["Resume", "area", "19", "21", "R21", "25", "PC1"])
     matrix.set_exponential_phases({"1": (2, 8), "2": (2, 8), "3": (2, 16), "4": (2, 10), "5": (2, 8), "6": (2, 8), "7": (2, 16), "8": (2, 16), "9": (2, 8), "10": (2, 8), "11": (2, 12),
-                                   "12": (2, 10), "13": (2, 8) ,"14": (2, 8), "15": (2, 14), "16": (2, 14), "17": (2, 12), "18": (2, 12), "20": (2, 14),
+                                   "12": (2, 10), "13": (2, 8), "14": (2, 8), "15": (2, 14), "16": (2, 14), "17": (2, 12), "18": (2, 12), "20": (2, 14),
                                    "22": (2, 14), "23": (2, 10), "24": (2, 10), "PC1": (2, 10), "PC2": (2, 14), "PC3": (2, 10), "PC4": (2, 10), "RPC1": (2, 10), "RPC2": (2, 10),
-                                   "RPC3": (2, 10)})
+                                   "RPC3": (2, 10), "N1": (0, 12), "N2": (0, 18), "N3": (0, 14), "N4": (0, 16), "N5": (0, 12), "N6": (0, 12), "N7": (0, 12), "N8": (0, 16), "N9": (0, 16)})
     matrix.get_experimental_data(parameter='all')
     matrix.get_substrate_uptake_from_biomass("C", "CO2", header="C00011")
     matrix.get_substrate_uptake_from_biomass("P", "C00009")
@@ -46,7 +46,7 @@ def experimental_data_processing(data_directory, filename, model):
 
 def simulations(matrix, model):
     complete_results, values_for_plot_carbon_limited, error1 = simulation_for_conditions(model, matrix.conditions[["C00011"]], matrix.conditions[["growth_rate"]], save_in_file=True, filename="trial_simulations/carbon_limited")
-    _, values_for_plot_p_limited, error2= simulation_for_conditions(model, matrix.conditions[["C00009"]], matrix.conditions[["growth_rate"]], save_in_file=True, filename="trial_simulations/p_limited")
+    _, values_for_plot_p_limited, error2 = simulation_for_conditions(model, matrix.conditions[["C00009"]], matrix.conditions[["growth_rate"]], save_in_file=True, filename="trial_simulations/p_limited")
     _, values_for_plot_carbon_and_p_limited, error3 = simulation_for_conditions(model, matrix.conditions[["C00011", "C00009"]], matrix.conditions[["growth_rate"]], save_in_file=True, filename="trial_simulations/carbon_and_p_limited")
     _, values_for_plot_n_limited, error4 = simulation_for_conditions(model, matrix.conditions[["C00244"]], matrix.conditions[["growth_rate"]], save_in_file=True, filename="trial_simulations/n_limited")
     _, values_for_plot_carbon_and_p_and_n_limited, error5 = simulation_for_conditions(model, matrix.conditions[["C00011", "C00009", "C00244"]], matrix.conditions[["growth_rate"]], save_in_file=True, filename="trial_simulations/carbon_and_p_and_n_limited")
@@ -79,7 +79,7 @@ def stats(data_directory, filename):
     matrix.conditions = "Resume"
     matrix.conditions = matrix.conditions.rename({"[N] mmol": "N", "[P] mmol": "P", "Salinity g/L": "salinity", "Aeration rate": "aeration", 'growth_rate': 'umax', 'Productivity (g/L.h)': 'Pmax', 'Biomass (gDW/L)': 'biomass'}, axis=1)
     boxplot(matrix.conditions, x_cols=['P', 'N', 'salinity', 'aeration'], y_cols=['Pmax'], to_show=True, x_labels={'P': 'P (mM)', 'N': 'N (mM)', 'salinity': 'NaCl $(g \cdot L^{-1})$', 'aeration': 'aeration rate'}
-                            , y_labels={'Pmax': 'Pmax $(g \cdot L^{-1} \cdot d^{-1})$'})
+            , y_labels={'Pmax': 'Pmax $(g \cdot L^{-1} \cdot d^{-1})$'})
     stats = StatisticalAnalysis(matrix.conditions)
     anova_table, model = stats.manova('umax ~ P')
     anova_table, model = stats.anova('biomass ~ P')
@@ -90,11 +90,9 @@ def stats(data_directory, filename):
     qqplot(model, to_show=True)
 
 
-
-
 def simulations_max_carotene(matrix, model):
     complete_results, values_for_plot_carbon_and_p_and_n_limited, error = simulation_for_conditions(model, matrix.conditions[["C00011", "C00009", "C00244"]], matrix.conditions[["growth_rate"]], save_in_file=True,
-                                                                                                    filename="carbon_and_p_and_n_limited", objective = {"DM_C02094__chlo": 0.9})
+                                                                                                    filename="carbon_and_p_and_n_limited", objective={"DM_C02094__chlo": 0.9})
     res = []
     print("Error1: ", error)
     for key, value in values_for_plot_carbon_and_p_and_n_limited.items():
@@ -108,10 +106,10 @@ def simulations_max_carotene(matrix, model):
 if __name__ == '__main__':
     data_directory = r"../data"
     model = read_model(data_directory, filename="model_with_trials.xml")
-    matrix = experimental_data_processing(data_directory, "experimental/Matriz- DCCR Dunaliella salina.xlsx", model)
+    matrix = experimental_data_processing(data_directory, "experimental/Matriz- DCCR Dunaliella salina_dfba.xlsx", model)
     # matrix = ExpMatrix(join(data_directory, "Matriz- DCCR Dunaliella salina_new.xlsx"))
     matrix.conditions = "Resume"
     print("Simulating")
-    simulations(matrix, model)
-    simulations_max_carotene(matrix, model)
+    # simulations(matrix, model)
+    # simulations_max_carotene(matrix, model)
     # stats(data_directory, "Matriz- DCCR Dunaliella salina_new.xlsx")
