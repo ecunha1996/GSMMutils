@@ -52,7 +52,8 @@ def carotene(parameters):
                  (parameters["Kaeration"] ** parameters['carotene_aeration_exponent'] / (parameters["aeration"] ** parameters['carotene_aeration_exponent'] +
                                                                                          parameters["Kaeration"] ** parameters['carotene_aeration_exponent'])))
     phosphate_factor = (parameters["p_quota"] - parameters["wPmin"]) / (parameters["wPopt"] - parameters["wPmin"])
-    vcar = v_car_gen * phi(parameters["a1"] * parameters["Ex"] + parameters["a0"] + parameters["a3"] * parameters["phosphate_mass_quota"], parameters["smoothing_factor"]) * phosphate_factor
+    vcar = v_car_gen * phi(parameters["a1"] * parameters["Ex"] + parameters["a0"] - parameters["a2"] * parameters["nitrogen_mass_quota"] +
+                           parameters["a3"] * parameters["phosphate_mass_quota"], parameters["smoothing_factor"]) * phosphate_factor
     return sp.Max(0, sp.N(vcar))
 
 
@@ -63,7 +64,8 @@ def lutein(parameters):
     v_lut_gen = (parameters["v_lut_max"] * (parameters["Ex"] ** parameters["l"]) / ((parameters["ExA"] ** parameters["l"]) + (parameters["Ex"] ** parameters["l"])) *
                  (parameters["Kaeration"] ** parameters['lutein_aeration_exponent'] / (parameters["aeration"] ** parameters['lutein_aeration_exponent'] + parameters["Kaeration"] ** parameters['lutein_aeration_exponent'])))
     phosphate_factor = (parameters["p_quota"] - parameters["wPmin"]) / (parameters["wPopt"] - parameters["wPmin"])
-    vlut = v_lut_gen * phi(parameters["a1_lut"] * parameters["Ex"] + parameters["a0_lut"] + parameters["a3_lut"] * parameters["phosphate_mass_quota"], parameters["smoothing_factor_lut"]) * phosphate_factor
+    vlut = v_lut_gen * phi(parameters["a1_lut"] * parameters["Ex"] + parameters["a0_lut"]  - parameters["a2_lut"] * parameters["nitrogen_mass_quota"] +
+                           + parameters["a3_lut"] * parameters["phosphate_mass_quota"], parameters["smoothing_factor_lut"]) * phosphate_factor
     return sp.Max(0, sp.N(vlut))
 
 

@@ -1,9 +1,7 @@
 from os.path import join
 from cobra.flux_analysis import pfba, find_blocked_reactions, flux_variability_analysis as fva, fastcc
 from pandas import DataFrame
-
-from GSMMutils import MyModel, DATA_PATH
-
+from .COBRAmodel import MyModel
 
 class ModelValidator:
     def __init__(self, model: MyModel, atpm_reaction=None, cytoplasm_abb="__cytop"):
@@ -14,7 +12,9 @@ class ModelValidator:
     def validate(self):
         self.check_reactions_equal_metabolites()
         self.check_balance()
+        self.old_model = self.model.copy()
         self.check_energy_producing_cycles()
+        self.model = self.old_model
         self.check_biomass_production()
         self.check_blocked_reactions()
         self.check_unbounded_flux()

@@ -19,7 +19,7 @@ from cobra.manipulation.delete import prune_unused_metabolites
 from openpyxl import load_workbook
 from pandas import DataFrame
 from sympy import Add
-
+import re
 from GSMMutils.experimental.Biomass import Biomass
 from GSMMutils.experimental.BiomassComponent import BiomassComponent
 from GSMMutils.io import write_simulation
@@ -515,27 +515,47 @@ class MyModel(Model):
         if reaction.startswith("R_"):
             reaction = reaction.replace("R_", "")
 
+        pattern = re.compile('[^a-zA-Z0-9_]')
+
+        reaction = re.sub(pattern, '_', reaction)
+
         old_objective = self.objective
         precursors = self.get_reactants(reaction)
 
-        e_precursors_res = {"Flux": []}
+        e_precursors_res = {"Flux": [], "ReactantOrProduct": []}
         meta_val = []
         demands_ids = [demand.id for demand in self.demands]
         for precursor in precursors:
             if "DM_" + precursor.id not in demands_ids:
                 try:
-                    reaction = self.create_demand(precursor.id)
+                    temp_reaction = self.create_demand(precursor.id)
                 except Exception as e:
                     print(e)
                     continue
             else:
-                reaction = self.get_reaction("DM_" + precursor.id)
-            self.objective = reaction.id
+                temp_reaction = self.get_reaction("DM_" + precursor.id)
+            self.objective = temp_reaction.id
             val_2 = self.model.optimize().objective_value
             e_precursors_res["Flux"].append(val_2)
+            e_precursors_res["ReactantOrProduct"].append("Reactant")
             meta_val.append(precursor.name)
-            self.remove_reactions(reaction.id)
-
+            self.remove_reactions(temp_reaction.id)
+        sinks_ids = [sink.id for sink in self.sinks]
+        for product in self.get_products(reaction):
+            if "Sk_" + product.id not in sinks_ids:
+                try:
+                    temp_reaction = self.create_sink(product.id)
+                except Exception as e:
+                    print(e)
+                    continue
+            else:
+                temp_reaction = self.get_reaction("Sk_" + product.id)
+            self.objective = temp_reaction.id
+            val_2 = self.model.optimize().objective_value
+            e_precursors_res["Flux"].append(val_2)
+            e_precursors_res["ReactantOrProduct"].append("Product")
+            meta_val.append(product.name)
+            self.remove_reactions(temp_reaction.id)
         res = DataFrame(e_precursors_res, index=meta_val)
         self.objective = old_objective
         return res

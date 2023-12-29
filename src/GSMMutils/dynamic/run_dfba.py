@@ -724,7 +724,7 @@ def parameter_optimization(custom_parameters: list = None):
             f.write(f"{e}\n")
         f.write(f"Initial error was: {initial_error}")
     shutil.make_archive(f'{DATA_PATH}/dfba', 'zip', f'{DATA_PATH}/dfba')
-    max_iterations = 1000
+    max_iterations = 10000
 
     if custom_parameters:
         initial_parameters = {key: initial_parameters[key] for key in custom_parameters}
@@ -927,34 +927,36 @@ def run_all():
 
 if __name__ == '__main__':
     # parameter_optimization()
-    # parameter_optimization(['ExA',
-    #                         'KNm',
-    #                         'KPm',
-    #                         'K_nitrogen_quota',
-    #                         'VNmax',
-    #                         'VPmax',
-    #                         'a0',
-    #                         'a0_lut',
-    #                         'a1',
-    #                         'a1_lut',
-    #                         'a3',
-    #                         'a3_lut',
-    #                         'l',
-    #                         'light_conversion_factor',
-    #                         'ro0',
-    #                         'ro1',
-    #                         'smoothing_factor',
-    #                         'smoothing_factor_lut',
-    #                         'v_car_max',
-    #                         'v_lut_max',
-    #                         'v_nitrate_max',
-    #                         'v_polyphosphate_max',
-    #                         'wNmax',
-    #                         'wNmin',
-    #                         'wPmin',
-    #                         'wPopt',
-    #                         'Kaeration',
-    #                         'lutein_aeration_exponent',
-    #                         'carotene_aeration_exponent'])
+    parameter_optimization(['ExA',
+                            'KNm',
+                            'KPm',
+                            'K_nitrogen_quota',
+                            'VNmax',
+                            'VPmax',
+                            'a0',
+                            'a0_lut',
+                            'a1',
+                            'a1_lut',
+                            'a2',
+                            'a2_lut',
+                            'a3',
+                            'a3_lut',
+                            'l',
+                            'light_conversion_factor',
+                            'ro0',
+                            'ro1',
+                            'smoothing_factor',
+                            'smoothing_factor_lut',
+                            'v_car_max',
+                            'v_lut_max',
+                            'v_nitrate_max',
+                            'v_polyphosphate_max',
+                            'wNmax',
+                            'wNmin',
+                            'wPmin',
+                            'wPopt',
+                            'Kaeration',
+                            'lutein_aeration_exponent',
+                            'carotene_aeration_exponent'])
     # run_all()
-    run_all_parallel()
+    # run_all_parallel()
