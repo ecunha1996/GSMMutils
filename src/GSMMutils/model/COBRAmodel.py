@@ -6,6 +6,7 @@ Created on Mon Jun 29 14:52:26 2020
 """
 import copy
 import os
+import re
 from os.path import join
 from typing import Union
 
@@ -19,7 +20,7 @@ from cobra.manipulation.delete import prune_unused_metabolites
 from openpyxl import load_workbook
 from pandas import DataFrame
 from sympy import Add
-import re
+
 from GSMMutils.experimental.Biomass import Biomass
 from GSMMutils.experimental.BiomassComponent import BiomassComponent
 from GSMMutils.io import write_simulation
