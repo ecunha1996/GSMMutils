@@ -1,24 +1,23 @@
 import json
 import os
 from os.path import join
-
 import paramiko
-
 from GSMMutils.utils.utils import get_login_info
 
 
 class Remote:
-    def __init__(self, data_directory=None, src_directory=None):
+    def __init__(self, data_directory=None, src_directory=None, server="turing"):
         self.data_directory = data_directory or join(os.path.dirname(os.path.abspath(__file__)).split("src")[0], "data")
         self.src_directory = src_directory or join(os.path.dirname(os.path.abspath(__file__)).split("src")[0], "src")
         self.client = None
+        self.server = server
         self.login()
 
     def login(self):
         try:
             self.client = paramiko.SSHClient()
             self.client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-            host, username, password = get_login_info()
+            host, username, password = get_login_info(self.server)
             self.client.connect(host, username=username, password=password)
             print(f"Connected to remote server {host}")
         except Exception as e:
@@ -37,3 +36,16 @@ class Remote:
 
         print(stdout.read().decode('utf-8'))
         print(stderr.read().decode('utf-8'))
+
+
+class DockerClient:
+    def __init__(self, data_directory=None, src_directory=None, examples_directory=None, config_directory=None, utilities_directory=None,server="turing"):
+        self.data_directory = data_directory or join(os.path.dirname(os.path.abspath(__file__)).split("data")[0], "data")
+        self.src_directory = src_directory or join(os.path.dirname(os.path.abspath(__file__)).split("src")[0], "src")
+        self.examples_directory = examples_directory or join(os.path.dirname(os.path.abspath(__file__)).split("examples")[0], "examples")
+        self.config_directory = config_directory or join(os.path.dirname(os.path.abspath(__file__)).split("config")[0], "config")
+        self.utilities_directory = utilities_directory or join(os.path.dirname(os.path.abspath(__file__)).split("utilities")[0], "utilities")
+        self.server = server
+        self.remote = Remote(data_directory, src_directory, self.server)
+
+

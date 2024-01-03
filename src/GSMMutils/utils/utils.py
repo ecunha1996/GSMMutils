@@ -16,7 +16,7 @@ from GSMMutils.experimental.BiomassComponent import BiomassComponent
 CONFIG_PATH = abspath(join(dirname(__file__), '../../../config'))
 
 
-def get_login_info(server="turing"):
+def get_login_info(server: str):
     try:
         if os.path.exists(join(CONFIG_PATH, 'server_connection.json')):
             with open(join(CONFIG_PATH, 'server_connection.json')) as f:
