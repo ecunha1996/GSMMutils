@@ -154,7 +154,13 @@ def update_st(stoichiometries, new_value):
     return stoichiometries
 
 
-def get_biomass_mass(model, biomass_reaction=None):
+def get_biomass_mass(model, biomass_reaction=None, lipid_subreactions = None):
+    if lipid_subreactions is None:
+        lipid_subreactions = [model.reactions.e_TAG__lip,
+         model.reactions.e_DAG__er, model.reactions.e_DGTS__er, model.reactions.e_PE__cytop, model.reactions.e_PC__cytop,
+         model.reactions.e_PI__er, model.reactions.e_PG__chlo, model.reactions.e_DGDG__chlo,
+         model.reactions.e_SQDG__chlo, model.reactions.e_MGDG__chlo, model.reactions.e_CL__mito,
+         model.reactions.e_FFA__cytop]
     def get_sum_of_reaction(reaction, stoichiometry, ignore_water, elementar_counter):
         counter = 0
         for reactant in reaction.reactants:
@@ -180,11 +186,7 @@ def get_biomass_mass(model, biomass_reaction=None):
         current_counter = 0
         lipid_stoichiometry = abs(current_biomass_reaction.metabolites[model.metabolites.e_Lipid__cytop])
         lipids_reaction = model.reactions.e_Lipid__cytop
-        lipid_subreactions = [model.reactions.e_TAG__lip,
-                              model.reactions.e_DAG__er, model.reactions.e_DGTS__er, model.reactions.e_PE__cytop, model.reactions.e_PC__cytop,
-                              model.reactions.e_PI__er, model.reactions.e_PG__chlo, model.reactions.e_DGDG__chlo,
-                              model.reactions.e_SQDG__chlo, model.reactions.e_MGDG__chlo, model.reactions.e_CL__mito,
-                              model.reactions.e_FFA__cytop]
+
         for reaction in lipid_subreactions:
             for reactant in reaction.reactants:
                 current_counter += abs(reaction.metabolites[reactant] * reactant.formula_weight * lipids_reaction.metabolites[
@@ -219,12 +221,14 @@ def get_biomass_mass(model, biomass_reaction=None):
                         else:
                             go = False
                     if go:
+                        print(reaction.id)
                         if 'Protein' in reaction.id:
                             ignore_water = True
                         else:
                             ignore_water = False
                         res = get_sum_of_reaction(reaction, abs(biomass_reaction.metabolites[reactant]), ignore_water,
                                                   element_counter)
+                        print(res)
                         c += res[0]
                         element_counter = res[1]
     return round(c, 3), element_counter

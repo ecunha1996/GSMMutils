@@ -5,6 +5,7 @@ from .COBRAmodel import MyModel
 
 class ModelValidator:
     def __init__(self, model: MyModel, atpm_reaction=None, cytoplasm_abb="__cytop"):
+        self.old_model = None
         self.model = model
         self.atpm_reaction = atpm_reaction
         self.cytoplasm_abb = cytoplasm_abb
