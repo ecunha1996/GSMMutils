@@ -2,6 +2,8 @@ from os.path import join
 from cobra.flux_analysis import pfba, find_blocked_reactions, flux_variability_analysis as fva, fastcc
 from pandas import DataFrame
 from .COBRAmodel import MyModel
+from .. import DATA_PATH
+
 
 class ModelValidator:
     def __init__(self, model: MyModel, atpm_reaction=None, cytoplasm_abb="__cytop"):

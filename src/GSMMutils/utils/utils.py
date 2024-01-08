@@ -4,8 +4,6 @@ import os
 import subprocess
 import sys
 from os.path import join, abspath, dirname
-
-import numpy as np
 import pandas as pd
 from cobra import Metabolite
 from joblib import Parallel, delayed
@@ -24,11 +22,13 @@ def get_login_info(server: str):
                 host = data[server]['host']
                 username = data[server]['username']
                 password = data[server]['password']
+                container_tool = data[server]['container_tool']
         else:
             host = input("Enter host: ")
             username = input("Enter username: ")
             password = input("Enter password: ")
-        return host, username, password
+            container_tool = input("Enter container tool (podman or docker): ")
+        return host, username, password, container_tool
     except Exception as e:
         print(e)
         sys.exit(1)
@@ -154,13 +154,14 @@ def update_st(stoichiometries, new_value):
     return stoichiometries
 
 
-def get_biomass_mass(model, biomass_reaction=None, lipid_subreactions = None):
+def get_biomass_mass(model, biomass_reaction=None, lipid_subreactions=None):
     if lipid_subreactions is None:
         lipid_subreactions = [model.reactions.e_TAG__lip,
-         model.reactions.e_DAG__er, model.reactions.e_DGTS__er, model.reactions.e_PE__cytop, model.reactions.e_PC__cytop,
-         model.reactions.e_PI__er, model.reactions.e_PG__chlo, model.reactions.e_DGDG__chlo,
-         model.reactions.e_SQDG__chlo, model.reactions.e_MGDG__chlo, model.reactions.e_CL__mito,
-         model.reactions.e_FFA__cytop]
+                              model.reactions.e_DAG__er, model.reactions.e_DGTS__er, model.reactions.e_PE__cytop, model.reactions.e_PC__cytop,
+                              model.reactions.e_PI__er, model.reactions.e_PG__chlo, model.reactions.e_DGDG__chlo,
+                              model.reactions.e_SQDG__chlo, model.reactions.e_MGDG__chlo, model.reactions.e_CL__mito,
+                              model.reactions.e_FFA__cytop]
+
     def get_sum_of_reaction(reaction, stoichiometry, ignore_water, elementar_counter):
         counter = 0
         for reactant in reaction.reactants:
@@ -206,6 +207,8 @@ def get_biomass_mass(model, biomass_reaction=None, lipid_subreactions = None):
     counter, element_counter = parse_lipids(biomass_reaction, element_counter)
     c = 0
     c += counter / 1000
+    print("e-Lipid")
+    print(c)
     to_ignore = ["C00002__cytop", "C00001__cytop", "e_Lipid__cytop"]
     for reactant in biomass_reaction.reactants:
         if reactant.id not in to_ignore:

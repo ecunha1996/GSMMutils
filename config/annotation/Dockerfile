@@ -18,12 +18,12 @@ RUN python3 --version
 
 RUN cd /home
 
-RUN wget https://ftp.ebi.ac.uk/pub/software/unix/iprscan/5/5.65-97.0/interproscan-5.65-97.0-64-bit.tar.gz
-RUN wget https://ftp.ebi.ac.uk/pub/software/unix/iprscan/5/5.65-97.0/interproscan-5.65-97.0-64-bit.tar.gz.md5
+#RUN wget https://ftp.ebi.ac.uk/pub/software/unix/iprscan/5/5.65-97.0/interproscan-5.65-97.0-64-bit.tar.gz
+#RUN wget https://ftp.ebi.ac.uk/pub/software/unix/iprscan/5/5.65-97.0/interproscan-5.65-97.0-64-bit.tar.gz.md5
 
 # Recommended checksum to confirm the download was successful:
-RUN md5sum -c interproscan-5.65-97.0-64-bit.tar.gz.md5
+#RUN md5sum -c interproscan-5.65-97.0-64-bit.tar.gz.md5
 
-RUN tar -pxvzf interproscan-5.65-97.0-*-bit.tar.gz
+#RUN tar -pxvzf interproscan-5.65-97.0-*-bit.tar.gz
 
-RUN python3 setup.py -f interproscan.properties
+#RUN python3 setup.py -f interproscan.properties
