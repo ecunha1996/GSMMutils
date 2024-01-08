@@ -1,5 +1,9 @@
 from os.path import join, dirname, abspath
 
-SRC_PATH = abspath(join(dirname(__file__), '../'))
-DATA_PATH = abspath(join(dirname(__file__), '../../data'))
+from .experimental import *
+from .io import *
+from .model import *
+from .utils import *
+from .stats import *
+from .annotation import *
 

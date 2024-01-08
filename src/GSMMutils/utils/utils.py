@@ -11,6 +11,8 @@ from scipy.stats import linregress
 
 from GSMMutils.experimental.BiomassComponent import BiomassComponent
 
+SRC_PATH = abspath(join(dirname(__file__), '../'))
+DATA_PATH = abspath(join(dirname(__file__), '../../data'))
 CONFIG_PATH = abspath(join(dirname(__file__), '../../../config'))
 
 
