@@ -15,7 +15,6 @@ class InterProScanDocker(DockerClient):
         super().__init__(data_directory, src_directory, examples_directory, config_directory, utilities_directory, server)
         self.interproscan_directory = interproscan_directory
 
-
     def build(self):
         cmd = f'{self.remote.container_tool} build {self.config_directory}/annotation -t interproscan'
         self.remote.run('interproscan', cmd)
