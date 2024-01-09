@@ -1,6 +1,7 @@
 import unittest
 from GSMMutils.annotation.interproscan import InterProScanDocker
 import os
+import pytest
 IN_GITHUB_ACTIONS = os.getenv("GITHUB_ACTIONS") == "true"
 
 
