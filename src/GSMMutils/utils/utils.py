@@ -8,7 +8,7 @@ import pandas as pd
 from cobra import Metabolite
 from joblib import Parallel, delayed
 from scipy.stats import linregress
-
+import numpy as np
 from GSMMutils.experimental.BiomassComponent import BiomassComponent
 
 SRC_PATH = abspath(join(dirname(__file__), '../'))

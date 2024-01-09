@@ -5,11 +5,10 @@ import shutil
 from os import makedirs
 from os.path import join, exists
 from typing import List
-
 import wget
 import requests
 from requests.adapters import HTTPAdapter, Retry
-from GSMMutils import DATA_PATH
+from GSMMutils.utils.utils import DATA_PATH
 
 
 def get_next_link(headers):
