@@ -11,8 +11,7 @@ on:
       - main
       - dev
     paths-ignore:
-      - '/tests/unit_tests/annotation/test_busco.py'
-      - '/tests/unit_tests/annotation/test_interproscan.py'
+      - '**/tests/unit_tests/annotation/**'
 
 jobs:
   test:
