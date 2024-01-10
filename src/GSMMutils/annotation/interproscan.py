@@ -21,7 +21,7 @@ class InterProScanDocker(DockerClient):
 
     def run(self, interproscan_cmd):
         cmd = (
-            f'{self.remote.container_tool} run --name interproscan -rm -v {self.data_directory}:/home/data:Z -v {self.src_directory}:/home/src/:Z '
+            f'{self.remote.container_tool} run --name interproscan --rm -v {self.data_directory}:/home/data:Z -v {self.src_directory}:/home/src/:Z '
             f'-v {self.examples_directory}:/home/examples/:Z -v {self.config_directory}:/home/config/:Z -v {self.utilities_directory}:/home/utilities/:Z -v {self.interproscan_directory}:/home/interproscan/:Z '
             f'interproscan sh -c "cd /home && /home/interproscan/interproscan.sh {interproscan_cmd}"'
             )

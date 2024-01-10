@@ -23,7 +23,7 @@ class InterProScanTest(unittest.TestCase):
 
     @pytest.mark.skip(reason="Test doesn't work in Github Actions.")
     def test_run(self):
-        self.ipsdocker.run("-i data/protein.fasta -f TSV -o data/output_test.tsv -cpu 8")
+        self.ipsdocker.run("-i data/protein.fasta -f TSV -o data/interproscan_output_test.tsv -cpu 8")
 
 
 if __name__ == '__main__':

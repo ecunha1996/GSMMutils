@@ -27,26 +27,26 @@ class StructuralAnnotation(GenomeAnnotation):
         pass
 
     def alignment_evaluation(self, filepath: str = None, k: int = 1):
-        try:
-            data = pd.read_csv(filepath, sep='\t', header=False)
-        except Exception as e:
-            print(e)
-            with open(filepath) as f:
-                data_as_list = f.readlines()
-                max_length = max([len(line.split('\t')) for line in data_as_list])
-                for index, element in enumerate(data_as_list):
-                    data_as_list[index] = data_as_list[index].strip("\n").split('\t')
-                    if len(data_as_list[index]) < max_length:
-                        data_as_list[index] += ['-'] * (max_length - len(data_as_list[index]))
-                data_as_list = pd.DataFrame(data_as_list)
-                data_as_list.to_csv(f"{filepath}_corrected.csv", sep='\t', header=False, index=False)
-                data = data_as_list
+        """
+        This function evaluates the alignment by calculating the gene annotation ratio (genes annotated/total genes).
+        Parameters
+        ----------
+        filepath: str
+            The path to the file with the alignment results.
+        k: int
+            The number of genes in the genome.
+
+        Returns
+        -------
+
+        """
+        data = pd.read_csv(filepath, sep='\t', header=None)
         unique_genes = len(data[0].unique())
         if not k:
             gene_ann_ration = unique_genes / len(self.genes)
         else:
             gene_ann_ration = unique_genes / k
-        print(gene_ann_ration)
+        return gene_ann_ration
 
 
 class FunctionalAnnotation(GenomeAnnotation):

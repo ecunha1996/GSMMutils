@@ -3,7 +3,13 @@
 
 ## Description
 
-This is a collection of utilities for working with GSM-M data.  The utilities are written in Python 3.6 and are intended to be run from the command line.  The utilities are:
+This is a collection of utilities for working with Genome-Scale Metabolic Models and associated experimental data.
+It offers a set of functions for (some of them are executed with docker containers):
+- Reading and writing GSMMs in SBML format
+- Reading and writing experimental data in tabular format
+- Performing genome analysis like InterProScan searches and BUSCO analysis
+- Performing dynamic flux balance analysis (dFBA) with dFBA (https://gitlab.com/davidtourigny/dynamic-fba)
+- Integrating omics data into GSMMs with _Troppo_ and MEWpy
 
 
 ## Installation
@@ -15,4 +21,8 @@ git clone  https://github.com/ecunha1996/GSMMutils.git
 cd GSMMutils
 python setup.py install
 ```
+
+## Credits and License
+Developed at:
+-  Centre of Biological Engineering, University of Minho (2020-)
 
