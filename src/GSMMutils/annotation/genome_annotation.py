@@ -46,7 +46,7 @@ class StructuralAnnotation(GenomeAnnotation):
             gene_ann_ration = unique_genes / len(self.genes)
         else:
             gene_ann_ration = unique_genes / k
-        return gene_ann_ration
+        return unique_genes, gene_ann_ration
 
 
 class FunctionalAnnotation(GenomeAnnotation):

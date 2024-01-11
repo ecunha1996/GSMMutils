@@ -10,8 +10,9 @@ class StructuralAnnotationTest(unittest.TestCase):
         self.data_path = join(dirname(__file__), '../../data/annotation/')
 
     def test_alignment_evaluation(self):
-        genes_annotated = self.gsa.alignment_evaluation(join(self.data_path, 'interproscan_output_test.tsv'), k=3)
-        self.assertEquals(genes_annotated, 3)
+        genes_annotated, gene_ann_ration = self.gsa.alignment_evaluation(join(self.data_path, 'interproscan_output_test.tsv'), k=3)
+        self.assertEquals(gene_ann_ration, 1)
+        self.assertEquals(len(genes_annotated), 3)
 
 
 if __name__ == '__main__':
