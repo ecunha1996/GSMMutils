@@ -9,7 +9,7 @@ import sys
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 sys.path.insert(0, os.path.abspath('.'))
 sys.path.insert(0, os.path.abspath('../../src'))
-project = 'GSMMutils'
+project = 'gsmmutils'
 copyright = '2023, Emanuel Cunha'
 author = 'Emanuel Cunha'
 release = '0.0.1'

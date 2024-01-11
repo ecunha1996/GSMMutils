@@ -3,7 +3,7 @@ from cobra import flux_analysis
 from GSMMutils import DATA_PATH
 from GSMMutils.experimental.ExpMatrix import ExpMatrix
 from GSMMutils.model.COBRAmodel import simulation_for_conditions, MyModel
-# from GSMMutils.omics.omics_integration import OmicsIntegration
+# from gsmmutils.omics.omics_integration import OmicsIntegration
 from os.path import join
 from GSMMutils.graphics.plot import *
 from GSMMutils.stats.stats import *

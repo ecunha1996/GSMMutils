@@ -96,7 +96,7 @@ class OmicsIntegration:
             counts_file = join(os.getcwd(), "counts.tsv")
         if not os.path.exists(output_file):
             self.counts.to_csv(counts_file, sep='\t')
-        cmd = ["Rscript", join(os.getcwd(), "../../src/GSMMutils/omics/GeTMM.R"), counts_file, data_path, output_file, ','.join(self.groups)]
+        cmd = ["Rscript", join(os.getcwd(), "../../src/gsmmutils/omics/GeTMM.R"), counts_file, data_path, output_file, ','.join(self.groups)]
         run(cmd)
         self.getmm = read_csv(output_file, index_name='GeneID', index_col=0, comment='#', sep='\t')
 
@@ -105,7 +105,7 @@ class OmicsIntegration:
             getmm_file = join(os.getcwd(), "getmm.tsv")
         if not output_file:
             output_file = join(os.getcwd(), "degs.tsv")
-        cmd = ["Rscript", join(os.getcwd(), "../../src/GSMMutils/omics/DGE.R"), getmm_file, output_file, ','.join(self.groups)]
+        cmd = ["Rscript", join(os.getcwd(), "../../src/gsmmutils/omics/DGE.R"), getmm_file, output_file, ','.join(self.groups)]
         run(cmd)
         self.degs = read_csv(output_file, index_name='GeneID', index_col=0, comment='#', sep='\t')
 

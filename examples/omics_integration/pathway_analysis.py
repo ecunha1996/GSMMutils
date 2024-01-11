@@ -70,11 +70,11 @@ if __name__ == '__main__':
     data = load_data([
         r"C:\Users\Bisbii\PythonProjects\GSMMutils\data\omics\nacl_fastcore_results.csv",
         r"C:\Users\Bisbii\PythonProjects\GSMMutils\data\omics\nacl_gimme_results.csv",
-        #r"C:\Users\Bisbii\PythonProjects\GSMMutils\data\omics\h2o2_fastcore_results.csv",
-        #r"C:\Users\Bisbii\PythonProjects\GSMMutils\data\omics\h2o2_gimme_results.csv",
-        # r"C:\Users\Bisbii\PythonProjects\GSMMutils\data\omics\ml_ll_results.csv",
-        # r"C:\Users\Bisbii\PythonProjects\GSMMutils\data\omics\hl_ml_results.csv",
-        # r"C:\Users\Bisbii\PythonProjects\GSMMutils\data\omics\hl_ll_results.csv"
+        #r"C:\Users\Bisbii\PythonProjects\gsmmutils\data\omics\h2o2_fastcore_results.csv",
+        #r"C:\Users\Bisbii\PythonProjects\gsmmutils\data\omics\h2o2_gimme_results.csv",
+        # r"C:\Users\Bisbii\PythonProjects\gsmmutils\data\omics\ml_ll_results.csv",
+        # r"C:\Users\Bisbii\PythonProjects\gsmmutils\data\omics\hl_ml_results.csv",
+        # r"C:\Users\Bisbii\PythonProjects\gsmmutils\data\omics\hl_ll_results.csv"
     ])
     reactions_pathways_map, pathways_reactions_map, model = get_reactions_pathway_map()
     for key in data.keys():

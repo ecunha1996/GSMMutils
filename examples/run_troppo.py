@@ -26,7 +26,7 @@ def main():
     blocked = find_blocked_reactions(model)
     model.remove_reactions(blocked)
     # model_consistent = fastcc(model)
-    # cobra.io.write_sbml_model(model_consistent, r"C:\Users\Bisbii\PythonProjects\GSMMutils\data\models\model_consistent.xml")
+    # cobra.io.write_sbml_model(model_consistent, r"C:\Users\Bisbii\PythonProjects\gsmmutils\data\models\model_consistent.xml")
     # model = MyModel(r"C:\Users\Bisbii\PythonProjects\ExpAlgae\data\models\model_consistent.xml", "e_Biomass__cytop")
     omics = OmicsIntegration(r"../data/omics/output.txt", samples_names={"SRR7984026Aligned.out.sam": "LL_1",
                                                                          "SRR7984027Aligned.out.sam": "LL_2",
@@ -141,7 +141,7 @@ def get_different_reactions():
 if __name__ == '__main__':
     # model = MyModel(join("../data", "models/model.xml"), "e_Biomass__cytop")
     # model.add_medium(join("../data", "media.xlsx"), "media_with_starch")
-    # model.write(r"C:\Users\Bisbii\PythonProjects\GSMMutils\data\models\model_with_media.xml")
+    # model.write(r"C:\Users\Bisbii\PythonProjects\gsmmutils\data\models\model_with_media.xml")
     main()
     # get_different_reactions()
     # main_reduced_model()
