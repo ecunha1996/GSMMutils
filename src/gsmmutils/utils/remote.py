@@ -7,6 +7,14 @@ from gsmmutils.utils.utils import get_login_info
 
 class Remote:
     def __init__(self, data_directory=None, src_directory=None, server="turing"):
+        """
+
+        Parameters
+        ----------
+        data_directory
+        src_directory
+        server
+        """
         self.data_directory = data_directory or join(os.path.dirname(os.path.abspath(__file__)).split("src")[0], "data")
         self.src_directory = src_directory or join(os.path.dirname(os.path.abspath(__file__)).split("src")[0], "src")
         self.client, self.container_tool  = None, None
@@ -14,6 +22,13 @@ class Remote:
         self.login()
 
     def login(self):
+        """
+        Method to login to remote server. It reads the login information from the config file and uses paramiko to connect to the server.
+        If no login information is found, it will prompt the user to enter the login information.
+        Returns
+        -------
+
+        """
         try:
             self.client = paramiko.SSHClient()
             self.client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
@@ -25,6 +40,17 @@ class Remote:
             print(e)
 
     def run(self, docker_name, docker_cmd):
+        """
+        Method to run a docker container on the remote server. If the container already exists, it will start the container.
+        Parameters
+        ----------
+        docker_name
+        docker_cmd
+
+        Returns
+        -------
+
+        """
         try:
             _, stdout, stderr = self.client.exec_command(f'{self.container_tool} ps -a --format json')
             stdout_as_str = stdout.read().decode('utf-8')
@@ -41,6 +67,60 @@ class Remote:
 
         print(stdout.read().decode('utf-8'))
         print(stderr.read().decode('utf-8'))
+
+    def upload_data(self, localFilePath, remoteFilePath):
+        """
+        Method to upload data from local system to remote server.
+        Parameters
+        ----------
+        localFilePath
+        remoteFilePath
+
+        Returns
+        -------
+
+        """
+        sftp_client = self.client.open_sftp()
+        try:
+            sftp_client.put(localFilePath, remoteFilePath)
+        except FileNotFoundError as err:
+            print(f"File {localFilePath} was not found on the local system")
+        sftp_client.close()
+
+    def download_data(self, remoteFilePath, localFilePath):
+        """
+        Method to download data from remote server to local system.
+        Parameters
+        ----------
+        remoteFilePath
+        localFilePath
+
+        Returns
+        -------
+
+        """
+        sftp_client = self.client.open_sftp()
+        try:
+            sftp_client.get(remoteFilePath, localFilePath)
+        except FileNotFoundError as err:
+            print(f"File: {remoteFilePath} was not found on the source server {self.__hostName}:{self.__port}")
+        sftp_client.close()
+
+    def exec(self, cmd):
+        """
+        Method to execute a command on the remote server.
+        Parameters
+        ----------
+        cmd
+
+        Returns
+        -------
+
+        """
+        try:
+            self.client.exec_command(cmd)
+        except Exception as e:
+            print(e)
 
 
 class DockerClient:

@@ -98,25 +98,74 @@
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">gsmmutils.utils.remote.</span></span><span class="sig-name descname"><span class="pre">Remote</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data_directory</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">src_directory</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">server</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'turing'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#gsmmutils.utils.remote.Remote" title="Link to this definition"></a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <p class="rubric">Methods</p>
-<table class="docutils align-default">
+<table class="autosummary longtable docutils align-default">
 <tbody>
-<tr class="row-odd"><td><p><strong>login</strong></p></td>
-<td></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#gsmmutils.utils.remote.Remote.download_data" title="gsmmutils.utils.remote.Remote.download_data"><code class="xref py py-obj docutils literal notranslate"><span class="pre">download_data</span></code></a>(remoteFilePath, localFilePath)</p></td>
+<td><p>Method to download data from remote server to local system. :Parameters: * <strong>remoteFilePath</strong>              * <strong>localFilePath</strong>.</p></td>
 </tr>
-<tr class="row-even"><td><p><strong>run</strong></p></td>
-<td></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#gsmmutils.utils.remote.Remote.exec" title="gsmmutils.utils.remote.Remote.exec"><code class="xref py py-obj docutils literal notranslate"><span class="pre">exec</span></code></a>(cmd)</p></td>
+<td><p>Method to execute a command on the remote server.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#gsmmutils.utils.remote.Remote.login" title="gsmmutils.utils.remote.Remote.login"><code class="xref py py-obj docutils literal notranslate"><span class="pre">login</span></code></a>()</p></td>
+<td><p>Method to login to remote server.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#gsmmutils.utils.remote.Remote.run" title="gsmmutils.utils.remote.Remote.run"><code class="xref py py-obj docutils literal notranslate"><span class="pre">run</span></code></a>(docker_name, docker_cmd)</p></td>
+<td><p>Method to run a docker container on the remote server. If the container already exists, it will start the container. :Parameters: * <strong>docker_name</strong>              * <strong>docker_cmd</strong>.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#gsmmutils.utils.remote.Remote.upload_data" title="gsmmutils.utils.remote.Remote.upload_data"><code class="xref py py-obj docutils literal notranslate"><span class="pre">upload_data</span></code></a>(localFilePath, remoteFilePath)</p></td>
+<td><p>Method to upload data from local system to remote server. :Parameters: * <strong>localFilePath</strong>              * <strong>remoteFilePath</strong>.</p></td>
 </tr>
 </tbody>
 </table>
 <dl class="py method">
+<dt class="sig sig-object py" id="gsmmutils.utils.remote.Remote.download_data">
+<span class="sig-name descname"><span class="pre">download_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">remoteFilePath</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">localFilePath</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#gsmmutils.utils.remote.Remote.download_data" title="Link to this definition"></a></dt>
+<dd><p>Method to download data from remote server to local system.
+:Parameters: * <strong>remoteFilePath</strong></p>
+<blockquote>
+<div><ul class="simple">
+<li><p><strong>localFilePath</strong></p></li>
+</ul>
+</div></blockquote>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="gsmmutils.utils.remote.Remote.exec">
+<span class="sig-name descname"><span class="pre">exec</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cmd</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#gsmmutils.utils.remote.Remote.exec" title="Link to this definition"></a></dt>
+<dd><p>Method to execute a command on the remote server.
+:Parameters: <strong>cmd</strong></p>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="gsmmutils.utils.remote.Remote.login">
 <span class="sig-name descname"><span class="pre">login</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#gsmmutils.utils.remote.Remote.login" title="Link to this definition"></a></dt>
-<dd></dd></dl>
+<dd><p>Method to login to remote server. It reads the login information from the config file and uses paramiko to connect to the server.
+If no login information is found, it will prompt the user to enter the login information.</p>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="gsmmutils.utils.remote.Remote.run">
 <span class="sig-name descname"><span class="pre">run</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">docker_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">docker_cmd</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#gsmmutils.utils.remote.Remote.run" title="Link to this definition"></a></dt>
-<dd></dd></dl>
+<dd><p>Method to run a docker container on the remote server. If the container already exists, it will start the container.
+:Parameters: * <strong>docker_name</strong></p>
+<blockquote>
+<div><ul class="simple">
+<li><p><strong>docker_cmd</strong></p></li>
+</ul>
+</div></blockquote>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="gsmmutils.utils.remote.Remote.upload_data">
+<span class="sig-name descname"><span class="pre">upload_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">localFilePath</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">remoteFilePath</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#gsmmutils.utils.remote.Remote.upload_data" title="Link to this definition"></a></dt>
+<dd><p>Method to upload data from local system to remote server.
+:Parameters: * <strong>localFilePath</strong></p>
+<blockquote>
+<div><ul class="simple">
+<li><p><strong>remoteFilePath</strong></p></li>
+</ul>
+</div></blockquote>
+</dd></dl>
 
 </dd></dl>
 

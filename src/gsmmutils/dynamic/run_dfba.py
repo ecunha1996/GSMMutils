@@ -31,7 +31,7 @@ from gsmmutils.dynamic.rhs import get_bounds
 from gsmmutils.dynamic.drhs import get_dynamic_expressions
 from gsmmutils.dynamic.exchange_fluxes import get_exchange_fluxes
 from gsmmutils.graphics.plot import plot_concentrations, generate_plot_for_data
-from gsmmutils import DATA_PATH
+from gsmmutils.utils.utils import DATA_PATH
 import warnings
 
 logging.getLogger('pandas').setLevel(logging.CRITICAL)
