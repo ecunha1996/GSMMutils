@@ -1,6 +1,6 @@
 import unittest
 
-from GSMMutils.utils.unit_manager import UnitManager, Unit
+from gsmmutils.utils.unit_manager import UnitManager, Unit
 
 
 class TestUnitManager(unittest.TestCase):

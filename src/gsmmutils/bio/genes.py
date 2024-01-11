@@ -1,6 +1,6 @@
 import pandas as pd
 
-from GSMMutils.bio.gene import Gene
+from gsmmutils.bio.gene import Gene
 
 
 class Genes:

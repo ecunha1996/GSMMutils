@@ -9,8 +9,8 @@ from sklearn.preprocessing import StandardScaler
 from matplotlib import colors as mcolors
 import prince
 
-from GSMMutils import DATA_PATH
-from GSMMutils.utils.config_variables import DATASET
+from gsmmutils import DATA_PATH
+from gsmmutils.utils.config_variables import DATASET
 
 M_COLORS = list(mcolors.TABLEAU_COLORS.keys())
 COLORS = M_COLORS + ['#1f6357', '#017374', '#0cb577', '#ff0789', '#afa88b']

@@ -1,6 +1,6 @@
 import unittest
 
-from GSMMutils.experimental.BiomassComponent import BiomassComponent
+from gsmmutils.experimental.BiomassComponent import BiomassComponent
 
 
 class TestModel(unittest.TestCase):

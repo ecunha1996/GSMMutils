@@ -2,7 +2,7 @@ from os.path import join
 from cobra.flux_analysis import pfba, find_blocked_reactions, flux_variability_analysis as fva, fastcc
 from pandas import DataFrame
 from .COBRAmodel import MyModel
-from GSMMutils.utils.utils import DATA_PATH
+from gsmmutils.utils.utils import DATA_PATH
 
 
 class ModelValidator:

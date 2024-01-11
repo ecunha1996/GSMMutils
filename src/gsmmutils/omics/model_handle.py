@@ -8,7 +8,7 @@ import pandas as pd
 from cobra.flux_analysis import find_blocked_reactions
 from cobra.io import write_sbml_model
 
-from GSMMutils import DATA_PATH
+from gsmmutils import DATA_PATH
 
 CONFIG_PATH = abspath(join(dirname(__file__), '../../../config'))
 params = json.load(open(rf"{CONFIG_PATH}/troppo_nacl.json", "r"))

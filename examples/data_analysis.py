@@ -3,13 +3,13 @@ from pprint import pprint
 import pandas as pd
 from matplotlib import pyplot as plt
 
-from GSMMutils import DATA_PATH
+from gsmmutils import DATA_PATH
 
 pd.set_option('display.max_columns', None)
-from GSMMutils.experimental.Biomass import Biomass
-from GSMMutils.experimental.ExpMatrix import ExpMatrix
-from GSMMutils.graphics.plot import boxplot, qqplot
-from GSMMutils.stats.stats import StatisticalAnalysis
+from gsmmutils.experimental.Biomass import Biomass
+from gsmmutils.experimental.ExpMatrix import ExpMatrix
+from gsmmutils.graphics.plot import boxplot, qqplot
+from gsmmutils.stats.stats import StatisticalAnalysis
 
 def stats(matrix):
     matrix.conditions = matrix.conditions.rename({"[N] mmol": "N", "[P] mmol": "P", "Salinity g/L": "salinity", "Aeration rate": "aeration", 'growth_rate': 'umax', 'Productivity (g/L.h)': 'Pmax', 'Biomass (gDW/L)': 'biomass'}, axis=1)

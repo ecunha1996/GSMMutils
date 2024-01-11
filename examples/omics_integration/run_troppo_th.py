@@ -3,12 +3,12 @@ import math
 import os
 from os.path import abspath, dirname, join
 import pandas as pd
-from GSMMutils import DATA_PATH
-from GSMMutils.io import read_csv
-from GSMMutils.omics.omics_integration import OmicsIntegration
-from GSMMutils.omics.omics_processing import thresholding_filter
-from GSMMutils.omics.troppo_integration import troppo_omics_integration
-from GSMMutils.omics.model_handle import load_model, sbml_model_reconstruction
+from gsmmutils import DATA_PATH
+from gsmmutils.io import read_csv
+from gsmmutils.omics.omics_integration import OmicsIntegration
+from gsmmutils.omics.omics_processing import thresholding_filter
+from gsmmutils.omics.troppo_integration import troppo_omics_integration
+from gsmmutils.omics.model_handle import load_model, sbml_model_reconstruction
 
 CONFIG_PATH = abspath(join(dirname(__file__), '../../config'))
 

@@ -1,4 +1,4 @@
-from GSMMutils.omics.troppo_docker import TroppoDocker
+from gsmmutils.omics.troppo_docker import TroppoDocker
 
 
 def main():

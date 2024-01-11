@@ -5,7 +5,7 @@ import pandas.testing as pd_testing
 from statsmodels.multivariate.multivariate_ols import MultivariateTestResults
 from statsmodels.regression.linear_model import RegressionResultsWrapper
 
-from GSMMutils.stats.stats import StatisticalAnalysis
+from gsmmutils.stats.stats import StatisticalAnalysis
 
 
 class TestStats(unittest.TestCase):

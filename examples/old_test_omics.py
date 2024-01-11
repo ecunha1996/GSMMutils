@@ -2,10 +2,10 @@
 import math
 import os
 
-from GSMMutils.model.COBRAmodel import MyModel
-from GSMMutils.io import read_csv
-from GSMMutils.omics.omics_integration import OmicsIntegration
-from GSMMutils.utils.utils import flux_change
+from gsmmutils.model.COBRAmodel import MyModel
+from gsmmutils.io import read_csv
+from gsmmutils.omics.omics_integration import OmicsIntegration
+from gsmmutils.utils.utils import flux_change
 from examples.test_all import read_model
 import pandas as pd
 

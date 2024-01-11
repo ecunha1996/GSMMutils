@@ -1,10 +1,10 @@
 import os
 import pickle
 from cobra.flux_analysis import find_blocked_reactions
-from GSMMutils import DATA_PATH
-from GSMMutils.experimental.ExpMatrix import ExpMatrix
-from GSMMutils.model.COBRAmodel import MyModel
-from GSMMutils.utils.utils import get_element_in_biomass, get_molecular_weight
+from gsmmutils import DATA_PATH
+from gsmmutils.experimental.ExpMatrix import ExpMatrix
+from gsmmutils.model.COBRAmodel import MyModel
+from gsmmutils.utils.utils import get_element_in_biomass, get_molecular_weight
 
 
 def create_active_biomass(model):

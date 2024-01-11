@@ -1,6 +1,6 @@
 import os
 from os.path import join
-from GSMMutils.utils.remote import Remote
+from gsmmutils.utils.remote import Remote
 
 
 class DFBA:
@@ -13,5 +13,5 @@ class DFBA:
         cmd = (f'podman run --name dfba2 -v {self.data_directory}:/home/data/:Z -v '
                f'{self.src_directory}:/home/src/:Z davidtourigny/dfba sh -c "/usr/bin/python3 -m pip install --upgrade pip && pip install -q --root-user-action=ignore matplotlib seaborn scipy '
                f'joblib openpyxl psutil plotly kaleido timeout-decorator tqdm parallelbar && '
-               f'python3 /home/src/GSMMutils/dynamic/run_dfba.py > /home/data/output.txt"')  #
+               f'python3 /home/src/gsmmutils/dynamic/run_dfba.py > /home/data/output.txt"')  #
         self.remote.run('dfba2', cmd)

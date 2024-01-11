@@ -1,5 +1,5 @@
 import unittest
-from GSMMutils.annotation.busco import BuscoDocker
+from gsmmutils.annotation.busco import BuscoDocker
 import os
 import pytest
 IN_GITHUB_ACTIONS = os.getenv("GITHUB_ACTIONS") == "true"

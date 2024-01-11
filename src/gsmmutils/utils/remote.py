@@ -2,7 +2,7 @@ import json
 import os
 from os.path import join
 import paramiko
-from GSMMutils.utils.utils import get_login_info
+from gsmmutils.utils.utils import get_login_info
 
 
 class Remote:

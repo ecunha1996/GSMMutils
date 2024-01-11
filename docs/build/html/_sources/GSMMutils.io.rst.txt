@@ -1,21 +1,21 @@
-GSMMutils.io package
+gsmmutils.io package
 ====================
 
 Submodules
 ----------
 
-GSMMutils.io.reader module
+gsmmutils.io.reader module
 --------------------------
 
-.. automodule:: GSMMutils.io.reader
+.. automodule:: gsmmutils.io.reader
    :members:
    :undoc-members:
    :show-inheritance:
 
-GSMMutils.io.writer module
+gsmmutils.io.writer module
 --------------------------
 
-.. automodule:: GSMMutils.io.writer
+.. automodule:: gsmmutils.io.writer
    :members:
    :undoc-members:
    :show-inheritance:
@@ -23,7 +23,7 @@ GSMMutils.io.writer module
 Module contents
 ---------------
 
-.. automodule:: GSMMutils.io
+.. automodule:: gsmmutils.io
    :members:
    :undoc-members:
    :show-inheritance:

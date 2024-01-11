@@ -4,7 +4,7 @@ from os.path import abspath, dirname, join
 
 from pandas import DataFrame
 
-from GSMMutils.utils.utils import block_print, enable_print
+from gsmmutils.utils.utils import block_print, enable_print
 warnings.simplefilter("ignore")
 CONFIG_PATH = abspath(join(dirname(__file__), '../../../config'))
 block_print()

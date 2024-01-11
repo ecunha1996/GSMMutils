@@ -2,7 +2,7 @@ from os.path import join
 
 import matlab.engine
 
-from GSMMutils import DATA_PATH, DFBALAB_PATH
+from gsmmutils import DATA_PATH, DFBALAB_PATH
 
 
 class DAE:

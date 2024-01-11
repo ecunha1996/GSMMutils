@@ -21,10 +21,10 @@ from openpyxl import load_workbook
 from pandas import DataFrame
 from sympy import Add
 
-from GSMMutils.experimental.Biomass import Biomass
-from GSMMutils.experimental.BiomassComponent import BiomassComponent
-from GSMMutils.io import write_simulation
-from GSMMutils.utils.utils import update_st, get_precursors, normalize, convert_mmol_mol_to_g_molMM, \
+from gsmmutils.experimental.Biomass import Biomass
+from gsmmutils.experimental.BiomassComponent import BiomassComponent
+from gsmmutils.io import write_simulation
+from gsmmutils.utils.utils import update_st, get_precursors, normalize, convert_mmol_mol_to_g_molMM, \
     convert_mg_molMM_to_mmolM_gMM
 
 import logging

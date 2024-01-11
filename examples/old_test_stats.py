@@ -2,10 +2,10 @@ from pprint import pprint
 
 import pandas as pd
 pd.set_option('display.max_columns', None)
-from GSMMutils.experimental.Biomass import Biomass
-from GSMMutils.experimental.ExpMatrix import ExpMatrix
-from GSMMutils.graphics.plot import boxplot
-from GSMMutils.stats.stats import StatisticalAnalysis
+from gsmmutils.experimental.Biomass import Biomass
+from gsmmutils.experimental.ExpMatrix import ExpMatrix
+from gsmmutils.graphics.plot import boxplot
+from gsmmutils.stats.stats import StatisticalAnalysis
 
 if __name__ == '__main__':
     data_directory = r"../data"

@@ -1,29 +1,29 @@
-GSMMutils.experimental package
+gsmmutils.experimental package
 ==============================
 
 Submodules
 ----------
 
-GSMMutils.experimental.Biomass module
+gsmmutils.experimental.Biomass module
 -------------------------------------
 
-.. automodule:: GSMMutils.experimental.Biomass
+.. automodule:: gsmmutils.experimental.Biomass
    :members:
    :undoc-members:
    :show-inheritance:
 
-GSMMutils.experimental.BiomassComponent module
+gsmmutils.experimental.BiomassComponent module
 ----------------------------------------------
 
-.. automodule:: GSMMutils.experimental.BiomassComponent
+.. automodule:: gsmmutils.experimental.BiomassComponent
    :members:
    :undoc-members:
    :show-inheritance:
 
-GSMMutils.experimental.ExpMatrix module
+gsmmutils.experimental.ExpMatrix module
 ---------------------------------------
 
-.. automodule:: GSMMutils.experimental.ExpMatrix
+.. automodule:: gsmmutils.experimental.ExpMatrix
    :members:
    :undoc-members:
    :show-inheritance:
@@ -31,7 +31,7 @@ GSMMutils.experimental.ExpMatrix module
 Module contents
 ---------------
 
-.. automodule:: GSMMutils.experimental
+.. automodule:: gsmmutils.experimental
    :members:
    :undoc-members:
    :show-inheritance:

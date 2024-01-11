@@ -1,13 +1,13 @@
-GSMMutils.annotation package
+gsmmutils.annotation package
 ============================
 
 Submodules
 ----------
 
-GSMMutils.annotation.genome\_annotation module
+gsmmutils.annotation.genome\_annotation module
 ----------------------------------------------
 
-.. automodule:: GSMMutils.annotation.genome_annotation
+.. automodule:: gsmmutils.annotation.genome_annotation
    :members:
    :undoc-members:
    :show-inheritance:
@@ -15,7 +15,7 @@ GSMMutils.annotation.genome\_annotation module
 Module contents
 ---------------
 
-.. automodule:: GSMMutils.annotation
+.. automodule:: gsmmutils.annotation
    :members:
    :undoc-members:
    :show-inheritance:

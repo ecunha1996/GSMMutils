@@ -1,4 +1,4 @@
-from GSMMutils.annotation.interproscan import InterProScanDocker
+from gsmmutils.annotation.interproscan import InterProScanDocker
 
 
 def main():

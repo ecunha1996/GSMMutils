@@ -1,4 +1,4 @@
-from GSMMutils.optimization.optimization_docker import OptimizationDocker
+from gsmmutils.optimization.optimization_docker import OptimizationDocker
 
 
 def main():

@@ -1,4 +1,4 @@
-from GSMMutils.dynamic.DAE import DAE
+from gsmmutils.dynamic.DAE import DAE
 
 
 

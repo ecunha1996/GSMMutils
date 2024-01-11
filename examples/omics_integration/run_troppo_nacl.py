@@ -7,14 +7,14 @@ from os.path import join, dirname, abspath
 import pandas as pd
 from numpy import linspace
 
-from GSMMutils import DATA_PATH
-from GSMMutils.omics.omics_processing import thresholding_filter
-from GSMMutils.omics.troppo_integration import troppo_omics_integration
+from gsmmutils import DATA_PATH
+from gsmmutils.omics.omics_processing import thresholding_filter
+from gsmmutils.omics.troppo_integration import troppo_omics_integration
 sys.path.insert(0, r"/")
 sys.path.insert(0, "/home/src/")
-from GSMMutils.io import read_csv
-from GSMMutils.omics.omics_integration import OmicsIntegration
-from GSMMutils.omics.model_handle import load_model, sbml_model_reconstruction
+from gsmmutils.io import read_csv
+from gsmmutils.omics.omics_integration import OmicsIntegration
+from gsmmutils.omics.model_handle import load_model, sbml_model_reconstruction
 CONFIG_PATH = abspath(join(dirname(__file__), '../../config'))
 params = json.load(open(rf"{CONFIG_PATH}/troppo_nacl.json", "r"))
 MODEL_PATH = rf"{DATA_PATH}/models/model_with_trials.xml"

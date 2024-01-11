@@ -1,13 +1,13 @@
-GSMMutils.stats package
+gsmmutils.stats package
 =======================
 
 Submodules
 ----------
 
-GSMMutils.stats.stats module
+gsmmutils.stats.stats module
 ----------------------------
 
-.. automodule:: GSMMutils.stats.stats
+.. automodule:: gsmmutils.stats.stats
    :members:
    :undoc-members:
    :show-inheritance:
@@ -15,7 +15,7 @@ GSMMutils.stats.stats module
 Module contents
 ---------------
 
-.. automodule:: GSMMutils.stats
+.. automodule:: gsmmutils.stats
    :members:
    :undoc-members:
    :show-inheritance:

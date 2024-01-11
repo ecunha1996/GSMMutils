@@ -1,29 +1,29 @@
-GSMMutils.model package
+gsmmutils.model package
 =======================
 
 Submodules
 ----------
 
-GSMMutils.model.COBRAmodel module
+gsmmutils.model.COBRAmodel module
 ---------------------------------
 
-.. automodule:: GSMMutils.model.COBRAmodel
+.. automodule:: gsmmutils.model.COBRAmodel
    :members:
    :undoc-members:
    :show-inheritance:
 
-GSMMutils.model.FAME2Biomass module
+gsmmutils.model.FAME2Biomass module
 -----------------------------------
 
-.. automodule:: GSMMutils.model.FAME2Biomass
+.. automodule:: gsmmutils.model.FAME2Biomass
    :members:
    :undoc-members:
    :show-inheritance:
 
-GSMMutils.model.model\_validator module
+gsmmutils.model.model\_validator module
 ---------------------------------------
 
-.. automodule:: GSMMutils.model.model_validator
+.. automodule:: gsmmutils.model.model_validator
    :members:
    :undoc-members:
    :show-inheritance:
@@ -31,7 +31,7 @@ GSMMutils.model.model\_validator module
 Module contents
 ---------------
 
-.. automodule:: GSMMutils.model
+.. automodule:: gsmmutils.model
    :members:
    :undoc-members:
    :show-inheritance:

@@ -1,4 +1,4 @@
-from GSMMutils.io import read_excel
+from gsmmutils.io import read_excel
 
 
 class Biomass:

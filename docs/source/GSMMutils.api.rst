@@ -1,21 +1,21 @@
-GSMMutils.api package
+gsmmutils.api package
 =====================
 
 Submodules
 ----------
 
-GSMMutils.api.kegg module
+gsmmutils.api.kegg module
 -------------------------
 
-.. automodule:: GSMMutils.api.kegg
+.. automodule:: gsmmutils.api.kegg
    :members:
    :undoc-members:
    :show-inheritance:
 
-GSMMutils.api.uniprot module
+gsmmutils.api.uniprot module
 ----------------------------
 
-.. automodule:: GSMMutils.api.uniprot
+.. automodule:: gsmmutils.api.uniprot
    :members:
    :undoc-members:
    :show-inheritance:
@@ -23,7 +23,7 @@ GSMMutils.api.uniprot module
 Module contents
 ---------------
 
-.. automodule:: GSMMutils.api
+.. automodule:: gsmmutils.api
    :members:
    :undoc-members:
    :show-inheritance:

@@ -2,9 +2,9 @@ import os
 
 import pandas as pd
 
-from GSMMutils.graphics.plot import clustermap
-from GSMMutils.io import read_csv
-from GSMMutils.model.COBRAmodel import MyModel
+from gsmmutils.graphics.plot import clustermap
+from gsmmutils.io import read_csv
+from gsmmutils.model.COBRAmodel import MyModel
 import pickle
 #unlimit pandas printing:
 pd.set_option('display.max_rows', 500)

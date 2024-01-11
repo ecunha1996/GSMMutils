@@ -12,12 +12,12 @@ from mewpy.omics import ExpressionSet
 from mewpy.omics import ExpressionSet, eFlux, GIMME, iMAT
 from mewpy.simulation import get_simulator
 
-from GSMMutils import DATA_PATH
-from GSMMutils.bio.genes import Genes
-from GSMMutils.graphics.plot import clustermap
-from GSMMutils.io import read_csv
-from GSMMutils.io import write_specific_models
-from GSMMutils.utils.utils import run, differential_reaction_capacity
+from gsmmutils import DATA_PATH
+from gsmmutils.bio.genes import Genes
+from gsmmutils.graphics.plot import clustermap
+from gsmmutils.io import read_csv
+from gsmmutils.io import write_specific_models
+from gsmmutils.utils.utils import run, differential_reaction_capacity
 
 
 class OmicsIntegration:
@@ -216,7 +216,7 @@ class OmicsIntegration:
                 clustermap(variance.loc[variance.index.isin(in_pathway)], title=pathway, to_show=False, path=f"./omics/\clustermaps_reactions/clustermaps_gimme/{pathway.replace(' ', '_').replace('/', '_')}.png")
 
     def integrate_troppo(self, method, samples, **kwargs):
-        from GSMMutils.omics.troppo import integration_pipeline
+        from gsmmutils.omics.troppo import integration_pipeline
         for sample in samples:
             if "control" in sample:
                 df = pd.DataFrame(self.counts[sample]).T
@@ -228,7 +228,7 @@ class OmicsIntegration:
         pass
 
     def get_flux_change(self, combine_all=False, method_1=None, condition_1=None, method_2=None, condition_2=None, threshold: float = 0.1):
-        from GSMMutils.utils.utils import flux_change
+        from gsmmutils.utils.utils import flux_change
         if combine_all:
             for method in self.specific_models.keys():
                 for condition_1, condition_2 in itertools.product(self.specific_models[method].keys(), self.specific_models[method].keys()):
@@ -248,7 +248,7 @@ class OmicsIntegration:
             self.flux_change[f"{method_1}_{condition_1}_{method_2}_{condition_2}"] = flux_change(constraints_1, constraints_2, threshold)
 
     def get_reaction_capacity(self, condition, fva_solution):
-        from GSMMutils.utils.utils import reaction_capacity
+        from gsmmutils.utils.utils import reaction_capacity
         if not hasattr(self, "reaction_capacity"):
             self.reaction_capacity = {}
         self.reaction_capacity[condition] = reaction_capacity(fva_solution)

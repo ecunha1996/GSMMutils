@@ -1,6 +1,6 @@
 import sys
 sys.path.append('../../src')
-from GSMMutils.dynamic.dfba_docker import DFBA
+from gsmmutils.dynamic.dfba_docker import DFBA
 
 
 def main():

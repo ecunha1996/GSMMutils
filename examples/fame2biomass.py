@@ -2,8 +2,8 @@ import os
 from collections import OrderedDict
 from os.path import join
 
-from GSMMutils import DATA_PATH, MyModel
-from GSMMutils.model.FAME2Biomass import FAME2Biomass, load_results
+from gsmmutils import DATA_PATH, MyModel
+from gsmmutils.model.FAME2Biomass import FAME2Biomass, load_results
 
 if __name__ == '__main__':
     directory = join(DATA_PATH, 'fame2biomass')

@@ -8,8 +8,8 @@ from matplotlib import pyplot as plt
 from scipy import stats
 from scipy.stats import hypergeom, ks_2samp
 from statsmodels.stats import multitest
-from GSMMutils.model.COBRAmodel import MyModel
-from GSMMutils import DATA_PATH
+from gsmmutils.model.COBRAmodel import MyModel
+from gsmmutils import DATA_PATH
 import logging
 
 logging.getLogger('cobra.io').setLevel(logging.CRITICAL)

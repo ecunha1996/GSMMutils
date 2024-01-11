@@ -1,4 +1,4 @@
-# GSMMutils
+# gsmmutils
 
 
 ## Description
@@ -14,11 +14,11 @@ It offers a set of functions for (some of them are executed with docker containe
 
 ## Installation
 
-To install GSMMutils, clone the repository and run the setup.py script:
+To install gsmmutils, clone the repository and run the setup.py script:
 
 ```
-git clone  https://github.com/ecunha1996/GSMMutils.git
-cd GSMMutils
+git clone  https://github.com/ecunha1996/gsmmutils.git
+cd gsmmutils
 python setup.py install
 ```
 

@@ -1,4 +1,4 @@
-GSMMutils
+gsmmutils
 ======
 
 

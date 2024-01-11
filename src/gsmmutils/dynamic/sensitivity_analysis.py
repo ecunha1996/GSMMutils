@@ -3,10 +3,10 @@ import json
 from collections import OrderedDict
 from typing import List
 
-from GSMMutils.dynamic.initial_conditions import get_initial_conditions
-from GSMMutils.dynamic.rhs import get_bounds
-from GSMMutils.experimental.ExpMatrix import ExpMatrix
-from GSMMutils.utils.utils import get_parameter_range
+from gsmmutils.dynamic.initial_conditions import get_initial_conditions
+from gsmmutils.dynamic.rhs import get_bounds
+from gsmmutils.experimental.ExpMatrix import ExpMatrix
+from gsmmutils.utils.utils import get_parameter_range
 
 
 class SensitivityAnalysis:

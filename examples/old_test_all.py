@@ -1,12 +1,12 @@
 from cobra import flux_analysis
 
-from GSMMutils import DATA_PATH
-from GSMMutils.experimental.ExpMatrix import ExpMatrix
-from GSMMutils.model.COBRAmodel import simulation_for_conditions, MyModel
+from gsmmutils import DATA_PATH
+from gsmmutils.experimental.ExpMatrix import ExpMatrix
+from gsmmutils.model.COBRAmodel import simulation_for_conditions, MyModel
 # from gsmmutils.omics.omics_integration import OmicsIntegration
 from os.path import join
-from GSMMutils.graphics.plot import *
-from GSMMutils.stats.stats import *
+from gsmmutils.graphics.plot import *
+from gsmmutils.stats.stats import *
 
 
 def read_model(data_directory=DATA_PATH, filename="model.xml"):

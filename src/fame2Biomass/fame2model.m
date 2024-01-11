@@ -25,7 +25,7 @@ mdl2.ub = [ones(nMets, 1); 1000*ones(nExp*2,1)];
 
 % ADD UPPER LIMITS FOR KNOWN LIPID CONFIGURATIONS
 
-const = "C:\Users\Bisbii\PythonProjects\GSMMutils\data\fame2biomass\model_ngaditana_lipids\constraints.json";
+const = "C:\Users\Bisbii\PythonProjects\gsmmutils\data\fame2biomass\model_ngaditana_lipids\constraints.json";
 jsonStr = fileread(const);
 data = jsondecode(jsonStr);
 fieldNames = fieldnames(data);
@@ -84,7 +84,7 @@ end
 StoichOut = LipidStoich(metIndex);
 MetsOut = lipidClass(metIndex)';
 TableOut = horzcat(MetsOut, num2cell(StoichOut));
-outfilename = strcat('C:\Users\Bisbii\PythonProjects\GSMMutils\data\fame2biomass\model_ngaditana_lipids\', lipid_name);
+outfilename = strcat('C:\Users\Bisbii\PythonProjects\gsmmutils\data\fame2biomass\model_ngaditana_lipids\', lipid_name);
 outfilename = strcat(outfilename, '_opt_results.tsv');
 writecell(TableOut, outfilename, 'FileType', 'text','Delimiter','tab');
 return_val = 'return';

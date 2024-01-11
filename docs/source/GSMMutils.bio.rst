@@ -1,21 +1,21 @@
-GSMMutils.bio package
+gsmmutils.bio package
 =====================
 
 Submodules
 ----------
 
-GSMMutils.bio.gene module
+gsmmutils.bio.gene module
 -------------------------
 
-.. automodule:: GSMMutils.bio.gene
+.. automodule:: gsmmutils.bio.gene
    :members:
    :undoc-members:
    :show-inheritance:
 
-GSMMutils.bio.genes module
+gsmmutils.bio.genes module
 --------------------------
 
-.. automodule:: GSMMutils.bio.genes
+.. automodule:: gsmmutils.bio.genes
    :members:
    :undoc-members:
    :show-inheritance:
@@ -23,7 +23,7 @@ GSMMutils.bio.genes module
 Module contents
 ---------------
 
-.. automodule:: GSMMutils.bio
+.. automodule:: gsmmutils.bio
    :members:
    :undoc-members:
    :show-inheritance:

@@ -9,8 +9,8 @@ import pandas as pd
 import scipy
 from cobra import Model
 
-from GSMMutils import SRC_PATH, DATA_PATH
-from GSMMutils.model.COBRAmodel import MyModel
+from gsmmutils import SRC_PATH, DATA_PATH
+from gsmmutils.model.COBRAmodel import MyModel
 
 
 def load_results():

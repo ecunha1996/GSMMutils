@@ -1,69 +1,69 @@
-GSMMutils.dynamic package
+gsmmutils.dynamic package
 =========================
 
 Submodules
 ----------
 
-GSMMutils.dynamic.DAE module
+gsmmutils.dynamic.DAE module
 ----------------------------
 
-.. automodule:: GSMMutils.dynamic.DAE
+.. automodule:: gsmmutils.dynamic.DAE
    :members:
    :undoc-members:
    :show-inheritance:
 
-GSMMutils.dynamic.dfba\_docker module
+gsmmutils.dynamic.dfba\_docker module
 -------------------------------------
 
-.. automodule:: GSMMutils.dynamic.dfba_docker
+.. automodule:: gsmmutils.dynamic.dfba_docker
    :members:
    :undoc-members:
    :show-inheritance:
 
-GSMMutils.dynamic.drhs module
+gsmmutils.dynamic.drhs module
 -----------------------------
 
-.. automodule:: GSMMutils.dynamic.drhs
+.. automodule:: gsmmutils.dynamic.drhs
    :members:
    :undoc-members:
    :show-inheritance:
 
-GSMMutils.dynamic.exchange\_fluxes module
+gsmmutils.dynamic.exchange\_fluxes module
 -----------------------------------------
 
-.. automodule:: GSMMutils.dynamic.exchange_fluxes
+.. automodule:: gsmmutils.dynamic.exchange_fluxes
    :members:
    :undoc-members:
    :show-inheritance:
 
-GSMMutils.dynamic.initial\_conditions module
+gsmmutils.dynamic.initial\_conditions module
 --------------------------------------------
 
-.. automodule:: GSMMutils.dynamic.initial_conditions
+.. automodule:: gsmmutils.dynamic.initial_conditions
    :members:
    :undoc-members:
    :show-inheritance:
 
-GSMMutils.dynamic.rhs module
+gsmmutils.dynamic.rhs module
 ----------------------------
 
-.. automodule:: GSMMutils.dynamic.rhs
+.. automodule:: gsmmutils.dynamic.rhs
    :members:
    :undoc-members:
    :show-inheritance:
 
-GSMMutils.dynamic.run\_dfba module
+gsmmutils.dynamic.run\_dfba module
 ----------------------------------
 
-.. automodule:: GSMMutils.dynamic.run_dfba
+.. automodule:: gsmmutils.dynamic.run_dfba
    :members:
    :undoc-members:
    :show-inheritance:
 
-GSMMutils.dynamic.soa module
+gsmmutils.dynamic.soa module
 ----------------------------
 
-.. automodule:: GSMMutils.dynamic.soa
+.. automodule:: gsmmutils.dynamic.soa
    :members:
    :undoc-members:
    :show-inheritance:
@@ -71,7 +71,7 @@ GSMMutils.dynamic.soa module
 Module contents
 ---------------
 
-.. automodule:: GSMMutils.dynamic
+.. automodule:: gsmmutils.dynamic
    :members:
    :undoc-members:
    :show-inheritance:

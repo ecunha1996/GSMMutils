@@ -1,9 +1,9 @@
 import unittest
 from os import chdir
 from os.path import join, dirname
-from GSMMutils.dynamic.sensitivity_analysis import SensitivityAnalysis
-from GSMMutils.experimental.ExpMatrix import ExpMatrix
-from GSMMutils.graphics.plot import lineplot
+from gsmmutils.dynamic.sensitivity_analysis import SensitivityAnalysis
+from gsmmutils.experimental.ExpMatrix import ExpMatrix
+from gsmmutils.graphics.plot import lineplot
 
 
 class TestSensitivityAnalysis(unittest.TestCase):

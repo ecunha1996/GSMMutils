@@ -1,7 +1,7 @@
-GSMMutils
+gsmmutils
 =========
 
 .. toctree::
    :maxdepth: 4
 
-   GSMMutils
+   gsmmutils

@@ -1,7 +1,7 @@
 import os
 from os.path import join
 
-from GSMMutils.utils.remote import Remote
+from gsmmutils.utils.remote import Remote
 
 
 class TroppoDocker:

@@ -1,6 +1,6 @@
 import unittest
 
-from GSMMutils.annotation.genome_annotation import StructuralAnnotation
+from gsmmutils.annotation import StructuralAnnotation
 from os.path import join, dirname
 
 class StructuralAnnotationTest(unittest.TestCase):

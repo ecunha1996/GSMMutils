@@ -2,8 +2,8 @@ import json
 
 import pandas as pd
 
-from GSMMutils import MyModel, DATA_PATH
-from GSMMutils.api.kegg import search_pathway_map_id
+from gsmmutils import MyModel, DATA_PATH
+from gsmmutils.api.kegg import search_pathway_map_id
 import webbrowser
 
 
@@ -68,8 +68,8 @@ def get_der_by_pathway(pathway_name, pathway_map, data, model):
 
 if __name__ == '__main__':
     data = load_data([
-        r"C:\Users\Bisbii\PythonProjects\GSMMutils\data\omics\nacl_fastcore_results.csv",
-        r"C:\Users\Bisbii\PythonProjects\GSMMutils\data\omics\nacl_gimme_results.csv",
+        r"C:\Users\Bisbii\PythonProjects\gsmmutils\data\omics\nacl_fastcore_results.csv",
+        r"C:\Users\Bisbii\PythonProjects\gsmmutils\data\omics\nacl_gimme_results.csv",
         #r"C:\Users\Bisbii\PythonProjects\gsmmutils\data\omics\h2o2_fastcore_results.csv",
         #r"C:\Users\Bisbii\PythonProjects\gsmmutils\data\omics\h2o2_gimme_results.csv",
         # r"C:\Users\Bisbii\PythonProjects\gsmmutils\data\omics\ml_ll_results.csv",

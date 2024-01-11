@@ -1,13 +1,13 @@
-GSMMutils.graphics package
+gsmmutils.graphics package
 ==========================
 
 Submodules
 ----------
 
-GSMMutils.graphics.plot module
+gsmmutils.graphics.plot module
 ------------------------------
 
-.. automodule:: GSMMutils.graphics.plot
+.. automodule:: gsmmutils.graphics.plot
    :members:
    :undoc-members:
    :show-inheritance:
@@ -15,7 +15,7 @@ GSMMutils.graphics.plot module
 Module contents
 ---------------
 
-.. automodule:: GSMMutils.graphics
+.. automodule:: gsmmutils.graphics
    :members:
    :undoc-members:
    :show-inheritance:

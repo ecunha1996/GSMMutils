@@ -4,10 +4,10 @@ from os.path import join
 
 import numpy as np
 
-from GSMMutils import DATA_PATH
-from GSMMutils.io import read_csv
-from GSMMutils.model.COBRAmodel import MyModel
-from GSMMutils.omics.omics_integration import OmicsIntegration
+from gsmmutils import DATA_PATH
+from gsmmutils.io import read_csv
+from gsmmutils.model.COBRAmodel import MyModel
+from gsmmutils.omics.omics_integration import OmicsIntegration
 import pickle
 
 

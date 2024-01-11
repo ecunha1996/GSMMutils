@@ -2,7 +2,7 @@ import unittest
 
 import cobra
 from pandas import DataFrame
-from GSMMutils.model.model_validator import ModelValidator
+from gsmmutils.model.model_validator import ModelValidator
 from unit_tests.model.test_model import TestModel
 
 

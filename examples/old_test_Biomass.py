@@ -3,9 +3,9 @@ from os.path import join
 
 import cobra
 
-from GSMMutils import DATA_PATH
-from GSMMutils.experimental.Biomass import Biomass
-from GSMMutils.model.COBRAmodel import MyModel
+from gsmmutils import DATA_PATH
+from gsmmutils.experimental.Biomass import Biomass
+from gsmmutils.model.COBRAmodel import MyModel
 
 
 def read_model(data_directory, filename="model.xml"):

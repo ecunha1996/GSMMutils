@@ -1,5 +1,5 @@
 import unittest
-from GSMMutils.api.uniprot import Uniprot
+from gsmmutils.api.uniprot import Uniprot
 
 
 class MyTestCase(unittest.TestCase):

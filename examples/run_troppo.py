@@ -1,11 +1,11 @@
 import math
 import cobra.io
-from GSMMutils.model.COBRAmodel import *
+from gsmmutils.model.COBRAmodel import *
 import seaborn as sns
-from GSMMutils.omics.troppo import integration_pipeline
+from gsmmutils.omics.troppo import integration_pipeline
 from cobra.flux_analysis import find_blocked_reactions
-from GSMMutils.io import read_csv
-from GSMMutils.omics.omics_integration import OmicsIntegration
+from gsmmutils.io import read_csv
+from gsmmutils.omics.omics_integration import OmicsIntegration
 
 sns.set(rc={'figure.figsize': (35, 8.27)})
 

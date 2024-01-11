@@ -10,7 +10,7 @@ import platform
 if platform.system() == "Linux":
     data_path = "/home/data/"
 else:
-    data_path = r"C:\Users\Bisbii\PythonProjects\GSMMutils\data"
+    data_path = r"C:\Users\Bisbii\PythonProjects\gsmmutils\data"
 
 
 def main():

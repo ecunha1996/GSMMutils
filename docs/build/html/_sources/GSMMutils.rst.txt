@@ -1,4 +1,4 @@
-GSMMutils package
+gsmmutils package
 =================
 
 Subpackages
@@ -7,22 +7,22 @@ Subpackages
 .. toctree::
    :maxdepth: 4
 
-   GSMMutils.annotation
-   GSMMutils.api
-   GSMMutils.bio
-   GSMMutils.dynamic
-   GSMMutils.experimental
-   GSMMutils.graphics
-   GSMMutils.io
-   GSMMutils.model
-   GSMMutils.omics
-   GSMMutils.stats
-   GSMMutils.utils
+   gsmmutils.annotation
+   gsmmutils.api
+   gsmmutils.bio
+   gsmmutils.dynamic
+   gsmmutils.experimental
+   gsmmutils.graphics
+   gsmmutils.io
+   gsmmutils.model
+   gsmmutils.omics
+   gsmmutils.stats
+   gsmmutils.utils
 
 Module contents
 ---------------
 
-.. automodule:: GSMMutils
+.. automodule:: gsmmutils
    :members:
    :undoc-members:
    :show-inheritance:

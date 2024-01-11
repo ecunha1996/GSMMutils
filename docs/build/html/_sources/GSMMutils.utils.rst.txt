@@ -1,45 +1,45 @@
-GSMMutils.utils package
+gsmmutils.utils package
 =======================
 
 Submodules
 ----------
 
-GSMMutils.utils.config\_variables module
+gsmmutils.utils.config\_variables module
 ----------------------------------------
 
-.. automodule:: GSMMutils.utils.config_variables
+.. automodule:: gsmmutils.utils.config_variables
    :members:
    :undoc-members:
    :show-inheritance:
 
-GSMMutils.utils.medium\_variables module
+gsmmutils.utils.medium\_variables module
 ----------------------------------------
 
-.. automodule:: GSMMutils.utils.medium_variables
+.. automodule:: gsmmutils.utils.medium_variables
    :members:
    :undoc-members:
    :show-inheritance:
 
-GSMMutils.utils.pipeline\_paths module
+gsmmutils.utils.pipeline\_paths module
 --------------------------------------
 
-.. automodule:: GSMMutils.utils.pipeline_paths
+.. automodule:: gsmmutils.utils.pipeline_paths
    :members:
    :undoc-members:
    :show-inheritance:
 
-GSMMutils.utils.remote module
+gsmmutils.utils.remote module
 -----------------------------
 
-.. automodule:: GSMMutils.utils.remote
+.. automodule:: gsmmutils.utils.remote
    :members:
    :undoc-members:
    :show-inheritance:
 
-GSMMutils.utils.utils module
+gsmmutils.utils.utils module
 ----------------------------
 
-.. automodule:: GSMMutils.utils.utils
+.. automodule:: gsmmutils.utils.utils
    :members:
    :undoc-members:
    :show-inheritance:
@@ -47,7 +47,7 @@ GSMMutils.utils.utils module
 Module contents
 ---------------
 
-.. automodule:: GSMMutils.utils
+.. automodule:: gsmmutils.utils
    :members:
    :undoc-members:
    :show-inheritance:

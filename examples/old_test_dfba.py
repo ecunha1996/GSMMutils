@@ -2,9 +2,9 @@ from os.path import join
 
 import numpy as np
 
-from GSMMutils.dynamic.soa import soa
-from GSMMutils.model.COBRAmodel import MyModel
-from GSMMutils.utils.utils import get_element_in_biomass, get_biomass_mass
+from gsmmutils.dynamic.soa import soa
+from gsmmutils.model.COBRAmodel import MyModel
+from gsmmutils.utils.utils import get_element_in_biomass, get_biomass_mass
 
 
 def read_model(data_directory):

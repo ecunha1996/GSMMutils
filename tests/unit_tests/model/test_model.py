@@ -2,7 +2,7 @@ import os
 import unittest
 from os.path import dirname, join
 
-from GSMMutils import MyModel
+from gsmmutils import MyModel
 
 
 class TestModel(unittest.TestCase):
