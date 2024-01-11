@@ -10,7 +10,7 @@ if __name__ == "__main__":
     python_requires='>=3.6',
     package_dir={'': 'src'},
     packages=find_packages('src'),
-    package_data={"": ["*.xml", "*.csv", "*.txt"], 'gsmmutils': files},
+    package_data={"": ["*.xml", "*.csv", "*.txt"]},
     include_package_data=True,
     long_description=readme,
     test_suite='tests'
