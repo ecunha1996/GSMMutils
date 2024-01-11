@@ -3,7 +3,7 @@ import os
 from os.path import join
 import paramiko
 from gsmmutils.utils.utils import get_login_info
-
+from stat import S_ISDIR, S_ISREG
 
 class Remote:
     def __init__(self, data_directory=None, src_directory=None, server="turing"):
@@ -68,7 +68,7 @@ class Remote:
         print(stdout.read().decode('utf-8'))
         print(stderr.read().decode('utf-8'))
 
-    def upload_data(self, localFilePath, remoteFilePath):
+    def upload_data(self, localFilePath, remoteFilePath, isDirectory=False):
         """
         Method to upload data from local system to remote server.
         Parameters
@@ -87,7 +87,7 @@ class Remote:
             print(f"File {localFilePath} was not found on the local system")
         sftp_client.close()
 
-    def download_data(self, remoteFilePath, localFilePath):
+    def download_data(self, remoteFilePath, localFilePath, isDirectory=False):
         """
         Method to download data from remote server to local system.
         Parameters
@@ -101,10 +101,61 @@ class Remote:
         """
         sftp_client = self.client.open_sftp()
         try:
-            sftp_client.get(remoteFilePath, localFilePath)
+            if not isDirectory:
+                sftp_client.get(remoteFilePath, localFilePath)
+            else:
+                sftp_get_recursive(remoteFilePath, localFilePath, sftp_client)
         except FileNotFoundError as err:
             print(f"File: {remoteFilePath} was not found on the source server {self.__hostName}:{self.__port}")
-        sftp_client.close()
+        finally:
+            sftp_client.close()
+
+    def sftp_put_recursive(self, path, dest, sftp):
+        """
+        Method to recursively upload data from local system to remote server.
+        Parameters
+        ----------
+        path
+        dest
+        sftp
+
+        Returns
+        -------
+
+        """
+        if os.path.isdir(path):
+            try:
+                sftp.mkdir(dest)
+            except IOError:
+                pass
+            for f in os.listdir(path):
+                sftp_put_recursive(os.path.join(path, f), os.path.join(dest, f), sftp)
+        else:
+            sftp.put(path, dest)
+
+    def sftp_get_recursive(self, path, dest, sftp):
+        """
+        Method to recursively download data from remote server to local system.
+        Parameters
+        ----------
+        path
+        dest
+        sftp
+
+        Returns
+        -------
+
+        """
+        item_list = sftp.listdir_attr(path)
+        dest = str(dest)
+        if not os.path.isdir(dest):
+            os.makedirs(dest, exist_ok=True)
+        for item in item_list:
+            mode = item.st_mode
+            if S_ISDIR(mode):
+                sftp_get_recursive(path + "/" + item.filename, dest + "/" + item.filename, sftp)
+            else:
+                sftp.get(path + "/" + item.filename, dest + "/" + item.filename)
 
     def exec(self, cmd):
         """
