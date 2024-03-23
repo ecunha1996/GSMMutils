@@ -1,15 +1,129 @@
-from os import getcwd, chdir
+from os import getcwd, chdir, walk
 from os.path import getsize
+from typing import Union
 
 import pandas as pd
 
-from ..api.uniprot import UniProt
+from ..api import UniProt
+from ..bio.genome import Genome
 from ..utils.utils import run
+from Bio.SeqIO import parse
 
 
 class GenomeAnnotation:
     def __init__(self):
-        self.genes = None
+        self._results = {}
+        self._genomes = {}
+        self._report = {}
+
+    @property
+    def genomes(self):
+        return self._genomes
+
+    @genomes.setter
+    def genomes(self, genomes):
+        self._genomes = genomes
+
+    @property
+    def results(self):
+        return self._results
+
+    @results.setter
+    def results(self, results):
+        self._results = results
+
+    @property
+    def report(self) -> dict:
+        return self._report
+
+    @report.setter
+    def report(self, report: dict):
+        self._report = report
+
+    def load_genes(self, name: str, genome: Union[list, Genome]):
+        """
+        This function loads the genes.
+        Parameters
+        ----------
+        name: str
+            The name of the genome.
+        genome: list or Genome
+            The list of genes or the genome object.
+        Returns
+        -------
+
+        """
+        self.genomes[name] = genome
+
+    def load_from_fasta(self, filepath: str, name: str = None):
+        """
+        This function loads the genes from a fasta file.
+        Parameters
+        ----------
+        filepath: str
+            The path to the fasta file.
+
+        Returns
+        -------
+
+        """
+        if not name:
+            name = filepath.split('/')[-1].split('.')[0]
+        genes = []
+        for record in parse(filepath, 'fasta'):
+            genes.append(record)
+        self.genomes[name] = genes
+
+    def load_genomes_from_folder(self, folder: str):
+        """
+        This function loads the genomes from a folder.
+        Parameters
+        ----------
+        folder: str
+            The path to the folder.
+
+        Returns
+        -------
+
+        """
+        for dirpath, dirnames, filenames in walk(folder):
+            for filename in filenames:
+                if filename.endswith('.faa'):
+                    genome = Genome()
+                    genome.load_from_fasta(f"{dirpath}/{filename}")
+                    self.load_genes(filename, genome)
+
+    def load_results(self, path: str, name: str = None, **kwargs):
+        """
+        This function loads the results.
+        Parameters
+        ----------
+        path: str
+            The path to the results.
+        name: str
+            The name of the results.
+
+        Returns
+        -------
+
+        """
+        pass
+
+    def calculate_gene_annotation_ratio(self, methods=None):
+        """
+        This function calculates the gene annotation ratio.
+        Returns
+        -------
+
+        """
+        if methods is None:
+            methods = ['interproscan', 'busco']
+        for name, result in self.results.items():
+            if name not in self.report:
+                self.report[name] = {}
+            for method in methods:
+                genes_with_results = len(result[method].gene_id.unique())
+                self.report[name]['Gene Annotation Ratio'] = genes_with_results / len(self.genomes[name])
 
 
 class StructuralAnnotation(GenomeAnnotation):
@@ -93,7 +207,7 @@ class FunctionalAnnotation(GenomeAnnotation):
         old_dir = getcwd()
         chdir(self.blast_directory)
         # get records from Swiss-prot, with the ec_number
-        uniprot_api = Uniprot()
+        uniprot_api = UniProt()
         result = list(uniprot_api.search_by_ec_number(ec_number))
         # write the records to a fasta file
         if len(result) > 0:

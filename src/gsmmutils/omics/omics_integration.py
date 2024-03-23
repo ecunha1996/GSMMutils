@@ -12,7 +12,7 @@ from mewpy.omics import ExpressionSet
 from mewpy.omics import ExpressionSet, eFlux, GIMME, iMAT
 from mewpy.simulation import get_simulator
 
-from ..bio.genes import Genes
+from ..bio.genome import Genome
 from ..graphics.plot import clustermap
 from ..io import read_csv
 from ..io import write_specific_models
@@ -31,7 +31,7 @@ class OmicsIntegration:
         self.counts_file = join(os.getcwd(), filename)
         self.samples, self.samples_names = None, samples_names
         self._data, self._counts, self.tpm = pd.DataFrame(), pd.DataFrame(), pd.DataFrame()
-        self._genes = Genes()
+        self._genes = Genome()
         self.load()
         self.groups = groups or [e.split("_")[0] for e in self.samples]
         self.specific_models = {}
@@ -42,7 +42,7 @@ class OmicsIntegration:
 
     @genes.setter
     def genes(self, value):
-        self._genes = Genes(batch=value)
+        self._genes = Genome(batch=value)
 
     @property
     def data(self):

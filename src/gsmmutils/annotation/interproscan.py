@@ -1,12 +1,49 @@
 import os
 from os.path import join
 
+from .genome_annotation import GenomeAnnotation
+from ..io import read_csv
 from ..utils.remote import Remote, DockerClient
 
 
-class InterProScan:
+class InterProScan(GenomeAnnotation):
     def __init__(self):
-        pass
+        super().__init__()
+        self._results = {}
+
+    def load_results(self, path: str, name: str = None, **kwargs):
+        """
+        This function loads the results from the InterProScan.
+        Parameters
+        ----------
+        name: str
+            The name of the results.
+        path: str
+            The path to the InterProScan results.
+
+        Returns
+        -------
+
+        """
+        if not name:
+            name = path.split("/")[-1].split(".")[0]
+        df = read_csv(path, sep="\t", header=None, **kwargs)
+        df.columns = ['gene_id', 'hash', 'score', 'db', 'db_accession', 'db_description', 'start', 'end', 'evalue', 'status', 'date', 'interpro_accession', 'interpro_description']
+        if name not in self.results:
+            self.results[name] = {}
+        self.results[name]['interproscan'] = df
+
+    def load_results_from_folder(self, path: str):
+        """
+        This function loads the results from the InterProScan folder.
+        Returns
+        -------
+
+        """
+        for root, dirs, files in os.walk(path):
+            for file in files:
+                if file.endswith(".tsv"):
+                    self.load_results(join(root, file))
 
 
 class InterProScanDocker(DockerClient):
@@ -24,5 +61,5 @@ class InterProScanDocker(DockerClient):
             f'{self.remote.container_tool} run --name interproscan --rm -v {self.data_directory}:/home/data:Z -v {self.src_directory}:/home/src/:Z '
             f'-v {self.examples_directory}:/home/examples/:Z -v {self.config_directory}:/home/config/:Z -v {self.utilities_directory}:/home/utilities/:Z -v {self.interproscan_directory}:/home/interproscan/:Z '
             f'interproscan sh -c "cd /home && /home/interproscan/interproscan.sh {interproscan_cmd}"'
-            )
+        )
         self.remote.run('interproscan', cmd)
