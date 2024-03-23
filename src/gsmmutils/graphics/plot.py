@@ -3,6 +3,7 @@ from typing import Union, List, Any, Tuple
 import matplotlib.pyplot as plt
 import pandas as pd
 import seaborn as sns
+from matplotlib.pyplot import scatter
 from scipy import stats
 
 sns.set(rc={'figure.figsize': (15, 6)})
@@ -201,3 +202,33 @@ def generate_plot_for_data(filename: str, experimental_data: dict, simulation_da
     plt.ylabel(y_label)
     plt.xlabel(r"Trial")
     plt.savefig(filename)
+
+
+def basic_scatter(data, to_show=False, path=None, **kwargs):
+    """
+
+    Parameters
+    ----------
+    path
+    to_show
+    data
+
+    Returns
+    -------
+
+    """
+    x = list(data.values())
+    y = list(data.keys())
+    scatter(x=x, y=y)
+    if 'ylabel' in kwargs:
+        plt.ylabel(kwargs['ylabel'])
+    if 'xlabel' in kwargs:
+        plt.xlabel(kwargs['xlabel'])
+    if 'title' in kwargs:
+        plt.title(kwargs['title'])
+    if to_show:
+        plt.show()
+    else:
+        plt.savefig(path)
+    plt.clf()
+    plt.close()

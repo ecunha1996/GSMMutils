@@ -9,12 +9,9 @@ from cobra import Metabolite
 from joblib import Parallel, delayed
 from scipy.stats import linregress
 import numpy as np
-from gsmmutils.experimental.BiomassComponent import BiomassComponent
 
-SRC_PATH = abspath(join(dirname(__file__), '../'))
-DATA_PATH = abspath(join(dirname(__file__), '../../data'))
-CONFIG_PATH = abspath(join(dirname(__file__), '../../../config'))
-
+from .. import CONFIG_PATH
+from ..experimental.BiomassComponent import BiomassComponent
 
 def get_login_info(server: str):
     try:
@@ -81,7 +78,6 @@ def get_average_uptake(data, exponential_phase, substrate) -> float:
 
 def get_element_in_biomass(model, element, biomass_reaction):
     res = get_biomass_mass(model, biomass_reaction)
-    print(res)
     percentage_map = {}
     for key in res[1]:
         percentage_map[key] = round(res[1][key] * Metabolite(formula=key).formula_weight / 1000, 3)
@@ -189,7 +185,6 @@ def get_biomass_mass(model, biomass_reaction=None, lipid_subreactions=None):
         current_counter = 0
         lipid_stoichiometry = abs(current_biomass_reaction.metabolites[model.metabolites.e_Lipid__cytop])
         lipids_reaction = model.reactions.e_Lipid__cytop
-
         for reaction in lipid_subreactions:
             for reactant in reaction.reactants:
                 current_counter += abs(reaction.metabolites[reactant] * reactant.formula_weight * lipids_reaction.metabolites[
@@ -209,8 +204,6 @@ def get_biomass_mass(model, biomass_reaction=None, lipid_subreactions=None):
     counter, element_counter = parse_lipids(biomass_reaction, element_counter)
     c = 0
     c += counter / 1000
-    print("e-Lipid")
-    print(c)
     to_ignore = ["C00002__cytop", "C00001__cytop", "e_Lipid__cytop"]
     for reactant in biomass_reaction.reactants:
         if reactant.id not in to_ignore:
@@ -226,14 +219,12 @@ def get_biomass_mass(model, biomass_reaction=None, lipid_subreactions=None):
                         else:
                             go = False
                     if go:
-                        print(reaction.id)
                         if 'Protein' in reaction.id:
                             ignore_water = True
                         else:
                             ignore_water = False
                         res = get_sum_of_reaction(reaction, abs(biomass_reaction.metabolites[reactant]), ignore_water,
                                                   element_counter)
-                        print(res)
                         c += res[0]
                         element_counter = res[1]
     return round(c, 3), element_counter

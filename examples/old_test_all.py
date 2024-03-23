@@ -2,8 +2,6 @@ from cobra import flux_analysis
 
 from gsmmutils import DATA_PATH
 from gsmmutils.experimental.ExpMatrix import ExpMatrix
-from gsmmutils.model.COBRAmodel import simulation_for_conditions, MyModel
-# from gsmmutils.omics.omics_integration import OmicsIntegration
 from os.path import join
 from gsmmutils.graphics.plot import *
 from gsmmutils.stats.stats import *
@@ -19,7 +17,7 @@ def read_model(data_directory=DATA_PATH, filename="model.xml"):
     except:
         pass
     model.set_prism_reaction("PRISM_white_LED__extr")
-    model.reactions.ATPm__cytop.bounds = (2.85, 2.85)
+    model.reactions.ATPm__cytop.bounds = (2.85*24, 2.85*24)
     # blocked = flux_analysis.find_blocked_reactions(model, open_exchanges=True)
     # model.remove_reactions(blocked)
     # model.write(join(data_directory, "models/model_with_no_blocked.xml"))
@@ -110,6 +108,6 @@ if __name__ == '__main__':
     # matrix = ExpMatrix(join(data_directory, "Matriz- DCCR Dunaliella salina_new.xlsx"))
     matrix.conditions = "Resume"
     print("Simulating")
-    # simulations(matrix, model)
-    # simulations_max_carotene(matrix, model)
+    simulations(matrix, model)
+    simulations_max_carotene(matrix, model)
     # stats(data_directory, "Matriz- DCCR Dunaliella salina_new.xlsx")

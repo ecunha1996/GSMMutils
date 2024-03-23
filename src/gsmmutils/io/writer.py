@@ -15,7 +15,7 @@ def write_matrix(matrix, filename, **kwargs):
                 len(str(series.name))
             )) + 3
             worksheet.set_column(idx, idx, max_len)
-    writer.save()
+    writer.close()
 
 
 def write_simulation(results, filename, **kwargs):

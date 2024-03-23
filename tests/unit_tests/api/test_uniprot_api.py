@@ -1,11 +1,11 @@
 import unittest
-from gsmmutils.api.uniprot import Uniprot
+from gsmmutils.api.uniprot import UniProt
 
 
 class MyTestCase(unittest.TestCase):
     def test_uniprot_api_online_reviewed(self):
         ec_number = "2.7.11.1"
-        unprot_api = Uniprot()
+        unprot_api = UniProt()
         result = unprot_api.search_by_ec_number(ec_number)
         self.assertGreater(len(result), 0)
 

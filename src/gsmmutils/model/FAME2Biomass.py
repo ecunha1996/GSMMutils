@@ -9,8 +9,10 @@ import pandas as pd
 import scipy
 from cobra import Model
 
-from gsmmutils import SRC_PATH, DATA_PATH
-from gsmmutils.model.COBRAmodel import MyModel
+from ..utils.configs import get_config
+DATA_PATH = get_config().get("PATHS", "DATA_PATH")
+SRC_PATH = get_config().get("PATHS", "SRC_PATH")
+from ..model.COBRAmodel import MyModel
 
 
 def load_results():
@@ -78,6 +80,8 @@ def parse_other_lipids(lipid_abb, list_of_names, chains_map, obj_list):
                 print(acyl)
         except Exception as e:
             print(e)
+            print(lipid)
+            print("----")
     as_list = list(final_map.values())
     for e in as_list:
         if as_list.count(e) > 1:
@@ -88,6 +92,7 @@ def parse_other_lipids(lipid_abb, list_of_names, chains_map, obj_list):
 def get_metmat_tag(final_map, set_of_names, chains_map):
     faas = []
     met_mat = [[1 for _ in range(len(final_map.keys()))]]
+    met_mat_as_dict = {"row_0": [1 for _ in range(len(final_map.keys()))]}
     for fatty_acid_name, code in chains_map.items():
         temp = []
         for lipid in set_of_names:
@@ -98,8 +103,11 @@ def get_metmat_tag(final_map, set_of_names, chains_map):
             counter = [chain_1, chain_2, chain_3]
             temp.append(counter.count(code))
             faas += counter
-        met_mat.append(temp)
-    return met_mat, faas
+        if not all(e == 0 for e in temp):
+            met_mat.append(temp)
+            met_mat_as_dict[f"{fatty_acid_name}"] = temp
+    as_df = pd.DataFrame.from_dict(met_mat_as_dict, orient='index', columns=list(set_of_names))
+    return met_mat, faas, as_df
 
 
 def get_metmat(final_map, set_of_names, chains_map):
@@ -144,22 +152,51 @@ def parse_dgts(model, objective_list=None):
 
 
 def parse_tag(model):
-    list_of_names = [e.name for e in model.reactions.e_TAG_complete__lip.reactants]
-    chains_map = {'dodecanoyl': "12_0", "tetradecanoyl": "14_0", '9Z-tetradecenoyl': "14_1", "hexadecanoyl": "16_0",
-                  "9Z-hexadecenoyl": "16_1", '9Z,12Z-hexadecadienoyl': '16_2',
-                  "9Z,12Z,15Z-hexadecatrienoyl": "16_3", "4Z,7Z,10Z,13Z-hexadecatetraenoyl": "16_4",
-                  "heptadecanoyl": "17_0", "10Z-heptadecenoyl": "17_1",
-                  "octadecanoyl": "18_0", "9Z-octadecenoyl": "18_1", '9Z,12Z-octadecadienoyl': "18_2",
-                  "6Z,9Z,12Z-octadecatrienoyl": '18_3v2', '9Z,12Z,15Z-octadecatrienoyl': "18_3",
-                  'eicosanoyl': "20_0", '11Z-eicosenoyl': "20_1", '11Z,14Z-eicosadienoyl': "20_2",
-                  'eicosatrienoyl': "20_3", '5Z,8Z,11Z,14Z-eicosatetraenoyl': "20_4",
-                  "5Z,8Z,11Z,14Z,17Z-eicosapentaenoyl": "20_5", "docosanoyl": "22_0", "13Z-docosenoyl": "22_1",
-                  '13Z,16Z-docosadienoyl': "22_2", "4Z,7Z,10Z,13Z,16Z,19Z-docosahexaenoyl": "22_6"}
+    list_of_names = [e.name for e in model.reactions.e_TAG_complete__in.reactants]
+    chains_map = OrderedDict({'dodecanoyl': "12_0",
+                              'tridecanoyl': "13_0",
+                              "tetradecanoyl": "14_0",
+                              '9Z-tetradecenoyl': "14_1",
+                              "pentadecanoyl": "15_0",
+                              "hexadecanoyl": "16_0",
+                              "9Z-hexadecenoyl": "16_1",
+                              "7Z-hexadecenoyl": "16_1v2",
+                              '9Z,12Z-hexadecadienoyl': '16_2',
+                              '7Z,10Z-hexadecadienoyl': '16_2v2',
+                              "7Z,10Z,13Z-hexadecatrienoyl": "16_3",
+                              "4Z,7Z,10Z-hexadecatrienoyl": "16_3v2",
+                              "9Z,12Z,15Z-hexadecatrienoyl": "16_3v2",
+                              "4Z,7Z,10Z,13Z-hexadecatetraenoyl": "16_4",
+                              "heptadecanoyl": "17_0",
+                              "9Z-heptadecenoyl": "17_1",
+                              "octadecanoyl": "18_0",
+                              "9Z-octadecenoyl": "18_1",
+                              "6Z-octadecenoyl": "18_1v2",
+                              '9Z,12Z-octadecadienoyl': "18_2",
+                              "6Z,9Z,12Z-octadecatrienoyl": '18_3v2',
+                              '9Z,12Z,15Z-octadecatrienoyl': "18_3",
+                              "6Z,9Z,12Z,15Z-octadecatetraenoyl": "18_4",
+                              "nonadecanoyl": "19_0",
+                              "9Z-nonadecenoyl": "19_1",
+                              'eicosanoyl': "20_0",
+                              '11Z-eicosenoyl': "20_1",
+                              '11Z,14Z-eicosadienoyl': "20_2",
+                              '8Z,11Z,14Z-eicosatrienoyl': "20_3",
+                              '11Z,14Z,17Z-eicosatrienoyl': "20_3_v2",
+                              '5Z,8Z,11Z,14Z-eicosatetraenoyl': "20_4",
+                              '8Z,11Z,14Z,17Z-eicosatetraenoyl': "20_4_v2",
+                              "5Z,8Z,11Z,14Z,17Z-eicosapentaenoyl": "20_5",
+                              "docosanoyl": "22_0",
+                              "13Z-docosenoyl": "22_1",
+                              '13Z,16Z-docosadienoyl': "22_2",
+                              "7Z,10Z,13Z,16Z,19Z-docosapentaenoyl": "22_5",
+                              "4Z,7Z,10Z,13Z,16Z-docosapentaenoyl": "22_5v2",
+                              "4Z,7Z,10Z,13Z,16Z,19Z-docosahexaenoyl": "22_6"})
     final_map = {}
     for lipid in list_of_names:
         try:
             acyl = lipid.split("-sn-")[0]
-            acyl = acyl.replace('(8Z,11Z,14Z-', "").replace('(5Z,8Z,11Z,14Z-', "").replace('(8Z,11Z,14Z,17Z-', "").replace('(11Z,14Z,17Z', "")
+            # acyl = acyl.replace('(8Z,11Z,14Z-', "").replace('(5Z,8Z,11Z,14Z-', "").replace('(8Z,11Z,14Z,17Z-', "").replace('(11Z,14Z,17Z', "")
             if "1-" in acyl and "-2-" in acyl and "-3-" in acyl:
                 chain_1 = acyl.split("-2-")[0].lstrip("1-").strip(")").strip("(")
                 chain_2 = acyl.split("-2-")[1].split("-3-")[0].strip(")").strip("(")
@@ -213,33 +250,41 @@ def parse_2fa_lipid(lipid_abb, model, compartment_id="C_00003", parent_reaction=
         parent_reaction = f'e_{lipid_abb}__{compartment}'
     list_of_names = [e.name for e in model.reactions.get_by_id(parent_reaction).reactants]
     chains_map = OrderedDict({'dodecanoyl': "12_0",
+                              'tridecanoyl': "13_0",
                               "tetradecanoyl": "14_0",
                               '9Z-tetradecenoyl': "14_1",
+                              "pentadecanoyl": "15_0",
                               "hexadecanoyl": "16_0",
                               "9Z-hexadecenoyl": "16_1",
-                              'hexadecadienoyl': '16_2',
+                              "7Z-hexadecenoyl": "16_1v2",
+                              '9Z,12Z-hexadecadienoyl': '16_2',
+                              '7Z,10Z-hexadecadienoyl': '16_2v2',
                               "7Z,10Z,13Z-hexadecatrienoyl": "16_3",
+                              "4Z,7Z,10Z-hexadecatrienoyl": "16_3v2",
+                              "9Z,12Z,15Z-hexadecatrienoyl": "16_3v2",
                               "4Z,7Z,10Z,13Z-hexadecatetraenoyl": "16_4",
                               "heptadecanoyl": "17_0",
-                              "10Z-heptadecenoyl": "17_1",
+                              "9Z-heptadecenoyl": "17_1",
                               "octadecanoyl": "18_0",
                               "9Z-octadecenoyl": "18_1",
+                              "6Z-octadecenoyl": "18_1v2",
                               'octadecadienoyl': "18_2",
                               "6Z,9Z,12Z-octadecatrienoyl": '18_3v2',
                               '9Z,12Z,15Z-octadecatrienoyl': "18_3",
                               "6Z,9Z,12Z,15Z-octadecatetraenoyl": "18_4",
+                              "9Z-nonadecenoyl": "19_1",
                               'eicosanoyl': "20_0",
                               '11Z-eicosenoyl': "20_1",
                               '11Z,14Z-eicosadienoyl': "20_2",
                               '8Z,11Z,14Z-eicosatrienoyl': "20_3",
                               '11Z,14Z,17Z-eicosatrienoyl': "20_3_v2",
-                              # '8Z,11Z,14Z,17Z-eicosatetraenoyl': "20_4",
                               '5Z,8Z,11Z,14Z-eicosatetraenoyl': "20_4",
+                              '8Z,11Z,14Z,17Z-eicosatetraenoyl': "20_4_v2",
                               "5Z,8Z,11Z,14Z,17Z-eicosapentaenoyl": "20_5",
                               "docosanoyl": "22_0",
                               "13Z-docosenoyl": "22_1",
                               '13Z,16Z-docosadienoyl': "22_2",
-                              "4Z,7Z,10Z,13Z,16Z-docosapentaenoyl": "22_5",
+                              "7Z,10Z,13Z,16Z,19Z-docosapentaenoyl": "22_5",
                               "4Z,7Z,10Z,13Z,16Z,19Z-docosahexaenoyl": "22_6"})
     if lipid_abb == "DGTS":
         final_map = parse_dgts(model, objective_list)
@@ -250,7 +295,7 @@ def parse_2fa_lipid(lipid_abb, model, compartment_id="C_00003", parent_reaction=
 
     set_of_names = set(final_map.values())
     if lipid_abb == "TAG":
-        met_mat, faas = get_metmat_tag(final_map, set_of_names, chains_map)
+        met_mat, faas, as_df = get_metmat_tag(final_map, set_of_names, chains_map)
     else:
         met_mat, faas, as_df = get_metmat(final_map, set_of_names, chains_map)
     # if lipid_abb == "DAG":
@@ -273,6 +318,12 @@ def parse_2fa_lipid(lipid_abb, model, compartment_id="C_00003", parent_reaction=
     df_zeros = as_df.loc[(as_df == 0).all(axis=1)]
 
     as_df = as_df.loc[(as_df != 0).any(axis=1)]
+
+    chains_map_rev = OrderedDict({v: k for k, v in chains_map.items()})
+
+    fas_in_objective = [chains_map_rev[e] for e in objective_list.keys()]
+
+    print(f"The fatty acids were not found:\n{[e for e in fas_in_objective if e not in as_df.index.tolist()]}")
 
     for row in met_mat:
         if not all(e == 0 for e in row):
@@ -313,26 +364,26 @@ class FAME2Biomass:
 
     def parse_results_to_merlin(self, final_map_rev, reaction_id, lipid='pg'):
         res = []
-        compounds = pd.read_csv(rf"{self.data_directory}/model_ngaditana_lipids/model_compound_from_db.csv")
+        compounds = pd.read_csv(rf"{self.data_directory}/model_plutheri/model_compound_from_db.csv")
         lipid_results = pd.read_csv(
-            f"{self.data_directory}/model_ngaditana_lipids/{lipid}_opt_results.tsv",
+            f"{self.data_directory}/model_plutheri/{lipid}_opt_results.tsv",
             sep="\t", index_col=0,
             header=None).astype(float)
         lipid_results.columns = ["value"]
         lipid_results = normalize_to_one(lipid_results)
         lipid_results.to_csv(f"{lipid}_normalized.tsv", sep="\t")
         as_dict = lipid_results.to_dict(orient='index')
-        compartment = 46 if lipid.upper() != "TAG" else 57
+        compartment = 1 if lipid.upper() != "TAG" else 1
         if lipid.upper() in ("PG", "MGDG", "DGDG", "SQDG"):
-            compartment = 13
+            compartment = 1
         for key, value in as_dict.items():
             if "chlo" in key:
                 key = key.replace("__chlo", "")
-                compartment = 13
+                compartment = 1
             idcompound = compounds.loc[compounds["external_identifier"] == final_map_rev[key], 'idcompound'].values[0]
             res.append([-value["value"], compartment, idcompound, reaction_id])
         res_df = pd.DataFrame(res, columns=["stoichiometry", "compartment_id", "idcompound", "idreaction"])
-        res_df.to_csv(f"{self.data_directory}/model_ngaditana_lipids/{lipid}_model_stoichiometry.csv", index=False)
+        res_df.to_csv(f"{self.data_directory}/model_plutheri/{lipid}_model_stoichiometry.csv", index=False)
 
     def run(self, lipid_abb, objective_list, compartment="er", compartment_id="C_00001"):
         met_mat, _, _, final_map_rev, lipid_class, as_df = parse_2fa_lipid(lipid_abb, self.model,
@@ -343,7 +394,7 @@ class FAME2Biomass:
         eng = matlab.engine.start_matlab()
         eng.cd(self.data_directory)
         eng.addpath(join(SRC_PATH, "fame2biomass"))
-        eng.addpath(r'C:\gurobi912\win64\matlab')
+        eng.addpath(r'C:\gurobi1002\win64\matlab')
 
         # get all rows from df where there are no twos
         df_filtered = as_df[as_df.apply(lambda row: 2 not in row.values, axis=1)]
@@ -363,8 +414,8 @@ class FAME2Biomass:
         # function_name(list(lipid_class), b_vector)
         eng.fame2model(list(lipid_class), lipid_abb.lower(), b_vector)
         os.chdir(self.data_directory)
-        reactions_ids_map = {"PG": 53014, "PE": 53273, "PI": 53292, "PC": 47440, "MGDG": 35956, "DGDG": 35957,
-                             "SQDG": 35962, "DGTS": 35955, "DAG": 53297, "TAG": 52720}
+        reactions_ids_map = {"PG": 19655, "PE": 19889, "PI": 53292, "PC": 19845, "MGDG": 19670, "DGDG": 19718,
+                             "SQDG": 19736, "DGTS": 35955, "DAG": 19907, "TAG": 19372}
         lipid_results = pd.read_csv(rf"{DATA_PATH}\fame2biomass\{self.model.id}\{lipid_abb.lower()}_opt_results.tsv", sep="\t", index_col=0, header=None).astype(float)
         print(lipid_results.head())
         lipid_results.columns = ["value"]

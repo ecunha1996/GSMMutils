@@ -8,7 +8,8 @@ from typing import List
 import wget
 import requests
 from requests.adapters import HTTPAdapter, Retry
-from gsmmutils.utils.utils import DATA_PATH
+from ..utils.configs import get_config
+DATA_PATH = get_config().get("PATHS", "DATA_PATH")
 
 
 def get_next_link(headers):
@@ -19,7 +20,7 @@ def get_next_link(headers):
             return match.group(1)
 
 
-class Uniprot:
+class UniProt:
     def __init__(self):
         self.data_dir = join(DATA_PATH, join("databases", "uniprot"))
         if not exists(self.data_dir):

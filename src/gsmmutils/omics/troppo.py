@@ -5,8 +5,8 @@ from os.path import join
 from troppo.methods_wrappers import ReconstructionWrapper
 from troppo.omics.readers.generic import TabularReader
 
-from gsmmutils.model.COBRAmodel import MyModel
-from gsmmutils.utils.utils import enable_print
+from ..model.COBRAmodel import MyModel
+from ..utils.utils import enable_print
 
 warnings.filterwarnings("ignore")
 

@@ -3,8 +3,8 @@ from os.path import getsize
 
 import pandas as pd
 
-from gsmmutils.api.uniprot import Uniprot
-from gsmmutils.utils.utils import run
+from ..api.uniprot import UniProt
+from ..utils.utils import run
 
 
 class GenomeAnnotation:

@@ -24,14 +24,14 @@ from tqdm import tqdm
 
 os.environ["OPENBLAS_NUM_THREADS"] = "1"
 sys.path.insert(0, "/home/src/")
-from gsmmutils.experimental.ExpMatrix import ExpMatrix
-from gsmmutils.dynamic.initial_conditions import get_initial_conditions
-from gsmmutils.model.COBRAmodel import MyModel
-from gsmmutils.dynamic.rhs import get_bounds
-from gsmmutils.dynamic.drhs import get_dynamic_expressions
-from gsmmutils.dynamic.exchange_fluxes import get_exchange_fluxes
-from gsmmutils.graphics.plot import plot_concentrations, generate_plot_for_data
-from gsmmutils.utils.utils import DATA_PATH
+from ..experimental.ExpMatrix import ExpMatrix
+from ..dynamic.initial_conditions import get_initial_conditions
+from ..model.COBRAmodel import MyModel
+from ..dynamic.rhs import get_bounds
+from ..dynamic.drhs import get_dynamic_expressions
+from ..dynamic.exchange_fluxes import get_exchange_fluxes
+from ..graphics.plot import plot_concentrations, generate_plot_for_data
+from ..utils.utils import DATA_PATH
 import warnings
 
 logging.getLogger('pandas').setLevel(logging.CRITICAL)

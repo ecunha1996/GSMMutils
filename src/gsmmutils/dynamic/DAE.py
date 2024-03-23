@@ -2,8 +2,8 @@ from os.path import join
 
 import matlab.engine
 
-from gsmmutils import DATA_PATH, DFBALAB_PATH
-
+from ..utils.configs import get_config
+DATA_PATH = get_config().get("PATHS", "DATA_PATH")
 
 class DAE:
     def __init__(self, data_directory=join(DATA_PATH, "dynamic/DAE"), start: bool = True):

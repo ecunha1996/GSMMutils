@@ -2,7 +2,7 @@ function return_val = fame2model(lipidClass, lipid_name, b)
 
 disp(lipid_name);
 
-matrix_filename = strcat('model_ngaditana_lipids/', strcat(lipid_name, '_metmat.mat'));
+matrix_filename = strcat('model_plutheri/', strcat(lipid_name, '_metmat.mat'));
 %res_filename = strcat('model_ngaditana_lipids/', strcat(lipid_name, '_b_vector.mat'));
 
 metmat = double(load(matrix_filename).metmat);
@@ -25,7 +25,7 @@ mdl2.ub = [ones(nMets, 1); 1000*ones(nExp*2,1)];
 
 % ADD UPPER LIMITS FOR KNOWN LIPID CONFIGURATIONS
 
-const = "C:\Users\Bisbii\PythonProjects\gsmmutils\data\fame2biomass\model_ngaditana_lipids\constraints.json";
+const = "C:\Users\Bisbii\PythonProjects\gsmmutils\data\fame2biomass\model_plutheri\constraints.json";
 jsonStr = fileread(const);
 data = jsondecode(jsonStr);
 fieldNames = fieldnames(data);
@@ -84,7 +84,7 @@ end
 StoichOut = LipidStoich(metIndex);
 MetsOut = lipidClass(metIndex)';
 TableOut = horzcat(MetsOut, num2cell(StoichOut));
-outfilename = strcat('C:\Users\Bisbii\PythonProjects\gsmmutils\data\fame2biomass\model_ngaditana_lipids\', lipid_name);
+outfilename = strcat('C:\Users\Bisbii\PythonProjects\gsmmutils\data\fame2biomass\model_plutheri\', lipid_name);
 outfilename = strcat(outfilename, '_opt_results.tsv');
 writecell(TableOut, outfilename, 'FileType', 'text','Delimiter','tab');
 return_val = 'return';

@@ -1,7 +1,7 @@
 import pandas as pd
 
-from gsmmutils.graphics.plot import plot_two_axis
-from gsmmutils.utils.utils import get_light_kinetics, get_micmen_kinetics, get_caro_kinetics
+from ..graphics.plot import plot_two_axis
+from ..utils.utils import get_light_kinetics, get_micmen_kinetics, get_caro_kinetics
 
 
 class soa:

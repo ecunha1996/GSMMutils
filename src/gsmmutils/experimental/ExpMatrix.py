@@ -3,9 +3,9 @@ from typing import Union
 
 import pandas as pd
 
-from gsmmutils.io import read_matrix
-from gsmmutils.io import write_matrix
-from gsmmutils.utils.utils import get_molecular_weight, get_element_in_biomass, get_productivity, get_fixation, \
+from ..io import (read_matrix)
+from ..io import write_matrix
+from ..utils.utils import get_molecular_weight, get_element_in_biomass, get_productivity, get_fixation, \
     get_uptake, get_average_uptake, get_maximum_productivity, get_growth_rate
 
 

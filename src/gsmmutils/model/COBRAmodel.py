@@ -21,14 +21,12 @@ from openpyxl import load_workbook
 from pandas import DataFrame
 from sympy import Add
 
-from gsmmutils.experimental.Biomass import Biomass
-from gsmmutils.experimental.BiomassComponent import BiomassComponent
-from gsmmutils.io import write_simulation
-from gsmmutils.utils.utils import update_st, get_precursors, normalize, convert_mmol_mol_to_g_molMM, \
+from ..experimental.Biomass import Biomass
+from ..experimental.BiomassComponent import BiomassComponent
+from ..utils.utils import update_st, get_precursors, normalize, convert_mmol_mol_to_g_molMM, \
     convert_mg_molMM_to_mmolM_gMM
 
 import logging
-
 logging.getLogger('cobra').setLevel(logging.CRITICAL)
 
 
@@ -540,7 +538,7 @@ class MyModel(Model):
             e_precursors_res["Flux"].append(val_2)
             e_precursors_res["ReactantOrProduct"].append("Reactant")
             meta_val.append(precursor.name)
-            self.remove_reactions(temp_reaction.id)
+            self.remove_reactions([temp_reaction.id])
         sinks_ids = [sink.id for sink in self.sinks]
         for product in self.get_products(reaction):
             if "Sk_" + product.id not in sinks_ids:
@@ -556,7 +554,7 @@ class MyModel(Model):
             e_precursors_res["Flux"].append(val_2)
             e_precursors_res["ReactantOrProduct"].append("Product")
             meta_val.append(product.name)
-            self.remove_reactions(temp_reaction.id)
+            self.remove_reactions([temp_reaction.id])
         res = DataFrame(e_precursors_res, index=meta_val)
         self.objective = old_objective
         return res
@@ -1115,6 +1113,7 @@ class MyModel(Model):
         for reaction in self.reactions:
             if reaction.id.startswith("PRISM") and reaction.id != reaction_id:
                 reaction.bounds = (0, 0)
+        self.reactions.get_by_id(reaction_id).bounds = (0, 10000)
 
     def adjust_biomass(self, new_value, suffix="v2", biomass_reaction_id=None):
         if not biomass_reaction_id:
@@ -1478,40 +1477,6 @@ def check_balance(model, show_biomass_reactions=False):
                 else:
                     res[str(reaction.id)] = reaction.check_mass_balance()
     return res
-
-
-def simulation_for_conditions(model, conditions_df, growth_rate_df, save_in_file=False, filename=None, objective=None):
-    as_dict = conditions_df.to_dict(orient='index')
-    growth_rate = growth_rate_df.to_dict(orient='index')
-    complete_results = {}
-    error_sum = 0
-    values_for_plot = {}
-    model.exchanges.EX_C00011__dra.bounds = (-1000, 1000)
-    for index, condition in as_dict.items():
-        model_copy = model.copy()
-        for reaction in model_copy.reactions:
-            if ("Biomass" in reaction.id and "EX_" not in reaction.id
-                    and reaction.id != f"e_Biomass_trial{index}__cytop"):
-                reaction.bounds = (0, 0)
-        model_copy.reactions.get_by_id(f"e_Biomass_trial{index}__cytop").bounds = (0, 1000)
-        if objective:
-            [setattr(x, 'objective_coefficient', 0) for x in model.reactions if x.objective_coefficient != 0]
-            model_copy.reactions.get_by_id(f"e_Biomass_trial{index}__cytop").objective_coefficient = 1
-            for key, value in objective.items():
-                model_copy.reactions.get_by_id(key).objective_coefficient = value
-        else:
-            model_copy.objective = f"e_Biomass_trial{index}__cytop"
-        for met, lb in condition.items():
-            lb = -lb if lb < 0 else lb
-            model_copy.reactions.get_by_id("EX_" + met + "__dra").bounds = (round(-lb, 4), 1000)
-        sol = model_copy.optimize()
-        biomass = round(sol[f"e_Biomass_trial{index}__cytop"], 3)
-        error_sum += abs(growth_rate[index]['growth_rate'] - biomass)
-        complete_results[index] = sol
-        values_for_plot[index] = (growth_rate[index]['growth_rate'], biomass)
-    if save_in_file:
-        write_simulation(complete_results, filename)
-    return complete_results, values_for_plot, round(error_sum, 6)
 
 
 def get_reactions_nadh_nadph(model):

@@ -1,7 +1,5 @@
-import os
-from os.path import join
 
-from gsmmutils.utils.remote import Remote, DockerClient
+from ..utils.remote import DockerClient
 
 
 class Busco:

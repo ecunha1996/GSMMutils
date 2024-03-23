@@ -2,7 +2,12 @@ from os.path import join
 from cobra.flux_analysis import pfba, find_blocked_reactions, flux_variability_analysis as fva, fastcc
 from pandas import DataFrame
 from .COBRAmodel import MyModel
-from gsmmutils.utils.utils import DATA_PATH
+from ..utils.configs import get_config
+DATA_PATH = get_config().get("PATHS", "DATA_PATH")
+
+
+import logging
+logging.getLogger('cobra').setLevel(logging.CRITICAL)
 
 
 class ModelValidator:
