@@ -80,7 +80,7 @@ def get_element_in_biomass(model, element, biomass_reaction):
     res = get_biomass_mass(model, biomass_reaction)
     percentage_map = {}
     for key in res[1]:
-        percentage_map[key] = round(res[1][key] * Metabolite(formula=key).formula_weight / 1000, 3)
+        percentage_map[key] = res[1][key] * Metabolite(formula=key).formula_weight / 1000
     if round(sum(percentage_map.values()), 3) != 1: print(
         f"Error! Sum of Elemental mass percentage is different from 1! ({round(sum(percentage_map.values()), 3)})")
     return percentage_map[element]
@@ -168,6 +168,7 @@ def get_biomass_mass(model, biomass_reaction=None, lipid_subreactions=None):
             counter += abs(reaction.metabolites[reactant]) * copy.formula_weight * stoichiometry
             for key in elementar_counter.keys():
                 if key in reactant.elements:
+                    tmp =  abs(reaction.metabolites[reactant]) * reactant.elements[key] * stoichiometry
                     elementar_counter[key] += abs(reaction.metabolites[reactant]) * reactant.elements[
                         key] * stoichiometry
         for product in reaction.products:

@@ -10,6 +10,7 @@ import scipy
 from cobra import Model
 
 from ..utils.configs import get_config
+
 DATA_PATH = get_config().get("PATHS", "DATA_PATH")
 SRC_PATH = get_config().get("PATHS", "SRC_PATH")
 from ..model.COBRAmodel import MyModel
@@ -151,7 +152,7 @@ def parse_dgts(model, objective_list=None):
     return final_map
 
 
-def parse_tag(model):
+def parse_tag(model, obj_list):
     list_of_names = [e.name for e in model.reactions.e_TAG_complete__in.reactants]
     chains_map = OrderedDict({'dodecanoyl': "12_0",
                               'tridecanoyl': "13_0",
@@ -171,7 +172,8 @@ def parse_tag(model):
                               "9Z-heptadecenoyl": "17_1",
                               "octadecanoyl": "18_0",
                               "9Z-octadecenoyl": "18_1",
-                              "6Z-octadecenoyl": "18_1v2",
+                              "11Z-octadecenoyl": "18_1v2",
+                              "6Z-octadecenoyl": "18_1v3",
                               '9Z,12Z-octadecadienoyl': "18_2",
                               "6Z,9Z,12Z-octadecatrienoyl": '18_3v2',
                               '9Z,12Z,15Z-octadecatrienoyl': "18_3",
@@ -201,38 +203,31 @@ def parse_tag(model):
                 chain_1 = acyl.split("-2-")[0].lstrip("1-").strip(")").strip("(")
                 chain_2 = acyl.split("-2-")[1].split("-3-")[0].strip(")").strip("(")
                 chain_3 = acyl.split("-3-")[1].strip(")").strip("(")
-                final_map[lipid] = "TAG__" + chains_map[chain_1] + "__" + chains_map[chain_2] + "__" + chains_map[
-                    chain_3]
             elif "1,2-di" in acyl:
                 chains = acyl.split("-3-")[0].replace("1,2-di", "").lstrip("-").strip(")").strip("(")
                 chain_3 = acyl.split("-3-")[1].strip(")").strip("(")
                 chain_1 = chains
                 chain_2 = chains
-                final_map[lipid] = "TAG__" + chains_map[chain_1] + "__" + chains_map[chain_2] + "__" + chains_map[
-                    chain_3]
             elif "2,3-di" in acyl:
                 chain_1 = acyl.split("-2")[0].replace("1-", "").strip(")").strip("(")
                 chains = acyl.split("3-")[1].strip("di").lstrip("-").strip(")").strip("(")
                 chain_2 = chains
                 chain_3 = chains
-                final_map[lipid] = "TAG__" + chains_map[chain_1] + "__" + chains_map[chain_2] + "__" + chains_map[
-                    chain_3]
             elif "1,3-di" in acyl:
                 chains = acyl.split("-2-")[0].strip("1,3-di").lstrip("-").strip(")").strip("(")
                 chain_1 = chains
                 chain_3 = chains
                 chain_2 = acyl.split("-2-")[1].strip(")").strip("(")
-                final_map[lipid] = "TAG__" + chains_map[chain_1] + "__" + chains_map[chain_2] + "__" + chains_map[
-                    chain_3]
             elif "1,2,3-tri" in acyl:
                 chains = acyl.replace("1,2,3-tri", "").strip("-").strip(")").strip("(")
                 chain_1 = chains
                 chain_2 = chains
                 chain_3 = chains
-                final_map[lipid] = "TAG__" + chains_map[chain_1] + "__" + chains_map[chain_2] + "__" + chains_map[
-                    chain_3]
             else:
                 print(acyl)
+            if all(chains_map[chain] in obj_list for chain in [chain_1, chain_2, chain_3]):
+                final_map[lipid] = "TAG__" + chains_map[chain_1] + "__" + chains_map[chain_2] + "__" + chains_map[
+                chain_3]
         except Exception as e:
             print(e)
             print(lipid)
@@ -267,7 +262,8 @@ def parse_2fa_lipid(lipid_abb, model, compartment_id="C_00003", parent_reaction=
                               "9Z-heptadecenoyl": "17_1",
                               "octadecanoyl": "18_0",
                               "9Z-octadecenoyl": "18_1",
-                              "6Z-octadecenoyl": "18_1v2",
+                              "11Z-octadecenoyl": "18_1v2",
+                              "6Z-octadecenoyl": "18_1v3",
                               'octadecadienoyl': "18_2",
                               "6Z,9Z,12Z-octadecatrienoyl": '18_3v2',
                               '9Z,12Z,15Z-octadecatrienoyl': "18_3",
@@ -289,7 +285,7 @@ def parse_2fa_lipid(lipid_abb, model, compartment_id="C_00003", parent_reaction=
     if lipid_abb == "DGTS":
         final_map = parse_dgts(model, objective_list)
     elif lipid_abb == "TAG":
-        final_map = parse_tag(model)
+        final_map = parse_tag(model, objective_list)
     else:
         final_map = parse_other_lipids(lipid_abb, list_of_names, chains_map, objective_list)
 
@@ -325,8 +321,8 @@ def parse_2fa_lipid(lipid_abb, model, compartment_id="C_00003", parent_reaction=
 
     print(f"The fatty acids were not found:\n{[e for e in fas_in_objective if e not in as_df.index.tolist()]}")
 
-    for row in met_mat:
-        if not all(e == 0 for e in row):
+    for index, row in enumerate(met_mat):
+        if not all(e == 0 for e in row) and (as_df.index.tolist()[index] in fas_in_objective or index == 0):
             # if lipid_abb == "DAG":
             #     temp_row = row + chlo_matrix[i]
             # else:
@@ -397,7 +393,10 @@ class FAME2Biomass:
         eng.addpath(r'C:\gurobi1002\win64\matlab')
 
         # get all rows from df where there are no twos
-        df_filtered = as_df[as_df.apply(lambda row: 2 not in row.values, axis=1)]
+        df_filtered = as_df[as_df.apply(lambda row: 3 not in row.values, axis=1)]
+
+        print(df_filtered)
+
         if lipid_abb == "TAG":
             number_of_fatty_acids = 3
         else:

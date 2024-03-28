@@ -33,7 +33,7 @@ def write_simulation(results, filename, **kwargs):
                 len(str(series.name))
             )) + 3
             worksheet.set_column(idx, idx, max_len)
-    writer.save()
+    writer.close()
 
 
 def write_specific_models(specific_models, filename, **kwargs):
@@ -41,4 +41,4 @@ def write_specific_models(specific_models, filename, **kwargs):
     for method, samples in specific_models.items():
         for sample, result in samples.items():
             result.dataframe.to_excel(writer, sheet_name=f"{method}_{sample}", **kwargs)
-    writer.save()
+    writer.close()
