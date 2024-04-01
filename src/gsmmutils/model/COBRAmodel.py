@@ -15,10 +15,11 @@ import numpy as np
 import pandas as pd
 from cobra import flux_analysis, Model, Reaction, Metabolite
 from cobra.flux_analysis import find_essential_genes
-from cobra.io import write_sbml_model
+from cobra.io import write_sbml_model, read_sbml_model
 from cobra.manipulation.delete import prune_unused_metabolites
 from openpyxl import load_workbook
 from pandas import DataFrame
+from pydantic import FilePath, DirectoryPath
 from sympy import Add
 
 from ..experimental.Biomass import Biomass
@@ -27,11 +28,13 @@ from ..utils.utils import update_st, get_precursors, normalize, convert_mmol_mol
     convert_mg_molMM_to_mmolM_gMM
 
 import logging
+
 logging.getLogger('cobra').setLevel(logging.CRITICAL)
 
 
 class MyModel(Model):
-    def __init__(self, file_name=None, biomass_reaction=None, directory=None, prune_metabolites=False):
+    def __init__(self, file_name: Union[FilePath, str] = None, biomass_reaction: str = None, directory: Union[DirectoryPath, str] = None,
+                 prune_metabolites: bool = False):
         self.genes_pathways_map = None
         self.e_res_precursors = None
         self.bio_precursors_res = None
@@ -41,13 +44,13 @@ class MyModel(Model):
         self.pathway_reactions_map = {}
         self.biomass_reaction = None
         if not directory:
-            directory = os.getcwd()
+            directory = DirectoryPath(os.getcwd())
         self.directory = directory
         self.file_name = file_name
         self.model_old = []
         self.model_first = None
         self._biomass_composition = None
-        self.load_model(self.directory, self.file_name)
+        self.load_model(FilePath(join(self.directory, self.file_name)))
         if not biomass_reaction:
             biomass_reaction = self.search_biomass()
         if biomass_reaction:
@@ -85,7 +88,7 @@ class MyModel(Model):
 
     @biomass_composition.setter
     def biomass_composition(self, biomass_composition=None):
-        if type(biomass_composition) == str or not biomass_composition:
+        if isinstance(biomass_composition, str) or not biomass_composition:
             self._biomass_composition = {}
             if not self.biomass_components:
                 self.infer_biomass_from_model()
@@ -93,32 +96,31 @@ class MyModel(Model):
             for children in self.biomass_components[self.biomass_metabolite.id].children:
                 biomass_composition[children.id] = children.stoichiometry
             self._biomass_composition = biomass_composition
-        elif type(biomass_composition) == Biomass:
+        elif isinstance(biomass_composition, Biomass):
             self._biomass_composition = biomass_composition
         else:
             raise TypeError("Biomass composition must be a string or a Biomass object")
 
-    def load_model(self, directory, file_name):
+    def load_model(self, path: FilePath):
         """
-        This function loads the model. Returns a COBRAApy object, the model
-        It also creates a copy of the model to be used in the first simulation
-        :param directory:
-        :param file_name:
-        :return:
-        """
+        This function loads a model from a file
+        Parameters
+        ----------
+        path: FilePath
+            Path of the file
 
+        Returns
+        -------
+
+        """
         print("Loading")
         print("")
-
-        os.chdir(directory)
-
-        self.model = cobra.io.read_sbml_model(join(directory, file_name))
+        self.model = read_sbml_model(path)
         if not self.model.exchanges:
             for reaction in self.model.reactions:
                 if "EX_" in reaction.id:
                     met = reaction.products[0]
                     reaction.add_metabolites({met: -1})
-        # print("deleting b")
         self.delete_b_metabolites()
         return self.model
 
@@ -146,9 +148,9 @@ class MyModel(Model):
 
     def get_reaction(self, reaction: Union[str, Reaction]):
         try:
-            if type(reaction) == str:
+            if isinstance(reaction, str):
                 return self.reactions.get_by_id(reaction)
-            elif type(reaction) == Reaction:
+            elif isinstance(reaction, Reaction):
                 return reaction
         except KeyError:
             print(reaction + " not found")
@@ -861,7 +863,7 @@ class MyModel(Model):
         try:
             for metabolite in metabolites:
                 if metabolite in data.keys():
-                    if type(data[metabolite]) != tuple:
+                    if not isinstance(data[metabolite], tuple):
                         data[metabolite] = (-data[metabolite], 1000)
                     if aliases and metabolite in aliases.keys():
                         metabolite_in_model = aliases[metabolite]
@@ -1012,10 +1014,10 @@ class MyModel(Model):
 
         return deletion_results
 
-    def connectivity(self, output_file_name, extracellular_compartment, cytosol_compartment, periplasm=False):
+    def connectivity(self, output_file_name: Union[FilePath, str], extracellular_compartment, cytosol_compartment, periplasm=False):
 
         # open output file
-        writer = pd.ExcelWriter(os.path.join(self.directory, output_file_name), engine='xlsxwriter')
+        writer = pd.ExcelWriter(FilePath(join(self.directory, output_file_name)), engine='xlsxwriter')
 
         col = ["Name", "Outside", "Inside"]
 
@@ -1052,10 +1054,10 @@ class MyModel(Model):
         writer.save()
         writer.close()
 
-    def topological_analysis(self, output_file_name):
+    def topological_analysis(self, output_file_name: Union[FilePath, str]):
 
         # open output file
-        writer = pd.ExcelWriter(os.path.join(self.directory, output_file_name), engine='xlsxwriter')
+        writer = pd.ExcelWriter(join(self.directory, output_file_name), engine='xlsxwriter')
 
         col = ["Inside", "Outside", "Gene", "Gene Rules"]
 

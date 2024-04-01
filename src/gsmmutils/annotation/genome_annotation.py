@@ -88,10 +88,10 @@ class GenomeAnnotation:
         """
         for dirpath, dirnames, filenames in walk(folder):
             for filename in filenames:
-                if filename.endswith('.faa'):
+                if filename.endswith('.faa') or filename.endswith('.fasta'):
                     genome = Genome()
-                    genome.load_from_fasta(f"{dirpath}/{filename}")
-                    self.load_genes(filename, genome)
+                    genome.from_fasta(f"{dirpath}/{filename}")
+                    self.load_genes(dirpath.split("/")[-1], genome)
 
     def load_results(self, path: str, name: str = None, **kwargs):
         """
@@ -123,7 +123,7 @@ class GenomeAnnotation:
                 self.report[name] = {}
             for method in methods:
                 genes_with_results = len(result[method].gene_id.unique())
-                self.report[name]['Gene Annotation Ratio'] = genes_with_results / len(self.genomes[name])
+                self.report[name]['Gene Annotation Ratio'] = round(genes_with_results / len(self.genomes[name]), 2)
 
 
 class StructuralAnnotation(GenomeAnnotation):

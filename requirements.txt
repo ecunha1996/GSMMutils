@@ -20,5 +20,5 @@ numpy~=1.23.5
 scipy~=1.11.3
 mewpy~=0.1.31
 matplotlib~=3.5.0
-pytest~=4.6.11
 biopython~=1.81
+pydantic~=1.10.13

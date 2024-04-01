@@ -271,6 +271,7 @@ class FSEOF:
 
         Parameters
         ----------
+        target
         reaction_list
         expression
         original_simulation
@@ -321,6 +322,7 @@ class FSEOF:
 
         Parameters
         ----------
+        target
         ordered_obj_fun
         adjusted_model
 
