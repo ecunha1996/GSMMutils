@@ -11,7 +11,8 @@ from gsmmutils.model.COBRAmodel import MyModel
 def read_model(data_directory, filename="model.xml"):
     model = MyModel(join(join(data_directory, "models"), filename), "e_Biomass__cytop")
     model.add_medium(join(data_directory, "media.xlsx"), "base_medium")
-    model.reactions.ATPm__cytop.bounds = (1.5*24, 1.5*24)
+    # model.reactions.ATPm__cytop.bounds = (1.5*24, 1.5*24)
+    model.reactions.ATPm__cytop.bounds = (0, 10000)
     for reaction in model.reactions:
         if reaction.lower_bound <= -1000:
             reaction.lower_bound = -10000
@@ -19,8 +20,8 @@ def read_model(data_directory, filename="model.xml"):
             reaction.upper_bound = 10000
     cobra_config = cobra.Configuration()
     cobra_config.bounds = -10000, 10000
-    model.write(f"models/model_with_media.xml")
     model.set_prism_reaction("PRISM_white_LED__extr")
+    model.write(f"models/model_with_media.xml")
     model.reactions.R00019__chlo.bounds = (0, 0)
     return model
 
