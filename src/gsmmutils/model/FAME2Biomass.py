@@ -39,10 +39,8 @@ def load_results():
     for row in results.itertuples():
         chain_1 = chains_map[row.lipid.split('__')[1]].replace(':', '').split("(")[0]
         chain_2 = chains_map[row.lipid.split('__')[2]].replace(':', '').split("(")[0]
-        model_compound = {}
-        model_compound["external_identifier"] = f"dghs{chain_1}{chain_2}"
-        model_compound["name"] = f"Diacylglycerolhomoserine ({chains_map[row.lipid.split('__')[1]]}:{chains_map[row.lipid.split('__')[2]]})"
-        model_compound["formula"] = "R"
+        model_compound = {"external_identifier": f"dghs{chain_1}{chain_2}",
+                          "name": f"Diacylglycerolhomoserine ({chains_map[row.lipid.split('__')[1]]}:{chains_map[row.lipid.split('__')[2]]})", "formula": "R"}
         model_compound_total[counter] = model_compound
         counter += 1
     as_df = pd.DataFrame.from_dict(model_compound_total, orient='index')

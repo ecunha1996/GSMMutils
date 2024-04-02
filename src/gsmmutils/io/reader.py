@@ -1,8 +1,8 @@
 import pandas as pd
-
+read_matrix
 
 def read_matrix(filename, **kwargs):
-    matrix = pd.read_excel(filename, **kwargs)
+    matrix = pd.read_excel(filename, sheet_name=None, **kwargs)
     for value in matrix.values():
         value.index = value.index.astype(str)
     return matrix

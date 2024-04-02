@@ -6,6 +6,12 @@ from ..utils.utils import get_light_kinetics, get_micmen_kinetics, get_caro_kine
 
 class soa:
     def __init__(self, model):
+        self.fluxes = None
+        self.concentrations = None
+        self.metabolites_to_follow_reverse = None
+        self.metabolites_to_follow = None
+        self.time_span = None
+        self._time_span = None
         self._kinetics = {}
         self.model = model
         self.initial_conditions = None

@@ -3,7 +3,7 @@ from os.path import join
 
 from .genome_annotation import GenomeAnnotation
 from ..io import read_csv
-from ..utils.remote import Remote, DockerClient
+from ..utils.remote import DockerClient
 
 
 class InterProScan(GenomeAnnotation):
