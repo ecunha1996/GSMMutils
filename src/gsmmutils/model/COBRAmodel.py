@@ -44,13 +44,13 @@ class MyModel(Model):
         self.pathway_reactions_map = {}
         self.biomass_reaction = None
         if not directory:
-            directory = DirectoryPath(os.getcwd())
+            directory = os.getcwd()
         self.directory = directory
         self.file_name = file_name
         self.model_old = []
         self.model_first = None
         self._biomass_composition = None
-        self.load_model(FilePath(join(self.directory, self.file_name)))
+        self.load_model(join(self.directory, self.file_name))
         if not biomass_reaction:
             biomass_reaction = self.search_biomass()
         if biomass_reaction:
