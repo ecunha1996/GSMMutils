@@ -1,5 +1,4 @@
 import pandas as pd
-read_matrix
 
 def read_matrix(filename, **kwargs):
     matrix = pd.read_excel(filename, sheet_name=None, **kwargs)
