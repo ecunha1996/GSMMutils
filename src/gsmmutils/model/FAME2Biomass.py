@@ -61,16 +61,10 @@ def parse_other_lipids(lipid_abb, list_of_names, chains_map, obj_list):
             if "1-" in acyl and "-2-" in acyl:
                 chain_1 = acyl.split("-2-")[0].lstrip("1-").strip("(").strip(")")
                 chain_2 = acyl.split("-2-")[1].strip("(").strip(")")
-                if "6Z" not in chain_1:
-                    chain_1 = chain_1.replace("9Z,12Z-", "")
-                if "6Z" not in chain_2:
-                    chain_2 = chain_2.replace("9Z,12Z-", "")
                 if chains_map[chain_1] in obj_list.keys() and chains_map[chain_2] in obj_list.keys():
                     final_map[lipid] = lipid_abb + "__" + chains_map[chain_1] + "__" + chains_map[chain_2]
             elif "-di" in acyl:
                 chains = acyl.split("-di")[1].lstrip("-").strip("(").strip(")")
-                if "6Z" not in chains:
-                    chains = chains.replace("9Z,12Z-", "")
                 chain_1 = chains
                 chain_2 = chains
                 if chains_map[chain_1] in obj_list.keys() and chains_map[chain_2] in obj_list.keys():
@@ -150,6 +144,7 @@ def parse_dgts(model, objective_list=None):
     return final_map
 
 
+
 def parse_tag(model, obj_list):
     list_of_names = [e.name for e in model.reactions.e_TAG_complete__in.reactants]
     chains_map = OrderedDict({'dodecanoyl': "12_0",
@@ -225,7 +220,7 @@ def parse_tag(model, obj_list):
                 print(acyl)
             if all(chains_map[chain] in obj_list for chain in [chain_1, chain_2, chain_3]):
                 final_map[lipid] = "TAG__" + chains_map[chain_1] + "__" + chains_map[chain_2] + "__" + chains_map[
-                chain_3]
+                    chain_3]
         except Exception as e:
             print(e)
             print(lipid)
@@ -262,7 +257,7 @@ def parse_2fa_lipid(lipid_abb, model, compartment_id="C_00003", parent_reaction=
                               "9Z-octadecenoyl": "18_1",
                               "11Z-octadecenoyl": "18_1v2",
                               "6Z-octadecenoyl": "18_1v3",
-                              'octadecadienoyl': "18_2",
+                              '9Z,12Z-octadecadienoyl': "18_2",
                               "6Z,9Z,12Z-octadecatrienoyl": '18_3v2',
                               '9Z,12Z,15Z-octadecatrienoyl': "18_3",
                               "6Z,9Z,12Z,15Z-octadecatetraenoyl": "18_4",
@@ -393,8 +388,6 @@ class FAME2Biomass:
         # get all rows from df where there are no twos
         df_filtered = as_df[as_df.apply(lambda row: 3 not in row.values, axis=1)]
 
-        print(df_filtered)
-
         if lipid_abb == "TAG":
             number_of_fatty_acids = 3
         else:
@@ -412,9 +405,9 @@ class FAME2Biomass:
         eng.fame2model(list(lipid_class), lipid_abb.lower(), b_vector)
         os.chdir(self.data_directory)
         reactions_ids_map = {"PG": 19655, "PE": 19889, "PI": 53292, "PC": 19845, "MGDG": 19670, "DGDG": 19718,
-                             "SQDG": 19736, "DGTS": 35955, "DAG": 19907, "TAG": 19372}
+                             "SQDG": 19736, "DGTS": 35955, "DAG": 19907, "TAG": 19372, "DGTA": 20639, "DGCC": 20711}
         lipid_results = pd.read_csv(rf"{DATA_PATH}\fame2biomass\{self.model.id}\{lipid_abb.lower()}_opt_results.tsv", sep="\t", index_col=0, header=None).astype(float)
-        print(lipid_results.head())
+        print(lipid_results)
         lipid_results.columns = ["value"]
         lipid_results = normalize_to_one(lipid_results)
         lipid_results.to_csv(rf"{DATA_PATH}\fame2biomass\{self.model.id}\{lipid_abb.lower()}_normalized.tsv", sep="\t", header=None)

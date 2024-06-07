@@ -165,21 +165,22 @@ def get_biomass_mass(model, biomass_reaction=None, lipid_subreactions=None):
         for reactant in reaction.reactants:
             copy = reactant.copy()
             copy.elements = {key: value for key, value in copy.elements.items() if key != "T"}
+            tmp = abs(reaction.metabolites[reactant]) * copy.formula_weight * stoichiometry
             counter += abs(reaction.metabolites[reactant]) * copy.formula_weight * stoichiometry
             for key in elementar_counter.keys():
                 if key in reactant.elements:
-                    tmp =  abs(reaction.metabolites[reactant]) * reactant.elements[key] * stoichiometry
                     elementar_counter[key] += abs(reaction.metabolites[reactant]) * reactant.elements[
                         key] * stoichiometry
         for product in reaction.products:
-            if product.id != "C00001__cytop" or not ignore_water:
-                copy = product.copy()
-                copy.elements = {key: value for key, value in copy.elements.items() if key != "T"}
-                counter -= reaction.metabolites[product] * copy.formula_weight * stoichiometry
-                for key in elementar_counter.keys():
-                    if key in product.elements:
-                        elementar_counter[key] -= abs(reaction.metabolites[product]) * product.elements[
-                            key] * stoichiometry
+            if not product.id.startswith("e_"):
+                if product.id != "C00001__cytop" or not ignore_water:
+                    copy = product.copy()
+                    copy.elements = {key: value for key, value in copy.elements.items() if key != "T"}
+                    counter -= reaction.metabolites[product] * copy.formula_weight * stoichiometry
+                    for key in elementar_counter.keys():
+                        if key in product.elements:
+                            elementar_counter[key] -= abs(reaction.metabolites[product]) * product.elements[
+                                key] * stoichiometry
         return round(counter / 1000, 5), elementar_counter
 
     def parse_lipids(current_biomass_reaction, current_element_counter):
@@ -187,9 +188,11 @@ def get_biomass_mass(model, biomass_reaction=None, lipid_subreactions=None):
         lipid_stoichiometry = abs(current_biomass_reaction.metabolites[model.metabolites.e_Lipid__cytop])
         lipids_reaction = model.reactions.e_Lipid__cytop
         for reaction in lipid_subreactions:
+            tmp = 0
             for reactant in reaction.reactants:
                 current_counter += abs(reaction.metabolites[reactant] * reactant.formula_weight * lipids_reaction.metabolites[
                     reaction.products[0]] * lipid_stoichiometry)
+                tmp +=  abs(reaction.metabolites[reactant] * reactant.formula_weight * lipids_reaction.metabolites[reaction.products[0]] * lipid_stoichiometry)
                 for key in current_element_counter.keys():
                     if key in reactant.elements:
                         current_element_counter[key] += abs(
@@ -228,6 +231,7 @@ def get_biomass_mass(model, biomass_reaction=None, lipid_subreactions=None):
                                                   element_counter)
                         c += res[0]
                         element_counter = res[1]
+                        print(reaction.id, res[0])
     return round(c, 3), element_counter
 
 

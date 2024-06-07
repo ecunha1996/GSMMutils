@@ -123,7 +123,7 @@ class FSEOF:
 
     def fseof(self, objective):
         self.adjusted_model.reactions.get_by_id(objective).bounds = (0, 1000)
-        self.adjusted_model.reactions.get_by_id("EX_C00011__dra").bounds = (-1000, 1000)
+        # self.adjusted_model.reactions.get_by_id("EX_C00011__dra").bounds = (-1000, 1000)
         with self.adjusted_model as model:
             model.objective = objective
             maximum_target_production = model.optimize().objective_value
