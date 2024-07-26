@@ -68,7 +68,7 @@ class GenomeAnnotation:
 
         """
         if not name:
-            name = filepath.split('/')[-1].split('.')[0]
+            name = '.'.join(os.path.basename(filepath).split('.')[:-1])
         genes = []
         for record in parse(filepath, 'fasta'):
             genes.append(record)
@@ -91,7 +91,7 @@ class GenomeAnnotation:
                 if filename.endswith('.faa') or filename.endswith('.fasta'):
                     genome = Genome()
                     genome.from_fasta(f"{dirpath}/{filename}")
-                    self.load_genes(dirpath.split("/")[-1], genome)
+                    self.load_genes(dirpath.split("/")[-1].split("\\")[-1], genome)
 
     def load_results(self, path: str, name: str = None, **kwargs):
         """
@@ -190,13 +190,11 @@ class FunctionalAnnotation(GenomeAnnotation):
             run(rf'blastp -db protein -query {query_path} -out {results_path} -evalue 1 -outfmt 6')
         chdir(old_dir)
 
-    def identify_gene_by_homology_from_ec(self, method: str, ec_number: str, n_hits: int = 20):
+    def identify_gene_by_homology_from_ec(self, method: str, ec_number: str):
         """
         This function identifies genes by homology using blastp.
         Parameters
         ----------
-        n_hits: int
-            The number of hits to be shown.
         method: str
             The method to be used for the homology search.
         ec_number: str
@@ -211,7 +209,6 @@ class FunctionalAnnotation(GenomeAnnotation):
         # get records from Swiss-prot, with the ec_number
         uniprot_api = UniProt()
         result = list(uniprot_api.search_by_ec_number(ec_number))
-        blast_result = None
         # write the records to a fasta file
         if len(result) > 0:
             with open('query.faa', 'w') as f:
@@ -223,10 +220,9 @@ class FunctionalAnnotation(GenomeAnnotation):
             if getsize(f"{self.blast_directory}/results.txt") > 0:
                 blast_result = pd.read_csv(f"{self.blast_directory}/results.txt", sep='\t', header=None)
                 blast_result.sort_values(by=10, ascending=True, inplace=True)
-                print(blast_result.head(n_hits))
+                print(blast_result.head(20))
                 chdir(old_dir)
             else:
                 print(f"No results found with {method}")
         else:
             print("No results found in Swiss-Prot")
-        return blast_result

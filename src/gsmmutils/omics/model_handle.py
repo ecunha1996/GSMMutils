@@ -1,19 +1,13 @@
 import json
 from os.path import abspath, join, dirname
-
 import cobra
 import os
-
 import pandas as pd
 from cobra.flux_analysis import find_blocked_reactions
 from cobra.io import write_sbml_model
+from cobra.manipulation.delete import prune_unused_metabolites
 
 
-CONFIG_PATH = abspath(join(dirname(__file__), '../../../config'))
-params = json.load(open(rf"{CONFIG_PATH}/troppo_nacl.json", "r"))
-media = pd.read_excel(rf"{DATA_PATH}/media.xlsx", index_col=0, sheet_name=None, engine='openpyxl')['media_with_starch'].to_dict(orient='index')
-MEDIUM_CONDITIONS = {'f2 medium': {key: (value['LB'], value['UB']) for key, value in media.items()}}
-MODEL_RESULTS_PATH = f"{DATA_PATH}/omics/{params['DATASET']}"
 def print_model_details(cobra_model):
     """
     Function to print the details of the currently loaded COBRA model.
@@ -35,7 +29,7 @@ def print_model_details(cobra_model):
     print('Exchanges:', len(cobra_model.exchanges))
 
 
-def load_model(model_path: str, consistent_model_path: str) -> cobra.Model:
+def load_model(model_path: str, consistent_model_path: str, medium_conditions) -> cobra.Model:
     """
     This function is used to load the model.
 
@@ -51,24 +45,25 @@ def load_model(model_path: str, consistent_model_path: str) -> cobra.Model:
     model : cobra.Model
         The loaded model.
     """
-
     if consistent_model_path and os.path.exists(consistent_model_path):
         model = cobra.io.read_sbml_model(consistent_model_path)
-
     else:
         model = cobra.io.read_sbml_model(model_path)
-        model.remove_reactions(find_blocked_reactions(model))
-        write_sbml_model(model, consistent_model_path)
-
-    print_model_details(model)
-
-    for reaction_id, bound in MEDIUM_CONDITIONS.items():
+    for reaction_id, bound in medium_conditions.items():
         if reaction_id in model.reactions:
             model.reactions.get_by_id(reaction_id).bounds = bound
+    # for demand in model.demands:
+    #     if 'photon' not in demand.id:
+    #         demand.bounds = (0, 0)
+    if not consistent_model_path or not os.path.exists(consistent_model_path):
+        model.remove_reactions(find_blocked_reactions(model, processes=30), remove_orphans=True)
+        write_sbml_model(model, consistent_model_path)
+    print_model_details(model)
+    print(model.slim_optimize())
     return model
 
 
-def sbml_model_reconstruction(original_model: cobra.Model, sample: str, integration_result_dict: dict):
+def sbml_model_reconstruction(original_model: cobra.Model, sample: str, integration_result_dict: dict, params, medium_conditions, model_results_path):
     """
     This function is used to reconstruct the model based on the integration results.
 
@@ -91,18 +86,16 @@ def sbml_model_reconstruction(original_model: cobra.Model, sample: str, integrat
     for reaction in reactions_to_deactivate:
         model_template.remove_reactions([reaction], remove_orphans=True)
 
-    for reaction_id, bound in MEDIUM_CONDITIONS[params['MEDIUM_NAME']].items():
+    for reaction_id, bound in medium_conditions[params['MEDIUM_NAME']].items():
         if reaction_id in model_template.reactions:
             model_template.reactions.get_by_id(reaction_id).bounds = bound
         else:
             print(reaction_id, 'exchange not found in the model.')
-
-    model_name = sample.split('_')[1] + '/' + sample + '.xml'
-    print(model_template.optimize())
-    cobra.io.write_sbml_model(model_template, os.path.join(MODEL_RESULTS_PATH, model_name))
+    model_template.remove_reactions(find_blocked_reactions(model_template, processes=min(os.cpu_count(), 30)), remove_orphans=True)
+    model_template, _ = prune_unused_metabolites(model_template)
+    model_name = sample + '.xml'
+    print(model_template.slim_optimize())
+    cobra.io.write_sbml_model(model_template, os.path.join(model_results_path, model_name))
 
     print(f'Model reconstruction for {sample} finished.')
     print_model_details(model_template)
-    #except Exception as e:
-    #    print(e)
-    #    print(f'Model reconstruction for {sample} failed.')

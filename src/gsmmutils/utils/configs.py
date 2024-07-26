@@ -30,7 +30,7 @@ def get_defaults():
     -------
     cfg: configparser.ConfigParser
     """
-    default_package_root = join(importlib.resources.files("gsmmutils").parent, "../")
+    default_package_root = join(str(importlib.resources.files("gsmmutils").parent), "../")
     normalized_path = normpath(default_package_root)
     resolved_path = realpath(normalized_path)
     GSMMUTILS_ROOT = getenv("GSMMUTILS_ROOT", resolved_path)

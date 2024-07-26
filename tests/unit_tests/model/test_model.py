@@ -2,7 +2,9 @@ import os
 import unittest
 from os.path import dirname, join
 
-from gsmmutils import MyModel
+from cobra.io import read_sbml_model
+
+from gsmmutils.model.COBRAmodel import MyModel
 
 
 class TestModel(unittest.TestCase):
@@ -17,6 +19,13 @@ class TestModel(unittest.TestCase):
         self.assertEqual(len(self.model.genes), 0)
         self.assertEqual(len(self.model.compartments), 2)
         self.assertEqual(len(self.model.boundary), 6)
+
+    def test_loopless_fva(self):
+        self.model = MyModel(r"C:\Users\Bisbii\PythonProjects\GSMMutils\data\models\model_ng.xml", "e_Biomass__cytop")
+        fva_sol = self.model.loopless_fva(n_jobs=4)
+        self.assertEqual(len(fva_sol), 26)
+        self.assertIsNotNone(fva_sol)
+        self.assertEqual(fva_sol.isnull().sum().sum(), 0)
 
 
 if __name__ == '__main__':

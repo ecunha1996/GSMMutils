@@ -6,8 +6,9 @@ def main():
     # genome_annotation = FunctionalAnnotation(r"C:\Users\Bisbii\Desktop\synecho")
     # genome_annotation = FunctionalAnnotation(r"C:\Users\Bisbii\OneDrive - Universidade do Minho\Algae\Models\Ngaditana\blast")
     # genome_annotation = FunctionalAnnotation(r"C:\Users\Bisbii\OneDrive - Universidade do Minho\Algae\Models\Dsalina\blast")
-    res = genome_annotation.identify_gene_by_homology_from_ec("blastp", "1.14.19.43")
+    res = genome_annotation.identify_gene_by_homology_from_ec("blastp", "2.7.1.107")
     print("#"*100)
+
 
 
 if __name__ == '__main__':

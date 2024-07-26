@@ -7,6 +7,7 @@ Created on Mon Jun 29 14:52:26 2020
 import copy
 import os
 import re
+from functools import partial
 from os.path import join
 from typing import Union
 
@@ -14,13 +15,15 @@ import cobra
 import numpy as np
 import pandas as pd
 from cobra import flux_analysis, Model, Reaction, Metabolite
-from cobra.flux_analysis import find_essential_genes
+from cobra.flux_analysis import find_essential_genes, loopless_solution, flux_variability_analysis
 from cobra.io import write_sbml_model, read_sbml_model
 from cobra.manipulation.delete import prune_unused_metabolites
 from openpyxl import load_workbook
 from pandas import DataFrame
+from parallelbar import progress_map
 from pydantic import FilePath, DirectoryPath
 from sympy import Add
+from tqdm import tqdm
 
 from ..experimental.Biomass import Biomass
 from ..experimental.BiomassComponent import BiomassComponent
@@ -1256,6 +1259,32 @@ class MyModel(Model):
         res = [s for s in sampler.batch(100, 10)]
         return res
 
+    def fva(self, **kwargs):
+        return flux_variability_analysis(self.copy(), **kwargs)
+
+    def loopless_fva(self, **kwargs):
+        n_jobs = kwargs.get("n_jobs", 1)
+        fraction_of_optimum = kwargs.get("fraction_of_optimum", 0.9)
+        kwargs = {key: value for key, value in kwargs.items() if key != "n_jobs" and key != "fraction_of_optimum"}
+        res = {}
+        tmp = progress_map(partial(self.loopless_fva_parallel, fraction_of_optimum), tasks=[r.id for r in self.reactions], n_cpu=n_jobs)
+        for r in tmp:
+            res.update(r)
+        as_df = pd.DataFrame.from_dict(res, orient='index', columns=["minimum", "maximum"])
+        return as_df
+
+    def loopless_fva_parallel(self, fraction_of_optimum=0.9, reaction=None):
+        if reaction is None:
+            raise ValueError("Reaction must be provided")
+        with self as model:
+            model.reactions.get_by_id(model.biomass_reaction).bounds = (fraction_of_optimum * model.slim_optimize(), 1000)
+            model.objective = reaction
+            model.objective_direction = "max"
+            max_value = loopless_solution(model).objective_value
+            model.objective_direction = "min"
+            min_value = loopless_solution(model).objective_value
+        return {reaction: (min_value, max_value)}
+
 
 def check_biomass(name, biomass):
     if biomass <= 0:
@@ -1558,3 +1587,6 @@ def check_transport(reaction):
     else:
         membrane = d[str(compartments)]
         return membrane
+
+
+

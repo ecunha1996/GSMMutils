@@ -67,6 +67,7 @@ def reconstruction_pipeline():
                                                                     "SRR6825170_Aligned.sortedByCoord.out.bam": "sorb_3",
                                                                     }, model=template_model)
     omics.getmm = read_csv(r"omics/getmm_salinity.tsv", index_name='GeneID', index_col=0, comment='#', sep='\t')
+    omics.get_degs()
     omics.sum_tech_reps()
     omics_data = omics.counts.applymap(lambda x: math.log2(x + 1))
     omics_data_temp = omics_data.loc[(omics_data != 0).any(axis=1)]

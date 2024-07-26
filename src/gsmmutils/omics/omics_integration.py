@@ -5,10 +5,9 @@ from pprint import pprint
 
 import numpy as np
 import pandas as pd
-# from bioinfokit.analys import norm
+from bioinfokit.analys import norm
 from cobra.flux_analysis import flux_variability_analysis as fva
 from cobra.io import write_sbml_model
-from mewpy.omics import ExpressionSet
 from mewpy.omics import ExpressionSet, eFlux, GIMME, iMAT
 from mewpy.simulation import get_simulator
 
@@ -70,6 +69,7 @@ class OmicsIntegration:
 
     def load(self):
         self.data = read_csv(self.counts_file, index_name='GeneID', index_col=0, comment='#', sep='\t')
+        self.data.reindex(sorted(self.data.columns), axis=1)
         self.data.index = self.data.index + "_1"
         if self.samples_names:
             self.data = self.data.rename(columns=self.samples_names)
@@ -77,6 +77,10 @@ class OmicsIntegration:
             self.samples = sorted(list(set(self.data.columns) - {'Chr', 'Start', 'End', 'Strand', 'Length'}))
         self.counts = self.data[self.samples]
         self.genes = self.data['Length']
+
+    def drop_sample(self, samples):
+        self.samples = list(set(self.samples) - set(samples))
+        self.counts = self.counts.drop(samples, axis=1)
 
     def get_tpm(self):
         nm = norm()
@@ -137,8 +141,10 @@ class OmicsIntegration:
         for group in self.groups:
             idx = self.counts.columns.str.startswith(group)
             self.counts.loc[:, group] = self.counts.iloc[:, idx].sum(axis=1).values
+            self.getmm.loc[:, group] = self.getmm.iloc[:, idx].sum(axis=1).values
         to_remove = [col for col in self.counts.columns if col not in self.groups]
         self.counts.drop(to_remove, axis=1, inplace=True)
+        self.getmm.drop(to_remove, axis=1, inplace=True)
 
     def integrate(self, method=None, samples=None, tool="mewpy", **kwargs):
         print(f"Integrating omics data with {method}")

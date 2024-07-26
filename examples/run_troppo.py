@@ -28,7 +28,7 @@ def main():
     # model_consistent = fastcc(model)
     # cobra.io.write_sbml_model(model_consistent, r"C:\Users\Bisbii\PythonProjects\gsmmutils\data\models\model_consistent.xml")
     # model = MyModel(r"C:\Users\Bisbii\PythonProjects\ExpAlgae\data\models\model_consistent.xml", "e_Biomass__cytop")
-    omics = OmicsIntegration(r"../data/omics/output.txt", samples_names={"SRR7984026Aligned.out.sam": "LL_1",
+    omics = OmicsIntegration(r"../../omics-integration/data/dsalina/PRJNA437866/output.txt", samples_names={"SRR7984026Aligned.out.sam": "LL_1",
                                                                          "SRR7984027Aligned.out.sam": "LL_2",
                                                                          "SRR7984028Aligned.out.sam": "LL_3",
                                                                          "SRR7984029Aligned.out.sam": "ML_1",
@@ -91,7 +91,7 @@ def main_reduced_model():
     model = MyModel(join("../data", "models/model_with_trials.xml"), "e_Biomass__cytop")
     model.add_medium(join("../data", "media.xlsx"), "media_with_starch")
     consistent_model = cobra.flux_analysis.fastcc(model, flux_threshold=2)
-    omics = OmicsIntegration(r"../data/omics/output.txt",
+    omics = OmicsIntegration(r"../../omics-integration/data/dsalina/PRJNA437866/output.txt",
                              samples_names={"SRR7984026Aligned.out.sam": "LL_1",
                                             "SRR7984027Aligned.out.sam": "LL_2",
                                             "SRR7984028Aligned.out.sam": "LL_3",
