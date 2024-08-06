@@ -53,7 +53,8 @@ def reconstruction_function(omics_container, parameters: dict):
     try:
         if method == 'fastcore':
             return rec_wrapper.run_from_omics(omics_data=omics_container, algorithm=method, and_or_funcs=parameters['and_or_funcs'],
-                                              integration_strategy=('custom', [integration_fx]), solver='CPLEX')
+                                              integration_strategy=('custom', [integration_fx]), flux_threshold=parameters.get("fastcore_flux_threshold", 1e-6),
+                                              solver='CPLEX')
 
         elif method == 'tinit':
             return rec_wrapper.run_from_omics(omics_data=omics_container, algorithm=method, and_or_funcs=parameters['and_or_funcs'],
@@ -124,7 +125,7 @@ def troppo_omics_integration(model: cobra.Model, algorithm: str, threshold: floa
     reactions_ids = [r.id for r in template.reactions]
     parameters = {'threshold': threshold, 'reconstruction_wrapper': reconstruction_wrapper, 'algorithm': algorithm,
                   'protected': protected, 'and_or_funcs': (min, sum), "obj_frac": params.get("obj_frac", 0.8),  "essential_reactions":[],  #reactions_ids.index("e_Biomass__cytop")
-                  }
+                  "fastcore_flux_threshold": params.get("fastcore_flux_threshold", 1e-6)}
 
     batch_fastcore_res = batch_run(reconstruction_function, omics_data, parameters, threads=thread_number)
 
