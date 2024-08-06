@@ -5,7 +5,7 @@ from typing import List
 
 from ..dynamic.initial_conditions import get_initial_conditions
 from ..dynamic.rhs import get_bounds
-from ..experimental.ExpMatrix import ExpMatrix
+from ..experimental.exp_matrix import ExpMatrix
 from ..utils.utils import get_parameter_range
 
 

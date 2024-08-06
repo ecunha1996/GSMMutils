@@ -2,7 +2,7 @@ import unittest
 from os import chdir
 from os.path import join, dirname
 from gsmmutils.dynamic.sensitivity_analysis import SensitivityAnalysis
-from gsmmutils.experimental.ExpMatrix import ExpMatrix
+from gsmmutils.experimental.exp_matrix import ExpMatrix
 from gsmmutils.graphics.plot import lineplot
 
 

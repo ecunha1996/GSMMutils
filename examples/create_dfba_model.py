@@ -2,7 +2,7 @@ import os
 import pickle
 from cobra.flux_analysis import find_blocked_reactions
 from gsmmutils import DATA_PATH
-from gsmmutils.experimental.ExpMatrix import ExpMatrix
+from gsmmutils.experimental.exp_matrix import ExpMatrix
 from gsmmutils.model.COBRAmodel import MyModel
 from gsmmutils.utils.utils import get_element_in_biomass, get_molecular_weight
 

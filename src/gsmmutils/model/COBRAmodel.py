@@ -25,8 +25,8 @@ from pydantic import FilePath, DirectoryPath
 from sympy import Add
 from tqdm import tqdm
 
-from ..experimental.Biomass import Biomass
-from ..experimental.BiomassComponent import BiomassComponent
+from ..experimental.biomass import Biomass
+from ..experimental.biomass_component import BiomassComponent
 from ..utils.utils import update_st, get_precursors, normalize, convert_mmol_mol_to_g_molMM, \
     convert_mg_molMM_to_mmolM_gMM
 

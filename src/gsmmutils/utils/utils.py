@@ -11,7 +11,7 @@ from scipy.stats import linregress
 import numpy as np
 
 from .. import CONFIG_PATH
-from ..experimental.BiomassComponent import BiomassComponent
+from ..experimental.biomass_component import BiomassComponent
 
 def get_login_info(server: str):
     try:

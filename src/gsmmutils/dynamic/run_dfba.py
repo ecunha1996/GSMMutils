@@ -24,7 +24,7 @@ from tqdm import tqdm
 
 os.environ["OPENBLAS_NUM_THREADS"] = "1"
 sys.path.insert(0, "/home/src/")
-from ..experimental.ExpMatrix import ExpMatrix
+from ..experimental.exp_matrix import ExpMatrix
 from ..dynamic.initial_conditions import get_initial_conditions
 from ..model.COBRAmodel import MyModel
 from ..dynamic.rhs import get_bounds

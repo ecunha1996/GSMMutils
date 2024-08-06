@@ -4,7 +4,7 @@ from os.path import join
 import cobra
 
 from gsmmutils import DATA_PATH
-from gsmmutils.experimental.Biomass import Biomass
+from gsmmutils.experimental.biomass import Biomass
 from gsmmutils.model.COBRAmodel import MyModel
 
 

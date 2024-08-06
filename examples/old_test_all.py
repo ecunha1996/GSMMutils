@@ -2,7 +2,7 @@ from cobra import flux_analysis
 from tqdm import tqdm
 
 from gsmmutils import DATA_PATH, write_simulation, MyModel
-from gsmmutils.experimental.ExpMatrix import ExpMatrix
+from gsmmutils.experimental.exp_matrix import ExpMatrix
 from os.path import join
 from gsmmutils.graphics.plot import *
 from gsmmutils.stats.stats import *
