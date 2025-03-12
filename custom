@@ -1,0 +1,28 @@
+en_needMoreSpace=WARNING! The amount of $INSTBASE disk space required to perform this installation is greater than what is available.  Please free up at least $free_up kilobytes in $INSTBASE and attempt this installation again.
+en_vmDownloadError=Error in downloading the VM. Installer exiting...
+en_launch=Launching installer...
+en_jreExtractFailed=The included VM could not be extracted.
+en_invalidUnzip=Invalid unzip command found
+en_checksumPassed=MD5 checksum verification for downloaded JVM passed
+en_corruptedFiles=The size of the extracted files to be installed are corrupted.
+en_tmpCleanup=WARNING! This installation has been interrupted. The installation process will now terminate and the temporary files it is using will be deleted from $ZIPLOC.
+en_downloadLoc2=Download location=$jreDownloadFileName_1
+en_downloadLoc1=Download location=$jreDownloadFileName
+en_downloadedVM2=Downloaded VM Pack using URL=$jvmSpecBuildWithoutVmDirectDownloadUrl
+en_downloadedVM1=Downloaded VM Pack using URL=$jvmSpecBuildWithoutVMNotFoundDownloadUrl
+en_installInvalidUnzip=InstallAnywhere could not find a supported unzip program on the system, this should not have any impact on the installation process.
+en_noEnoughSpace=WARNING: $INSTBASE does not have enough disk space! Attempting to use $HOME for install base and tmp dir.
+en_extractJRE=Extracting the JRE from the installer archive...
+en_jreUnzipFailed=The included VM could not be uncompressed (GZIP/UNCOMPRESS).
+en_unpackJRE=Unpacking the JRE...
+en_spaceUndetermined=WARNING! The amount of $INSTBASE disk space required and/or available could not be determined.  The installation will attempted anyway.
+en_jreUntarFailed=The included VM could not be unarchived (TAR).
+en_default=default
+en_reDownload=Please try to download the installer again and make sure that you download using 'binary' mode.  Please do not attempt to install this currently downloaded copy.
+en_configure=Configuring the installer for this system's environment...
+en_prepareInstall=Preparing to install
+en_checksumFailed=Error!! MD5 checksum verification for downloaded JVM failed. Installer exiting...
+en_extractRes=Extracting the installation resources from the installer archive...
+en_defaultCase=default case
+en_noPermission=The temporary install directory: $INSTBASE does not exist or you do not have permission to write to it.
+en_iatempdirNotPresent=You have used the IATEMPDIR to set the install base and tmp dir for this installation.  However, the directory $INSTBASE does not exist or is not a directory.  Please choose a valid directory.
