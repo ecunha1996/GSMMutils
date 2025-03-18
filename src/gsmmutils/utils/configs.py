@@ -30,17 +30,22 @@ def get_defaults():
     -------
     cfg: configparser.ConfigParser
     """
-    default_package_root = join(str(importlib.resources.files("gsmmutils").parent), "../")
-    normalized_path = normpath(default_package_root)
-    resolved_path = realpath(normalized_path)
-    GSMMUTILS_ROOT = getenv("GSMMUTILS_ROOT", resolved_path)
     cfg = configparser.ConfigParser()
-    cfg.add_section("PATHS")
-    cfg.set("PATHS", "GSMMUTILS_ROOT", GSMMUTILS_ROOT)
-    cfg.set("PATHS", "DATA_PATH", join(GSMMUTILS_ROOT, 'data'))
-    cfg.set("PATHS", "SRC_PATH", join(GSMMUTILS_ROOT, 'src'))
-    cfg.set("PATHS", "CONFIG_PATH", join(GSMMUTILS_ROOT, "config"))
-    return cfg
+    GSMMUTILS_ROOT = ""
+    try:
+        default_package_root = join(str(importlib.resources.files("gsmmutils").parent), "../")
+        normalized_path = normpath(default_package_root)
+        resolved_path = realpath(normalized_path)
+        GSMMUTILS_ROOT = getenv("GSMMUTILS_ROOT", resolved_path)
+    except Exception as e:
+        print(e)
+    finally:
+        cfg.add_section("PATHS")
+        cfg.set("PATHS", "GSMMUTILS_ROOT", GSMMUTILS_ROOT)
+        cfg.set("PATHS", "DATA_PATH", join(GSMMUTILS_ROOT, 'data'))
+        cfg.set("PATHS", "SRC_PATH", join(GSMMUTILS_ROOT, 'src'))
+        cfg.set("PATHS", "CONFIG_PATH", join(GSMMUTILS_ROOT, "config"))
+        return cfg
 
 
 def read_config():

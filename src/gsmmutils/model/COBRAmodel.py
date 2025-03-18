@@ -221,8 +221,9 @@ class MyModel(Model):
         return self.pre_precursors
 
     def set_stoichiometry(self, reaction, metabolite, stoichiometry):
-        self.get_reaction(reaction).add_metabolites({
-            self.get_metabolite(metabolite): -self.get_reaction(reaction).metabolites[self.get_metabolite(metabolite)]})
+        if self.metabolites.get_by_id(metabolite) in self.get_reaction(reaction).metabolites:
+            self.get_reaction(reaction).add_metabolites({
+                self.get_metabolite(metabolite): -self.get_reaction(reaction).metabolites[self.get_metabolite(metabolite)]})
         self.get_reaction(reaction).add_metabolites({self.get_metabolite(metabolite): stoichiometry})
 
     def maximize(self, value=True, pfba=True):
@@ -1132,6 +1133,9 @@ class MyModel(Model):
             {key: value for key, value in self.reactions.get_by_id(biomass_reaction_id).metabolites.items() if
              not key.id.startswith("e_")})
         self.add_reactions([new_biomass])
+        from gsmmutils.utils.utils import get_biomass_mass
+        t = get_biomass_mass(self, new_biomass.id)
+        print(t)
 
     def determine_precursors(self, composition, units):
         if units == 'mol/mol':

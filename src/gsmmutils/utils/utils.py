@@ -231,7 +231,6 @@ def get_biomass_mass(model, biomass_reaction=None, lipid_subreactions=None):
                                                   element_counter)
                         c += res[0]
                         element_counter = res[1]
-                        print(reaction.id, res[0])
     return round(c, 3), element_counter
 
 
