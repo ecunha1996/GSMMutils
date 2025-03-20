@@ -4,6 +4,15 @@ from KEGG_parser.parsers import parse_pathway
 from requests import get
 
 
+aliases = {"Glycolysis / Gluconeogenesis": "Glycolysis",
+           "Carbon fixation in photosynthetic organisms": "Carbon fixation by Calvin cycle",
+           "Carbon fixation pathways in prokaryotes": "Other carbon fixation pathways",
+            "Glycine, serine and threonine metabolism": "Glycine serine and threonine metabolism",
+           "Porphyrin and chlorophyll metabolism": "Porphyrin metabolism"
+           }
+
+
+
 def search_pathway_map_id(pathway_name):
     """
     Search for a pathway in KEGG and return the pathway id
@@ -16,8 +25,12 @@ def search_pathway_map_id(pathway_name):
     pathway_id: str
         KEGG id of the pathway
     """
-    url = f'https://rest.kegg.jp/find/pathway/{pathway_name}'
+    url = f'https://rest.kegg.jp/find/pathway/{pathway_name.replace("/", "").replace(",", "")}'
     response = get(url)
+    if response.text == "\n":
+        pathway_name = aliases.get(pathway_name, pathway_name)
+        url = f'https://rest.kegg.jp/find/pathway/{pathway_name.replace("/", "").replace(",", "")}'
+        response = get(url)
     for line in response.text.splitlines():
         if len(line.split('\t')) == 1:
             continue

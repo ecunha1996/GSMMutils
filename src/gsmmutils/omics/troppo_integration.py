@@ -121,7 +121,7 @@ def troppo_omics_integration(model: cobra.Model, algorithm: str, threshold: floa
     enable_print()
     print('Reconstruction Wrapper Finished.')
     # block_print()
-    protected = ["e_Biomass__cytop", ] + list(params['uptake_drains']['f2 medium'])
+    protected = ["e_Biomass__cytop", ] + list(params['uptake_drains']['f2 medium']) + list(params['protected_reactions'])
     reactions_ids = [r.id for r in template.reactions]
     parameters = {'threshold': threshold, 'reconstruction_wrapper': reconstruction_wrapper, 'algorithm': algorithm,
                   'protected': protected, 'and_or_funcs': (min, sum), "obj_frac": params.get("obj_frac", 0.8),  "essential_reactions":[],  #reactions_ids.index("e_Biomass__cytop")

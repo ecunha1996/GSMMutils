@@ -12,7 +12,6 @@ def read_model(data_directory, filename="model.xml"):
     model = MyModel(join(join(data_directory, "models"), filename), "e_Biomass__cytop")
     model.add_medium(join(data_directory, "media.xlsx"), "base_medium")
     # model.reactions.ATPm__cytop.bounds = (1.5*24, 1.5*24)
-    model.reactions.ATPm__cytop.bounds = (0, 10000)
     for reaction in model.reactions:
         if reaction.lower_bound <= -1000:
             reaction.lower_bound = -10000
@@ -51,7 +50,7 @@ if __name__ == '__main__':
     os.chdir(DATA_PATH)
     model = read_model(DATA_PATH, "model_ds.xml")
     print(model.optimize())
-    # biomass = Biomass("e_Biomass__cytop", "experimental/Biomass_exp_composition.xlsx")
-    # simulate_all_trials(biomass.biomass_matrix, model)
-    # model = read_model(DATA_PATH, "model_with_biomass_trials.xml")
-    # adjust_precursors(biomass, model)
+    biomass = Biomass("e_Biomass__cytop", "experimental/Biomass_exp_composition.xlsx")
+    simulate_all_trials(biomass.biomass_matrix, model)
+    model = read_model(DATA_PATH, "model_with_biomass_trials.xml")
+    adjust_precursors(biomass, model)
