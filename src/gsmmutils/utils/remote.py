@@ -36,7 +36,7 @@ class Remote:
             host, username, password, container_tool = get_login_info(self.server)
             self.client.connect(host, username=username, password=password)
             self.container_tool = container_tool
-            print(f"Connected to remote server {host}")
+            print("Successfully connected to the remote server.")
         except Exception as e:
             print(e)
 
