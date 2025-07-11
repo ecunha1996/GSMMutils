@@ -37,6 +37,8 @@ def search_pathway_map_id(pathway_name):
         pathway_id, pathway_name_from_kegg = line.split('\t')
         if pathway_name == pathway_name_from_kegg:
             return pathway_id.strip("path:")
+        return None
+    return None
 
 
 def get_kegg_pathways(pathway_id=None):
