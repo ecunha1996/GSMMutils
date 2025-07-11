@@ -2,7 +2,8 @@ import unittest
 from os.path import join, dirname
 from os import chdir
 
-from gsmmutils import Biomass, MyModel
+from gsmmutils.model import MyModel
+from gsmmutils.experimental import Biomass
 
 
 class TestBiomass(unittest.TestCase):

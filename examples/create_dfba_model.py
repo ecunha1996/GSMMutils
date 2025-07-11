@@ -2,7 +2,7 @@ import os
 import pickle
 from cobra.flux_analysis import find_blocked_reactions
 from gsmmutils import DATA_PATH
-from gsmmutils.experimental.ExpMatrix import ExpMatrix
+from gsmmutils.experimental.exp_matrix import ExpMatrix
 from gsmmutils.model.COBRAmodel import MyModel
 from gsmmutils.utils.utils import get_element_in_biomass, get_molecular_weight
 
@@ -77,7 +77,7 @@ def remove_glycerol(model):
 
 def remove_pigments(model):
     pigments_copy = model.reactions.e_Pigment__chlo.copy()
-    pigments_copy.id = 'e_Pigments_no_car_chl__cytop'
+    pigments_copy.id = 'e_Pigments_no_caro__cytop'
     model.add_reactions([pigments_copy])
     model.reactions.e_Pigment__chlo.bounds = (0, 0)
     # model.set_stoichiometry("e_Pigments_no_car_chl__cytop", "C05306__chlo", 0)
@@ -97,22 +97,18 @@ def remove_pigments(model):
     #
     # model.set_stoichiometry("e_ActiveBiomass__cytop", "e_Pigment__chlo", -0.0163)
 
-    model.set_stoichiometry("e_Pigments_no_car_chl__cytop", "C05306__chlo", -0.0323)
-    model.set_stoichiometry("e_Pigments_no_car_chl__cytop", "C05307__chlo", -0.0109)
-    model.set_stoichiometry("e_Pigments_no_car_chl__cytop", "C02094__chlo", 0)
-    model.set_stoichiometry("e_Pigments_no_car_chl__cytop", "C08601__chlo", 0)
+    model.set_stoichiometry("e_Pigments_no_caro__cytop", "C05306__chlo", -0.5841)
+    model.set_stoichiometry("e_Pigments_no_caro__cytop", "C05307__chlo", -0.4167)
+    model.set_stoichiometry("e_Pigments_no_caro__cytop", "C02094__chlo", 0)
+    model.set_stoichiometry("e_Pigments_no_caro__cytop", "C20484__chlo", 0)
+    model.set_stoichiometry("e_Pigments_no_caro__cytop", "C08601__chlo", 0)
 
-    model.set_stoichiometry("e_Pigments_no_car_chl__cytop", "C08614__chlo", -1.0221)
-    model.set_stoichiometry("e_Pigments_no_car_chl__cytop", "C05433__chlo", -0.0246)
-    model.set_stoichiometry("e_Pigments_no_car_chl__cytop", "C06098__chlo", -0.0158)
-    model.set_stoichiometry("e_Pigments_no_car_chl__cytop", "C08591__chlo", -0.1595)
+    model.set_stoichiometry("e_Pigments_no_caro__cytop", "C08614__chlo", -0.0661)
+    model.set_stoichiometry("e_Pigments_no_caro__cytop", "C06098__chlo", -0.0294)
 
-    model.set_stoichiometry("e_Pigments_no_car_chl__cytop", "C08606__chlo", -0.0031)
-    model.set_stoichiometry("e_Pigments_no_car_chl__cytop", "C05432__chlo", -0.0008)
-    model.set_stoichiometry("e_Pigments_no_car_chl__cytop", "C08579__chlo", -0.0014)
-    model.set_stoichiometry("e_Pigments_no_car_chl__cytop", "C20484__chlo", -0.4351)
+    model.set_stoichiometry("e_Pigments_no_caro__cytop", "C08606__chlo", -0.0724)
 
-    model.set_stoichiometry("e_ActiveBiomass__cytop", "e_Pigment__chlo", -0.0163)
+    model.set_stoichiometry("e_ActiveBiomass__cytop", "e_Pigment__chlo", -0.0114)
 
     return model
 
@@ -147,7 +143,7 @@ def main():
     import cobra
     cobra_config = cobra.Configuration()
     cobra_config.bounds = (-10000, 10000)
-    model = MyModel("models/model_with_trials.xml", "e_Biomass__cytop")
+    model = MyModel("models/model_ds.xml", "e_Biomass__cytop")
     model.add_medium("media.xlsx", "base_medium")
     model.setup_condition("default")
     for reaction in model.reactions:

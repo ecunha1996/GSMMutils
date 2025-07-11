@@ -26,7 +26,7 @@ class InterProScan(GenomeAnnotation):
 
         """
         if not name:
-            name = path.split("/")[-1].split(".")[0]
+            name = '.'.join(os.path.basename(path).split('.')[:-1])
         df = read_csv(path, sep="\t", header=None, **kwargs)
         df.columns = ['gene_id', 'hash', 'score', 'db', 'db_accession', 'db_description', 'start', 'end', 'evalue', 'status', 'date', 'interpro_accession', 'interpro_description']
         if name not in self.results:

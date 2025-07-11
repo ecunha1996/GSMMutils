@@ -2,7 +2,9 @@ import os
 import unittest
 from os.path import dirname, join
 
-from gsmmutils import MyModel
+from cobra.io import read_sbml_model
+
+from gsmmutils.model.COBRAmodel import MyModel
 
 
 class TestModel(unittest.TestCase):

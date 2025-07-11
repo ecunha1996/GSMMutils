@@ -1,6 +1,7 @@
 import json
 from os import makedirs
 from os.path import exists
+from typing import List
 
 import numpy as np
 import pandas as pd
@@ -26,7 +27,7 @@ class FSEOF:
     workdir: str
         The directory to save the results.
     """
-    def __init__(self, model: MyModel, targets: list[str], workdir: str = "results/fseof"):
+    def __init__(self, model: MyModel, targets: List[str], workdir: str = "results/fseof"):
         self.workdir = workdir
         if not exists(workdir):
             makedirs(workdir)
@@ -123,7 +124,7 @@ class FSEOF:
 
     def fseof(self, objective):
         self.adjusted_model.reactions.get_by_id(objective).bounds = (0, 1000)
-        self.adjusted_model.reactions.get_by_id("EX_C00011__dra").bounds = (-1000, 1000)
+        # self.adjusted_model.reactions.get_by_id("EX_C00011__dra").bounds = (-1000, 1000)
         with self.adjusted_model as model:
             model.objective = objective
             maximum_target_production = model.optimize().objective_value

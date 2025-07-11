@@ -1,8 +1,10 @@
 from cobra import flux_analysis
 from tqdm import tqdm
 
-from gsmmutils import DATA_PATH, write_simulation, MyModel
-from gsmmutils.experimental.ExpMatrix import ExpMatrix
+from gsmmutils import DATA_PATH
+from gsmmutils.model import MyModel
+from gsmmutils.io import write_simulation
+from gsmmutils.experimental.exp_matrix import ExpMatrix
 from os.path import join
 from gsmmutils.graphics.plot import *
 from gsmmutils.stats.stats import *
@@ -31,8 +33,8 @@ def experimental_data_processing(data_directory, filename, model):
     matrix.remove_trials(["Resume", "area", "19", "21", "R21", "25", "PC1"])
     matrix.set_exponential_phases({"1": (2, 8), "2": (2, 8), "3": (2, 16), "4": (2, 10), "5": (2, 8), "6": (2, 8), "7": (2, 16), "8": (2, 16), "9": (2, 8), "10": (2, 8), "11": (2, 12),
                                    "12": (2, 10), "13": (2, 8), "14": (2, 8), "15": (2, 14), "16": (2, 14), "17": (2, 12), "18": (2, 12), "20": (2, 14),
-                                   "22": (2, 14), "23": (2, 10), "24": (2, 10), "PC1": (2, 10), "PC2": (2, 14), "PC3": (2, 10), "PC4": (2, 10), "RPC1": (2, 10), "RPC2": (2, 10),
-                                   "RPC3": (2, 10), "N1": (0, 12), "N2": (0, 18), "N3": (0, 14), "N4": (0, 16), "N5": (0, 12), "N6": (0, 12), "N7": (0, 12), "N8": (0, 16), "N9": (0, 16)})
+                                   "22": (2, 14), "23": (2, 10), "24": (2, 10), "PC": (2, 10), "N1": (0, 12), "N2": (0, 18), "N3": (0, 14), "N4": (0, 16), "NC": (2, 16),
+                                   "TC": (2, 12), "SC": (2, 10)})
     matrix.get_experimental_data(parameter='all')
     matrix.get_substrate_uptake_from_biomass("C", "CO2", header="C00011")
     matrix.get_substrate_uptake_from_biomass("P", "C00009")
@@ -66,7 +68,7 @@ def simulation_for_conditions(model, conditions_df, growth_rate_df, save_in_file
                 model_copy.objective = f"e_Biomass_trial{index}__cytop"
             for met, lb in condition.items():
                 lb = -lb if lb < 0 else lb
-                model_copy.reactions.get_by_id("EX_" + met + "__dra").bounds = (round(-lb, 4), 1000)
+                model_copy.reactions.get_by_id("EX_" + met + "__dra").bounds = (round(-lb, 5), 1000)
             sol = model_copy.optimize()
             biomass = round(sol[f"e_Biomass_trial{index}__cytop"], 3)
             error_sum += abs(growth_rate[index]['growth_rate'] - biomass)
@@ -118,7 +120,7 @@ def stats(data_directory, filename):
     boxplot(matrix.conditions, x_cols=['P', 'N', 'salinity', 'aeration'], y_cols=['Pmax'], to_show=True, x_labels={'P': 'P (mM)', 'N': 'N (mM)', 'salinity': 'NaCl $(g \cdot L^{-1})$', 'aeration': 'aeration rate'}
             , y_labels={'Pmax': 'Pmax $(g \cdot L^{-1} \cdot d^{-1})$'})
     stats = StatisticalAnalysis(matrix.conditions)
-    anova_table, model = stats.manova('umax ~ P')
+    # anova_table, model = stats.manova('umax ~ P')
     anova_table, model = stats.anova('biomass ~ P')
     print(anova_table)
     hist(matrix.conditions, ['biomass'], title='Biomass', xlabel='Biomass $(g \cdot L^{-1})$', ylabel='Frequency')
@@ -146,8 +148,8 @@ if __name__ == '__main__':
     model = read_model(data_directory, filename="model_with_trials.xml")
     matrix = experimental_data_processing(data_directory, "experimental/Matriz- DCCR Dunaliella salina_dfba.xlsx", model)
     # matrix = ExpMatrix(join(data_directory, "Matriz- DCCR Dunaliella salina_new.xlsx"))
-    matrix.conditions = "Resume"
-    print("Simulating")
-    simulations(matrix, model)
-    simulations_max_carotene(matrix, model)
-    # stats(data_directory, "Matriz- DCCR Dunaliella salina_new.xlsx")
+    # matrix.conditions = "Resume"
+    # print("Simulating")
+    # simulations(matrix, model)
+    # simulations_max_carotene(matrix, model)
+    # stats(data_directory, "experimental/Matriz- DCCR Dunaliella salina_new.xlsx")

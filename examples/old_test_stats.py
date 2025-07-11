@@ -2,8 +2,8 @@ from pprint import pprint
 
 import pandas as pd
 pd.set_option('display.max_columns', None)
-from gsmmutils.experimental.Biomass import Biomass
-from gsmmutils.experimental.ExpMatrix import ExpMatrix
+from gsmmutils.experimental.biomass import Biomass
+from gsmmutils.experimental.exp_matrix import ExpMatrix
 from gsmmutils.graphics.plot import boxplot
 from gsmmutils.stats.stats import StatisticalAnalysis
 

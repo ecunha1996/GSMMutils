@@ -33,7 +33,7 @@ class ModelValidator:
         for reaction in self.model.reactions:
             balance = reaction.check_mass_balance()
             if (reaction.check_mass_balance() and "EX_" not in reaction.id and any([round(value, 5) != 0 for value in balance.values()])
-                    and "DM_" not in reaction.id):
+                    and "DM_" not in reaction.id and "SK_" not in reaction.id):
                 if show_biomass_reactions and str(reaction.id).startswith("e_"):
                     mass_balance[str(reaction.id)] = reaction.check_mass_balance()
                 else:

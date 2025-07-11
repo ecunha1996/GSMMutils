@@ -24,7 +24,7 @@ from tqdm import tqdm
 
 os.environ["OPENBLAS_NUM_THREADS"] = "1"
 sys.path.insert(0, "/home/src/")
-from ..experimental.ExpMatrix import ExpMatrix
+from ..experimental.exp_matrix import ExpMatrix
 from ..dynamic.initial_conditions import get_initial_conditions
 from ..model.COBRAmodel import MyModel
 from ..dynamic.rhs import get_bounds
@@ -39,7 +39,7 @@ warnings.filterwarnings("ignore")
 
 os.chdir("/home/")
 
-matrix = ExpMatrix(f"{DATA_PATH}/experimental/Matriz- DCCR Dunaliella salina_dfba_old.xlsx", conditions="Resume")
+matrix = ExpMatrix(f"{DATA_PATH}/experimental/Matriz- DCCR Dunaliella salina_dfba_new.xlsx", conditions="Resume")
 
 
 def select_random_conditions(conditions, num_to_select, mandatory_strings):
@@ -927,36 +927,36 @@ def run_all():
 
 if __name__ == '__main__':
     # parameter_optimization()
-    parameter_optimization(['ExA',
-                            'KNm',
-                            'KPm',
-                            'K_nitrogen_quota',
-                            'VNmax',
-                            'VPmax',
-                            'a0',
-                            'a0_lut',
-                            'a1',
-                            'a1_lut',
-                            'a2',
-                            'a2_lut',
-                            'a3',
-                            'a3_lut',
-                            'l',
-                            'light_conversion_factor',
-                            'ro0',
-                            'ro1',
-                            'smoothing_factor',
-                            'smoothing_factor_lut',
-                            'v_car_max',
-                            'v_lut_max',
-                            'v_nitrate_max',
-                            'v_polyphosphate_max',
-                            'wNmax',
-                            'wNmin',
-                            'wPmin',
-                            'wPopt',
-                            'Kaeration',
-                            'lutein_aeration_exponent',
-                            'carotene_aeration_exponent'])
+    # parameter_optimization(['ExA',
+    #                         'KNm',
+    #                         'KPm',
+    #                         'K_nitrogen_quota',
+    #                         'VNmax',
+    #                         'VPmax',
+    #                         'a0',
+    #                         'a0_lut',
+    #                         'a1',
+    #                         'a1_lut',
+    #                         'a2',
+    #                         'a2_lut',
+    #                         'a3',
+    #                         'a3_lut',
+    #                         'l',
+    #                         'light_conversion_factor',
+    #                         'ro0',
+    #                         'ro1',
+    #                         'smoothing_factor',
+    #                         'smoothing_factor_lut',
+    #                         'v_car_max',
+    #                         'v_lut_max',
+    #                         'v_nitrate_max',
+    #                         'v_polyphosphate_max',
+    #                         'wNmax',
+    #                         'wNmin',
+    #                         'wPmin',
+    #                         'wPopt',
+    #                         'Kaeration',
+    #                         'lutein_aeration_exponent',
+    #                         'carotene_aeration_exponent'])
     # run_all()
-    # run_all_parallel()
+    run_all_parallel()

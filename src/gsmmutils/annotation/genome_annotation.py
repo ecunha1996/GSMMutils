@@ -68,7 +68,7 @@ class GenomeAnnotation:
 
         """
         if not name:
-            name = filepath.split('/')[-1].split('.')[0]
+            name = '.'.join(os.path.basename(filepath).split('.')[:-1])
         genes = []
         for record in parse(filepath, 'fasta'):
             genes.append(record)
@@ -91,7 +91,7 @@ class GenomeAnnotation:
                 if filename.endswith('.faa') or filename.endswith('.fasta'):
                     genome = Genome()
                     genome.from_fasta(f"{dirpath}/{filename}")
-                    self.load_genes(dirpath.split("/")[-1], genome)
+                    self.load_genes(dirpath.split("/")[-1].split("\\")[-1], genome)
 
     def load_results(self, path: str, name: str = None, **kwargs):
         """

@@ -1,7 +1,6 @@
 import unittest
-from unittest.mock import patch, MagicMock
 from src.gsmmutils.model.fseof import FSEOF
-from gsmmutils import MyModel
+from gsmmutils.model import MyModel
 
 
 class TestFSEOF(unittest.TestCase):

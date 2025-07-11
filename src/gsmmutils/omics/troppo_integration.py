@@ -38,10 +38,13 @@ def reconstruction_function(omics_container, parameters: dict):
     def integration_fx(data_map):
         return [[k for k, v in data_map.get_scores().items() if (v is not None and v > threshold) or k in parameters['protected']]]
 
-    def score_apply(data_map):
-        dm = {k: 0 if v is None else (min(v, 10) - threshold) if k not in parameters['protected'] else 20
-              for k, v in data_map.items()}
-        return dm
+    # def score_apply(data_map):
+    #     dm = {k: 0 if v is None else (min(v, 10) - threshold) if k not in parameters['protected'] else 20
+    #           for k, v in data_map.items()}
+
+    def score_apply(reaction_map_scores):
+        return {k: 0 if v is None else v for k, v in reaction_map_scores.items()}
+
 
     threshold, rec_wrapper, method = [parameters[parameter] for parameter in
                                       ['threshold', 'reconstruction_wrapper', 'algorithm']]
@@ -50,11 +53,18 @@ def reconstruction_function(omics_container, parameters: dict):
     try:
         if method == 'fastcore':
             return rec_wrapper.run_from_omics(omics_data=omics_container, algorithm=method, and_or_funcs=parameters['and_or_funcs'],
-                                              integration_strategy=('custom', [integration_fx]), solver='CPLEX')
+                                              integration_strategy=('custom', [integration_fx]), flux_threshold=parameters.get("fastcore_flux_threshold", 1e-6),
+                                              solver='CPLEX')
 
         elif method == 'tinit':
             return rec_wrapper.run_from_omics(omics_data=omics_container, algorithm=method, and_or_funcs=parameters['and_or_funcs'],
-                                              integration_strategy=('continuous', score_apply), solver='CPLEX')
+                                              integration_strategy=('continuous', score_apply), solver='CPLEX',
+                                              essential_reactions=parameters["essential_reactions"])
+        elif method == 'gimme':
+            return rec_wrapper.run_from_omics(omics_data=omics_container, algorithm=method, and_or_funcs=parameters['and_or_funcs'],
+                                              integration_strategy=('continuous', score_apply), solver='CPLEX', obj_frac=parameters["obj_frac"],
+                                              objectives=[{'e_Biomass__cytop': 1}], preprocess=True, flux_threshold=parameters['threshold'],
+                                              reaction_ids=rec_wrapper.model_reader.r_ids, metabolite_ids=rec_wrapper.model_reader.m_ids)
 
     except Exception as e:
         traceback.print_exc()
@@ -62,7 +72,7 @@ def reconstruction_function(omics_container, parameters: dict):
 
 
 def troppo_omics_integration(model: cobra.Model, algorithm: str, threshold: float, thread_number: int,
-                             omics_dataset: DataFrame, thresholds_map=None, params=None):
+                             omics_dataset: DataFrame, thresholds_map=None, params=None, **kwargs):
     """
     This function is used to run the Troppo's integration algorithms.
 
@@ -111,10 +121,11 @@ def troppo_omics_integration(model: cobra.Model, algorithm: str, threshold: floa
     enable_print()
     print('Reconstruction Wrapper Finished.')
     # block_print()
-    protected = ["e_Biomass__cytop", ] + list(params['uptake_drains']['f2 medium'])
+    protected = ["e_Biomass__cytop", ] + list(params['uptake_drains']['f2 medium']) + list(params['protected_reactions'])
+    reactions_ids = [r.id for r in template.reactions]
     parameters = {'threshold': threshold, 'reconstruction_wrapper': reconstruction_wrapper, 'algorithm': algorithm,
-                  'protected': protected, 'and_or_funcs': (min, sum)
-                  }
+                  'protected': protected, 'and_or_funcs': (min, sum), "obj_frac": params.get("obj_frac", 0.8),  "essential_reactions":[],  #reactions_ids.index("e_Biomass__cytop")
+                  "fastcore_flux_threshold": params.get("fastcore_flux_threshold", 1e-6)}
 
     batch_fastcore_res = batch_run(reconstruction_function, omics_data, parameters, threads=thread_number)
 
