@@ -6,7 +6,7 @@ with open('README.rst') as readme_file:
 
 if __name__ == "__main__":
     setup(name='gsmmutils',
-    version='0.0.2',
+    version='0.0.3',
     python_requires='>=3.6',
     package_dir={'': 'src'},
     packages=find_packages('src'),
