@@ -31,7 +31,8 @@ class Remote:
         """
         try:
             self.client = paramiko.SSHClient()
-            self.client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+            self.client.load_system_host_keys()
+            self.client.set_missing_host_key_policy(paramiko.RejectPolicy())
             host, username, password, container_tool = get_login_info(self.server)
             self.client.connect(host, username=username, password=password)
             self.container_tool = container_tool
